@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "Dumax-ELD-App",
+    "slug": "Dumax-ELD-App",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
