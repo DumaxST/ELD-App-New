@@ -1,0 +1,7 @@
+{
+    "usuarios": [
+      {"id": 1, "usuario": "usuario1", "contrasena": "contrasena1"},
+      {"id": 2, "usuario": "usuario2", "contrasena": "contrasena2"}
+    ]
+  }
+  
