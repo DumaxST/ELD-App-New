@@ -120,37 +120,37 @@ const AppMenu = ({ navigation }) => {
           {appOptionShort({
             icon: "lock-closed-outline",
             option: languageModule.lang(language,'certification'),
-            // onPress: () => {
-            //   navigation.push("CertificacionELD");
-            // },
+            onPress: () => {
+              navigation.push("CertificacionELD");
+            },
           })}
           {appOptionShort({
             icon: "document-text-outline",
             option: languageModule.lang(language,'certifyLogs'),
-            // onPress: () => {
-            //   navigation.push("CertificarLogs");
-            // },
+            onPress: () => {
+              navigation.push("CertificarLogs");
+            },
           })}
           {appOptionShort({
             icon: "people-outline",
-            option: languageModule.lang(language,'entryOfSecondDriver')
-            // onPress: () => {
-            //   navigation.push("IngresoSegundoChofer");
-            // },
+            option: languageModule.lang(language,'entryOfSecondDriver'),
+             onPress: () => {
+               navigation.push("IngresoSegundoChofer");
+             },
           })}
           {appOptionShort({
             icon: "notifications-outline",
-            option: languageModule.lang(language,'notifications')
-            // onPress: () => {
-            //   navigation.push("Notificaciones");
-            // },
+            option: languageModule.lang(language,'notifications'),
+            onPress: () => {
+              navigation.push("Notificaciones");
+            },
           })}
           {appOptionShort({
             icon: "mail-outline",
-            option: languageModule.lang(language,'shipments')
-            // onPress: () => {
-            //   navigation.push("Envios");
-            // },
+            option: languageModule.lang(language,'shipments'),
+            onPress: () => {
+              navigation.push("Envios");
+            },
           })}
         </View>
       </ScrollView>

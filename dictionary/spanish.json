@@ -1,10 +1,11 @@
 {
+    "PleasesigninbeforeanymovementintheCMV": "Por favor inicia sesión antes de cualquier movimiento en el CMV",
     "login": "Iniciar Sesión",
     "userHOS": "UsuarioHOS",
     "password": "Contraseña",
     "latitude": "Latitud",
     "longitude": "Longitud",
-    "Updatedon": "Actualizado en",
+    "Updatedon": "Actualizado a",
     "AlertSwithBluetooth1": "Dumax requiere encender Bluetooth",
     "AlertSwithBluetooth2": "y tambien requiere conectar la aplicación a tu dispositivo de localización",
     "noAllow": "No permitir",
@@ -68,5 +69,13 @@
     "licenseNumber": "Número de licencia",
     "operationMode": "Modo de operación",
     "noAvailable": "No disponible",
-    "macAddress": "Dirección MAC"
+    "macAddress": "Dirección MAC",
+    "FMCSAregistrationInformation": "Información de registro de FMCSA",
+    "device": "Dispositivo",
+    "modalIdentifier": "Identificador modal",
+    "registrationID": "ID de registro",
+    "registeredWithFMCSA": "Registrado con FMCSA",
+    "certify": "Certificar",
+    "loading": "Cargando",
+    "incorrectUserOrPassword": "Usuario o contraseña incorrectos"
 }

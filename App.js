@@ -16,7 +16,12 @@ import Violaciones from './screens/principalScreen/violaciones/violaciones';
 import PerfilConductor from './screens/principalScreen/perfilConductor/perfilConductor';
 import AcercaDelELD from './screens/principalScreen/acercadeELD/acercadeELD';
 import Anotaciones from './screens/principalScreen/anotaciones/anotaciones';
-
+import CertificacionELD from './screens/principalScreen/certificacion/certificacionELD';
+import CertificarLogs from './screens/principalScreen/certificacion/certificarLogs';
+import IngresoSegundoChofer from './screens/principalScreen/entradaSegundoChofer/ingresoSegundoChofer';
+import Notificaciones from './screens/principalScreen/notificaciones/notificaciones';
+import Envios from './screens/principalScreen/envios/envios';
+import NuevoEnvio from './screens/principalScreen/envios/nuevoEnvio';
 
 const Stack = createStackNavigator();
 
@@ -42,6 +47,12 @@ const App = () => {
           <Stack.Screen name="PerfilConductor" component={PerfilConductor} />
           <Stack.Screen name="AcercaDelELD" component={AcercaDelELD} />
           <Stack.Screen name="Anotaciones" component={Anotaciones} />
+          <Stack.Screen name="CertificacionELD" component={CertificacionELD} />
+          <Stack.Screen name="CertificarLogs" component={CertificarLogs} />
+          <Stack.Screen name="IngresoSegundoChofer" component={IngresoSegundoChofer} />
+          <Stack.Screen name="Notificaciones" component={Notificaciones} />
+          <Stack.Screen name="Envios" component={Envios} />
+          <Stack.Screen name="NuevoEnvio" component={NuevoEnvio} />
 
         </Stack.Navigator>
       </NavigationContainer>

@@ -1,6 +1,7 @@
 {
+    "PleasesigninbeforeanymovementintheCMV": "Please sign in before any movement in the CMV",
     "login": "Login",
-    "userHOS": "userHOS",
+    "userHOS": "UserHOS",
     "password": "Password",
     "latitude": "Latitude",
     "longitude": "Longitude",
@@ -69,5 +70,13 @@
     "licenseNumber": "License Number",
     "operationMode": "Operation Mode",
     "noAvailable": "No Available",
-    "macAddress": "Mac Address"
+    "macAddress": "Mac Address",
+    "FMCSAregistrationInformation": "FMCSA registration Information",
+    "device": "Device",
+    "modalIdentifier": "Modal Identifier",
+    "registrationID": "Registration ID",
+    "registeredWithFMCSA": "Registered with FMCSA",
+    "certify": "Certify",
+    "loading": "Loading",
+    "incorrectUserOrPassword": "Incorrect user or password"
 }

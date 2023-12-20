@@ -63,6 +63,8 @@ export const isStillDriving = async (currentLocation, accuracy) => {
         lastData?.coords,
         currentLocation?.coords
       );
+      console.log("distance", distance);
+      console.log("accuracy", eld.accuracy);
       if (distance > eld.accuracy) {
         return distance;
       } else {

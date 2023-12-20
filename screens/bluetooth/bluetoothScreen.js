@@ -16,7 +16,7 @@ const BluetoothScreen = ({ navigation }) => {
 
   //Declaracion de variables
   const [language, setlanguage] = useState('');
-  const manager = new BleManager();
+  // const manager = new BleManager();
   const [connectingBluetoothDeviceDialog, setConnectingBluetoothDeviceDialog] = useState(false);
   const [showAdvertenciaDialog, setShowAdvertenciaDialog] = useState(false);
   const [searchingDevices, setSearchingForDevices] = useState(false);
@@ -25,21 +25,11 @@ const BluetoothScreen = ({ navigation }) => {
   const [selectedDevice, setSelectedDevice] = useState(null); 
 
   //Uso de efectos de inicio del screen
-  //Aqui obtenemos el idioma seleccionado desde la primera pantalla
-  useEffect(() => {
-    const getPreferredLanguage = async () => {
-      try {
-        setlanguage(await AsyncStorage.getItem("preferredLanguage"));
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    getPreferredLanguage();
-  }, []);
-
+  
   //Aqui obtenemos el estado del bluetooth del dispositivo
   useEffect(() => {
-    const checkBluetoothState = manager.onStateChange((state) => {  
+    const checkBluetoothState = (language) => {
+    const checkBTState = manager.onStateChange((state) => {  
     if (state === 'PoweredOff') {
       Alert.alert(languageModule.lang(language,"AlertSwithBluetooth1"), languageModule.lang(language, "AlertSwithBluetooth2"), [
         {
@@ -59,7 +49,7 @@ const BluetoothScreen = ({ navigation }) => {
   checkAndRequestBluetoothScanPermission((granted => {
     if (granted == true) {
       console.log("El permiso se concedió");
-      checkBluetoothState();
+      checkBTState();
     } else {
       console.log("El permiso no se concedió");
     }
@@ -77,33 +67,60 @@ const BluetoothScreen = ({ navigation }) => {
     subscription.remove();
   };
      
-
+    };
+  
+    const fetchLanguage = async () => {
+      try {
+        const preferredLanguage = await AsyncStorage.getItem("preferredLanguage");
+        if (preferredLanguage) {
+          checkBluetoothState(preferredLanguage);
+        } 
+      } catch (error) {
+        console.log(error);
+      }
+    };
+  
+    fetchLanguage();
+  }, []);
+  
+  //Aqui obtenemos el idioma seleccionado desde la primera pantalla
+  useEffect(() => {
+    const getPreferredLanguage = async () => {
+      try {
+        setlanguage(await AsyncStorage.getItem("preferredLanguage"));
+        console.log("Idioma seleccionado: " + language);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    getPreferredLanguage();
   }, []);
   
   //Funcion de escaneo de dispositivos
+
   const toggleScan = () => {
     if (!scanning) {
-      manager.startDeviceScan(null, null, (error, device) => {
-        console.log('Escaneando...');
-        if (error) {
-          console.error('Error scanning:', error);
-          return;
-        }
-        if (device.name) {
-          console.log('Detectado dispositivo:', device.name, device.id);
-          setDevices((prevDevices) => [...prevDevices, device]);
-        }
+      // manager.startDeviceScan(null, null, (error, device) => {
+      //   console.log('Escaneando...');
+      //   if (error) {
+      //     console.error('Error scanning:', error);
+      //     return;
+      //   }
+      //   if (device.name) {
+      //     console.log('Detectado dispositivo:', device.name, device.id);
+      //     setDevices((prevDevices) => [...prevDevices, device]);
+      //   }
 
-        //  device.writeCharacteristicWithResponseForService(
-        //   serviceUUID,
-        //   characteristicUUID,
-        //   [0x01, 0x02] // Datos para escribir
-        //   );
+      //   //  device.writeCharacteristicWithResponseForService(
+      //   //   serviceUUID,
+      //   //   characteristicUUID,
+      //   //   [0x01, 0x02] // Datos para escribir
+      //   //   );
 
-        // device.readCharacteristicForService(serviceUUID, characteristicUUID); // Leer datos
+      //   // device.readCharacteristicForService(serviceUUID, characteristicUUID); // Leer datos
 
 
-      });
+      // });
       //Abrimos el dialogo de busqueda de dispositivos por 3 segundos
       setSearchingForDevices(true);
       setTimeout(() => {
@@ -125,6 +142,11 @@ const BluetoothScreen = ({ navigation }) => {
         console.error('Error al conectar al dispositivo:', error);
       }
     }
+  };
+
+  const pushToDiagnostico = () => {
+    navigation.push("Diagnostico");
+    setShowAdvertenciaDialog(false);
   };
 
   
@@ -356,7 +378,7 @@ const BluetoothScreen = ({ navigation }) => {
           </Text>
           <TouchableOpacity
             activeOpacity={0.99}
-            onPress={() => navigation.push("PrincipalScreen")}
+            onPress={() => pushToDiagnostico()}
             style={{
               ...styles.optionBtns.btnStyle,
               ...styles.optionBtns.btnSuccess,

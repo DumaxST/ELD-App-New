@@ -1,8 +1,8 @@
 import axios from "axios";
 
-export const axiosURL =
-  "https://us-central1-dumax-eld.cloudfunctions.net/userApp";
-// export const axiosURL = "http://127.0.0.1:5000/dumax-eld/us-central1/userApp";
+//  export const axiosURL = "https://5ebc-2806-10ae-17-7ed5-b9d0-5a7f-63fa-8b37.ngrok-free.app/dumax-eld/us-central1/userApp";
+export const axiosURL ="https://us-central1-dumax-eld.cloudfunctions.net/userApp";
+// export const axiosURL = "http://localhost:5000/dumax-eld/us-central1/userApp";
 // export const axiosURL = "http://192.168.100.4:5001/dumax-eld/us-central1/userApp";
 
 export const getAxios = async (ref, params) => {
@@ -46,7 +46,7 @@ export const postAxios = async (ref, params) => {
     .catch((error) => {
       const errorCode = error?.code;
       const errorMessage = error?.message;
-      console.error(errorCode, errorMessage);
+      console.log("PostError",errorCode, errorMessage);
       return errorCode, errorMessage, error?.response?.data;
     });
 };

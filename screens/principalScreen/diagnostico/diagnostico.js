@@ -14,6 +14,22 @@ const Diagnostico = ({ navigation }) => {
 
   const [language, setlanguage] = useState("");  
   const [diagnostico, setDiagnostico] = useState([]);
+
+  
+  //Uso de efectos de inicio del screen
+  //Aqui obtenemos el idioma seleccionado desde la primera pantalla
+  useEffect(() => {
+    const getPreferredLanguage = async () => {
+       try {
+         setlanguage(await AsyncStorage.getItem("preferredLanguage"));
+       } catch (error) {
+         console.log(error);
+       }
+    };
+    getPreferredLanguage();
+  }, []);
+
+
   const diagnosticoResults = [
     {
       option: languageModule.lang(language, 'locationAvailability'),
@@ -65,18 +81,6 @@ const Diagnostico = ({ navigation }) => {
   const [diagnosticandoDispositivo, setDiagnosticandoDispositivo] =
     useState(true);
 
-  //Uso de efectos de inicio del screen
-  //Aqui obtenemos el idioma seleccionado desde la primera pantalla
-  useEffect(() => {
-    const getPreferredLanguage = async () => {
-       try {
-         setlanguage(await AsyncStorage.getItem("preferredLanguage"));
-       } catch (error) {
-         console.log(error);
-       }
-    };
-    getPreferredLanguage();
-  }, []);
   
   
   useEffect(() => {
@@ -284,7 +288,7 @@ const Diagnostico = ({ navigation }) => {
         <TouchableOpacity
           activeOpacity={0.99}
           onPress={() => {
-            navigation.push("PerfilDelVehiculo");
+            navigation.push("PerfilVehiculo");
           }}
           style={
             diagnostico.length > 0

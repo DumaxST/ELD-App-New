@@ -2,6 +2,7 @@ import { geoTimeStamp } from "../components/eldFunctions";
 import { currentCMV, getCurrentDriver } from "../config/localStorage";
 import { getAxios, postAxios, putAxios } from "./axiosConfig";
 
+//*-----------------BEFORE AUTHENTICATION---------------------------------*//
 export const authCarrierDriver = async (userName, userPsw) => {
   return await getAxios("/api/carrier/driver/auth", {
     userName: userName,
@@ -10,11 +11,32 @@ export const authCarrierDriver = async (userName, userPsw) => {
     console.error("authCarrierDriver", err);
   });
 };
+//*-----------------NEW AUTHENTICATION----------------------------------*//
+
+export const authDriver = async (userName, carrierID, language, password) => {
+  return await postAxios("/api/auth/login", {
+    userName: userName,
+    carrierID: carrierID,
+    language: language,
+    password: password,
+  }).then((res) =>{
+    return res
+  }).catch((err) => {
+    console.error("authDriver", err);
+  });
+}
 
 export const eld = {
-  getAccuracy: async () => {
-    return await getAxios(`/api/carrier/eld/accuracy`);
-  },
+  getAccuracy: async (carrierID, cmvID) => {
+    return await getAxios(`/api/carrier/eld/accuracy`, {
+      carrierID: carrierID,
+      cmvID: cmvID
+    }).then((res) =>{
+      return res
+    }).catch((err) => {
+      console.error("Accuracyerr", err);
+    });
+  }
 };
 
 // DRIVER EVENTS ===============================================================
@@ -99,12 +121,6 @@ export const postDriverEvent = async (
       carrier: currentChofer?.carrier,
     };
 
-    // console.log(
-    //   eventData.dutyStatus != lastDriverStatus,
-    //   currentChofer?.exemptDriverConfiguration?.value === "0" ||
-    //     currentChofer?.exemptDriverConfiguration?.value === 0
-    // );
-
     if (
       (eventData.dutyStatus != lastDriverStatus &&
         currentChofer?.exemptDriverConfiguration?.value === "0") ||
@@ -120,6 +136,7 @@ export const postDriverEvent = async (
       //   eldID: "bWuPuaLFPVQxdWH9eGdX",
       //   event: eventData,
       // });
+      console.log("chofer", currentChofer.id)
       return await postAxios("/api/driverEvent", {
         carrierID: currentChofer?.carrier?.id
           ? currentChofer?.carrier?.id
