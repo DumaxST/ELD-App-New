@@ -16,12 +16,12 @@
             "central"
           ],
           "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to bluetooth devices"
-        },
-        "expo-updates",
-        {
-          "username": "dguzmandumax"
         }
-      ]
+      ],
+      "expo-updates",
+      {
+        "username": "dguzmandumax"
+      }
     ],
     "extra": {
       "eas": {
