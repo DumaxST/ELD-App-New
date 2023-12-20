@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useCallback, useEffect } from "react";
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Provider } from 'react-redux';
 import  store  from './redux/store'
+import * as Updates from 'expo-updates';
 
 import LoginScreen from './screens/auth/loginScreen';
 import BluetoothScreen from './screens/bluetooth/bluetoothScreen';
@@ -26,6 +27,26 @@ import NuevoEnvio from './screens/principalScreen/envios/nuevoEnvio';
 const Stack = createStackNavigator();
 
 const App = () => {
+
+
+  async function onFetchUpdateAsync() {
+    try {
+      const update = await Updates.checkForUpdateAsync();
+
+      if (update.isAvailable) {
+        await Updates.fetchUpdateAsync();
+        await Updates.reloadAsync();
+      }
+    } catch (error) {
+      // You can also add an alert() to see the error message in case of an error when fetching updates.
+      alert(`Error fetching latest Expo update: ${error}`);
+    }
+  }
+
+  useEffect(() => { onFetchUpdateAsync() }, [])
+
+
+
   return (
     <Provider store={store}>
       <NavigationContainer>
