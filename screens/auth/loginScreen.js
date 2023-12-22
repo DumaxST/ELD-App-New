@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import RNPickerSelect from 'react-native-picker-select';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from "@react-navigation/native";
-import { authDriver, eld } from "../../data/commonQuerys";
+import { authDriver, eld, getCarriersOptions} from "../../data/commonQuerys";
 import { getCurrentDriver } from "../../config/localStorage";
 import { useSelector, useDispatch } from "react-redux";
 import * as Location from "expo-location";
@@ -16,6 +16,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { isStillDriving } from "../../components/eldFunctions";
 import { app, auth } from '../../config/firebase'
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import CountryFlag from "react-native-country-flag";
+import { checkAndRequestBluetoothScanPermission } from '../bluetooth/constructor';
 
 const languageModule = require('../../global_functions/variables');
 const { width } = Dimensions.get("window");
@@ -25,6 +27,8 @@ const LoginScreen = ({navigation}) => {
   const dispatch = useDispatch();
 
   //Declaraciones de variables
+  const [carriers, setCarriers] = useState([]);
+  const [selectedCarrier, setSelectedCarrier] = useState(null);
   const [showMotionAlert, setShowMotionAlert] = useState(false);
   const [errorMessages, setErrorMessages] = useState([]);
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -42,10 +46,75 @@ const LoginScreen = ({navigation}) => {
   const [backClickCount, setBackClickCount] = useState(0);
 
   console.log("status: ", driverStatus);
-
+  
+  //Obtenemos los permisos de ubicacion con efectos
   useEffect(() => {
-    startLocationTraking();
+    const requestPermissions = async () => {
+      let granted = await checkAndRequestBluetoothScanPermission();
+      while (!granted) {
+        granted = await checkAndRequestBluetoothScanPermission();
+      }
+
+      if (granted) {
+        console.log('Los permisos se concedieron');
+        // Realizar acciones cuando se concedan los permisos
+      } else {
+        console.log('Los permisos no se concedieron');
+        // Manejar el caso en el que los permisos no se concedan
+      }
+    };
+
+    requestPermissions();
   }, []);
+  //Obtenemos la ubicacion con efectos
+  useEffect(() => {
+    const startLocationTracking = async () => {
+      const foregroundPermission = await Location.requestForegroundPermissionsAsync();
+
+      if (!foregroundPermission.granted) {
+        console.log("Please grant location permissions");
+        return;
+      }
+
+      const locationOptions = {
+        accuracy: Location.Accuracy.High,
+        distanceInterval: 5,
+      };
+
+      const updateLocation = async () => {
+        const currentLocation = await Location.getCurrentPositionAsync(locationOptions);
+        setCurrentCords({ ...currentLocation.coords, timestamp: currentLocation.timestamp });
+      };
+
+      // Actualizar la ubicación inicial
+      updateLocation();
+
+      // Establecer un intervalo para actualizar continuamente la ubicación
+      const locationInterval = setInterval(updateLocation, 5000); // Actualizar cada 5 segundos (ajústalo según tu necesidad)
+
+      return () => clearInterval(locationInterval); // Limpiar el intervalo al desmontar el componente
+    };
+
+    startLocationTracking();
+  }, []);
+
+  // Obtener la lista de carriers cuando el componente se monta
+  useEffect(() => {
+    const fetchCarriers = async () => {
+      try {
+        const carriersList = await getCarriersOptions();
+        setCarriers(carriersList.map(carrier => ({
+          label: carrier.name,
+          value: carrier.id,
+        })))
+      } catch (error) {
+        console.error('Error fetching carriers:', error);
+      }
+    };
+
+    fetchCarriers();
+  }, []);
+
 
   //usamos el efecto focus para usar la funcion backaction
   useFocusEffect(
@@ -127,8 +196,8 @@ const LoginScreen = ({navigation}) => {
     
     // Opciones de idioma disponibles
     const options = [
-      { label: 'English', value: 'Eng' },
-      { label: 'Español', value: 'Esp' },
+      { label: 'English', value: 'Eng', flag: 'US' },
+      { label: 'Español', value: 'Esp', flag: 'MX' },
     ];
     setLanguageOptions(options);
   }, []);
@@ -220,7 +289,12 @@ const LoginScreen = ({navigation}) => {
 
   const authUser = async () => {
     //Vamos a obtenerlo desde la base pero lo ocuparemos local por ahora por ser elcarrier de prueba
-    const carrierID = 'lqdU1ErwDswdjSTiVEWp'
+    const carrierID = selectedCarrier;
+    if (!carrierID) {
+      errorMessages.push([languageModule.lang(language, 'SelectaCarrier')]);
+      openErrorModal();
+      return;
+    }
     try {
       return await authDriver(usuario, carrierID, language, password).then(
         async (res) => {
@@ -254,7 +328,7 @@ const LoginScreen = ({navigation}) => {
                     lastDriverStatus
                   )
                 );  
-              navigation.push("Diagnostico")                                
+              navigation.push("BluetoothScreen")                                
               }catch(error){
                 console.log("Error al pasar al driver:" + error)
               }
@@ -324,7 +398,7 @@ const LoginScreen = ({navigation}) => {
                 currentCords.timestamp
               ).toLocaleTimeString()}`}
             </Text>
-          ) : null}
+          ) : null}        
           <View
           style={{
             justifyContent: "center",
@@ -334,15 +408,40 @@ const LoginScreen = ({navigation}) => {
             width: 200,
           }}
         >
-          <Text>{"Version 1.0"}</Text>      
+          <Text>{"Version 1.0"}</Text> 
+          </View>
+          <View style={{ marginTop: Sizes.fixPadding, alignItems: 'center', width: 200 }}>
         <RNPickerSelect
-        value={selectedLanguage}
-        onValueChange={(value) => handleLanguageChange(value)}
-        items={languageOptions}
-        placeholder={{ label: '', value: null }}
-        style={{ ...pickerSelectStyles }}
+          value={selectedCarrier}
+          onValueChange={(value) => setSelectedCarrier(value)}
+          items={carriers}
+          placeholder={{ label: languageModule.lang(language, 'SelectaCarrier'), value: null }}
+          style={{
+            inputIOS: {
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: 50,
+              width: 200,
+            },
+          }}
         />
-        </View>
+      </View>
+      <View style={{ marginTop: Sizes.fixPadding, alignItems: 'center', width: 200 }}>
+        <RNPickerSelect
+          value={selectedLanguage}
+          onValueChange={(value) => handleLanguageChange(value)}
+          items={languageOptions}
+          placeholder={{ label: '', value: '', flag: '' }}
+          style={{
+            inputIOS: {
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: 50,
+              width: 200,
+            },
+          }}
+        />
+      </View>
         </View>
         
     )
@@ -535,28 +634,41 @@ const styles = StyleSheet.create({
     color: '#000',
     textDecorationLine: 'underline',
   },
+  languagePicker: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    height: 40,
+  }
 });
 
 const pickerSelectStyles = StyleSheet.create({
-  inputIOS: {
-    fontSize: 12,
-    paddingVertical: 9,
+  pickerIOS: {
+    fontSize: 10,
+    paddingVertical: 12,
     paddingHorizontal: 10,
     borderWidth: 1,
     borderColor: 'gray',
     borderRadius: 4,
     color: 'black',
-    paddingRight: 30, // to ensure the text is never behind the icon
+    paddingRight: 30,
+    backgroundColor: '#f0f0f0',
   },
-  inputAndroid: {
-    fontSize: 16,
+  pickerAndroid: {
+    fontSize: 14,
     paddingHorizontal: 10,
     paddingVertical: 8,
     borderWidth: 0.5,
     borderColor: 'purple',
     borderRadius: 8,
     color: 'black',
-    paddingRight: 30, // to ensure the text is never behind the icon
+    paddingRight: 30,
+    backgroundColor: '#fff', // Cambia el color de fondo para Android aquí
   },
 });
 

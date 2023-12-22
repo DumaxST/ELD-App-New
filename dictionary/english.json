@@ -78,5 +78,6 @@
     "registeredWithFMCSA": "Registered with FMCSA",
     "certify": "Certify",
     "loading": "Loading",
-    "incorrectUserOrPassword": "Incorrect user or password"
+    "incorrectUserOrPassword": "Incorrect user or password",
+    "SelectaCarrier": "Select a Carrier"
 }

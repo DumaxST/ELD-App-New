@@ -26,6 +26,14 @@ export const authDriver = async (userName, carrierID, language, password) => {
   });
 }
 
+export const getCarriersOptions = async () => {
+  return await getAxios("/api/app/carriers").then((res) =>{
+    return res
+  }).catch((err) => {
+    console.error("authDriver", err);
+  });
+}
+
 export const eld = {
   getAccuracy: async (carrierID, cmvID) => {
     return await getAxios(`/api/carrier/eld/accuracy`, {

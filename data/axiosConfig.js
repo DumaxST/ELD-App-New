@@ -1,7 +1,7 @@
 import axios from "axios";
 
-//  export const axiosURL = "https://5ebc-2806-10ae-17-7ed5-b9d0-5a7f-63fa-8b37.ngrok-free.app/dumax-eld/us-central1/userApp";
-export const axiosURL ="https://us-central1-dumax-eld.cloudfunctions.net/userApp";
+ export const axiosURL = "https://06ea-2806-10ae-17-c065-f4b6-77fd-6e18-f228.ngrok-free.app/dumax-eld/us-central1/userApp";
+// export const axiosURL ="https://us-central1-dumax-eld.cloudfunctions.net/userApp";
 // export const axiosURL = "http://localhost:5000/dumax-eld/us-central1/userApp";
 // export const axiosURL = "http://192.168.100.4:5001/dumax-eld/us-central1/userApp";
 

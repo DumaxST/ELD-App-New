@@ -16,7 +16,7 @@ const BluetoothScreen = ({ navigation }) => {
 
   //Declaracion de variables
   const [language, setlanguage] = useState('');
-  // const manager = new BleManager();
+  const manager = new BleManager();
   const [connectingBluetoothDeviceDialog, setConnectingBluetoothDeviceDialog] = useState(false);
   const [showAdvertenciaDialog, setShowAdvertenciaDialog] = useState(false);
   const [searchingDevices, setSearchingForDevices] = useState(false);
@@ -25,6 +25,25 @@ const BluetoothScreen = ({ navigation }) => {
   const [selectedDevice, setSelectedDevice] = useState(null); 
 
   //Uso de efectos de inicio del screen
+
+  useEffect(() => {
+    const requestPermissions = async () => {
+      let granted = await checkAndRequestBluetoothScanPermission();
+      while (!granted) {
+        granted = await checkAndRequestBluetoothScanPermission();
+      }
+
+      if (granted) {
+        console.log('Los permisos se concedieron');
+        // Realizar acciones cuando se concedan los permisos
+      } else {
+        console.log('Los permisos no se concedieron');
+        // Manejar el caso en el que los permisos no se concedan
+      }
+    };
+
+    requestPermissions();
+  }, []);
   
   //Aqui obtenemos el estado del bluetooth del dispositivo
   useEffect(() => {
@@ -99,7 +118,22 @@ const BluetoothScreen = ({ navigation }) => {
   //Funcion de escaneo de dispositivos
 
   const toggleScan = () => {
+    try{
     if (!scanning) {
+      manager.startDeviceScan(null, {
+        allowDuplicates: false,
+        },
+        async (error, device) => {
+          if (error) {
+            console.log(error)
+            manager.stopDeviceScan();
+          }
+          if (device) {
+            console.log('Detectado dispositivo:',device, device.name, device.id);
+            setDevices([...devices, device]);
+            manager.stopDeviceScan();} }
+          , );
+        
       // manager.startDeviceScan(null, null, (error, device) => {
       //   console.log('Escaneando...');
       //   if (error) {
@@ -108,16 +142,22 @@ const BluetoothScreen = ({ navigation }) => {
       //   }
       //   if (device.name) {
       //     console.log('Detectado dispositivo:', device.name, device.id);
-      //     setDevices((prevDevices) => [...prevDevices, device]);
+      //     setDevices((prevDevices) => {
+      //       const alreadyExists = prevDevices.find((prevDevice) => prevDevice.id === device.id);
+      //       if (!alreadyExists) {
+      //         return [...prevDevices, device];
+      //       }
+      //       return prevDevices;
+      //     });
       //   }
 
-      //   //  device.writeCharacteristicWithResponseForService(
-      //   //   serviceUUID,
-      //   //   characteristicUUID,
-      //   //   [0x01, 0x02] // Datos para escribir
-      //   //   );
+        //  device.writeCharacteristicWithResponseForService(
+        //   serviceUUID,
+        //   characteristicUUID,
+        //   [0x01, 0x02] // Datos para escribir
+        //   );
 
-      //   // device.readCharacteristicForService(serviceUUID, characteristicUUID); // Leer datos
+        // device.readCharacteristicForService(serviceUUID, characteristicUUID); // Leer datos
 
 
       // });
@@ -125,23 +165,31 @@ const BluetoothScreen = ({ navigation }) => {
       setSearchingForDevices(true);
       setTimeout(() => {
         setSearchingForDevices(false);
-      }, 3000);
+        manager.stopDeviceScan()
+      }, 4000);
     } else {
       manager.stopDeviceScan();
     }
-    setScanning(!scanning);
+    setScanning(!scanning);}
+    catch(error){
+      console.log(error);
+    }
   };
+
+  useEffect(() => {
+    if (selectedDevice) {
+      connectToDevice();
+    }
+  }, [selectedDevice]);
 
   //Funcion de conexion a dispositivo
   const connectToDevice = async () => {
-    if (selectedDevice) {
       try {
         const device = await manager.connectToDevice(selectedDevice.id); 
         console.log('Conectado al dispositivo:', device.name || 'Unknown');
       } catch (error) {
         console.error('Error al conectar al dispositivo:', error);
       }
-    }
   };
 
   const pushToDiagnostico = () => {
@@ -176,21 +224,96 @@ const BluetoothScreen = ({ navigation }) => {
     );
   }
 
+  function bluetoothDeviceOption({ device, last }, i) {
+    return (
+      <View
+        key={`bluetoothDeviceOption_${i}`}
+        style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}
+      >
+        <TouchableOpacity
+          activeOpacity={0.99}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <Image
+              source={
+                device.connected
+                  ? require("../../assets/images/icons/bluetooth-success.png")
+                  : require("../../assets/images/icons/bluetooth.png")
+              }
+              style={{ width: 16.0, height: 16.0, resizeMode: "contain" }}
+            />
+            <Text
+              numberOfLines={1}
+              style={{
+                marginLeft: Sizes.fixPadding,
+                marginRight: Sizes.fixPadding,
+                flex: 1,
+                ...Fonts.blackColor16SemiBold,
+              }}
+            >
+              {device.id}
+            </Text>
+          <Button title="Connect" onPress={() => setSelectedDevice(device)} />
+          </View>
+        </TouchableOpacity>
+        {last ? (
+          <View style={{ marginVertical: Sizes.fixPadding * 2.0 }} />
+        ) : (
+          <View
+            style={{
+              marginVertical: Sizes.fixPadding * 2.0,
+              backgroundColor: Colors.lightGrayColor,
+              height: 1.0,
+            }}
+          />
+        )}
+      </View>
+    );
+  }
+
   function devicesList() {
     return (
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={{ marginTop: Sizes.fixPadding * 3.0 }}>
-        {devices.map((device, index) => (
-        <View key={index} style={styles.deviceItem}>
-        <Text>{device.name || 'Unknown'}</Text>
-        <Icon name="bluetooth" type="material" size={30} color={Colors.primaryColor} />
-        <Button title="Connect" onPress={() => setSelectedDevice(device)} />
-        </View>
-        ))}
+          {devices.map((device, i) => {
+            return bluetoothDeviceOption(
+              {
+                device: device,
+                last: i + 1 == devices.length ? true : false,
+              },
+              i
+            );
+          })}
         </View>
       </ScrollView>
     );
   }
+  // function devicesList() {
+  //   return (
+  //     <ScrollView showsVerticalScrollIndicator={false}>
+  //       <View style={{ marginTop: Sizes.fixPadding * 3.0 }}>
+  //       {devices.map((device, index) => (
+  //       <View key={index} style={styles.deviceItem}>
+  //       <Text>{device.id || 'Unknown'}</Text>
+  //       <Icon name="bluetooth" type="material" size={30} color={Colors.primaryColor} />
+  //       <Button title="Connect" onPress={() => setSelectedDevice(device)} />
+  //       </View>
+  //       ))}
+  //       </View>
+  //     </ScrollView>
+  //   );
+  // }
 
   function screenOptions() {
     return (

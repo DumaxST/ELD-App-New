@@ -4144,6 +4144,11 @@ expo-av@^13.6.0:
   resolved "https://registry.npmjs.org/expo-av/-/expo-av-13.6.0.tgz"
   integrity sha512-42dDX53uao+IxuecNRcAvLuO7CiF9lriCufDfw2sSIGKRYox6m2RXYFstVpDSv2gzsuScGk7fwT23EUrUXbk8A==
 
+expo-bluetooth@^0.0.0:
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/expo-bluetooth/-/expo-bluetooth-0.0.0.tgz#0c298eabf7b4e6e44ac80c4f24c323368efd5a29"
+  integrity sha512-6OqEmPJ6yHkV6lLrkXHesE8DtzoHy5hW51LJ+PRju5ZivjUN9sHOSCnRLGf2+DQ8ozyyVyjTGPd/+04rASWyHA==
+
 expo-constants@~14.4.2:
   version "14.4.2"
   resolved "https://registry.npmjs.org/expo-constants/-/expo-constants-14.4.2.tgz"
@@ -4187,7 +4192,7 @@ expo-dev-menu@3.2.2:
 
 expo-eas-client@~0.6.0:
   version "0.6.0"
-  resolved "https://registry.yarnpkg.com/expo-eas-client/-/expo-eas-client-0.6.0.tgz#b722dde0de1b8b56701b282a5fdf28d3d3e79ec4"
+  resolved "https://registry.npmjs.org/expo-eas-client/-/expo-eas-client-0.6.0.tgz"
   integrity sha512-FSPy0ThcJBvzEzOZVhpOrYyHgQ8U1jJ4v7u7tr1x0KOVRqyf25APEQZFxxRPn3zAYW0tQ+uDTCbrwNymFqhQfw==
 
 expo-file-system@~15.4.0, expo-file-system@~15.4.4:
@@ -4260,7 +4265,7 @@ expo-status-bar@~1.6.0:
 
 expo-structured-headers@~3.3.0:
   version "3.3.0"
-  resolved "https://registry.yarnpkg.com/expo-structured-headers/-/expo-structured-headers-3.3.0.tgz#9f0b041a1d243a22a4a23d9eb19f02ace3c5258c"
+  resolved "https://registry.npmjs.org/expo-structured-headers/-/expo-structured-headers-3.3.0.tgz"
   integrity sha512-t+h5Zqaukd3Tn97LaWPpibVsmiC/TFP8F+8sAUliwCSMzgcb5TATRs2NcAB+JcIr8EP3JJDyYXJrZle1cjs4mQ==
 
 expo-updates-interface@~0.10.0:
@@ -4270,7 +4275,7 @@ expo-updates-interface@~0.10.0:
 
 expo-updates@~0.18.18:
   version "0.18.18"
-  resolved "https://registry.yarnpkg.com/expo-updates/-/expo-updates-0.18.18.tgz#6650a144c48f5831b6e03f413a4599d47acca97d"
+  resolved "https://registry.npmjs.org/expo-updates/-/expo-updates-0.18.18.tgz"
   integrity sha512-j9I/vCepUwJ2ZfXsqy5wG+IxXAR05+uiiPABDP9fd++09zt/r2H97abyl5sWaR1h4/0Z9wxXtI0ZssVdDXPE8A==
   dependencies:
     "@expo/code-signing-certificates" "0.0.5"
@@ -6732,6 +6737,16 @@ react-native-ble-plx@^3.1.2-rc.0:
   dependencies:
     "@expo/config-plugins" "^7.2.5"
 
+react-native-country-flag@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.npmjs.org/react-native-country-flag/-/react-native-country-flag-2.0.2.tgz"
+  integrity sha512-5LMWxS79ZQ0Q9ntYgDYzWp794+HcQGXQmzzZNBR1AT7z5HcJHtX7rlk8RHi7RVzfp5gW6plWSZ4dKjRpu/OafQ==
+
+react-native-country-flags@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.npmjs.org/react-native-country-flags/-/react-native-country-flags-1.1.0.tgz"
+  integrity sha512-5vpkb3gWL9dw3bp5behDjjMNOy9JrQhlSlzEfRR0MNacxxsQW3PaOSKSUDfZhpxIGe3dwyf/913pc4OuzujrjA==
+
 react-native-elements@^3.4.3:
   version "3.4.3"
   resolved "https://registry.npmjs.org/react-native-elements/-/react-native-elements-3.4.3.tgz"
@@ -6766,6 +6781,11 @@ react-native-paper@^5.11.1:
     color "^3.1.2"
     use-latest-callback "^0.1.5"
 
+react-native-permissions@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.npmjs.org/react-native-permissions/-/react-native-permissions-4.0.1.tgz"
+  integrity sha512-wiC+zsVbysV2/pvrwB6sawB3Uhs1xWSfUCxRBmg3vBi7uc9egxAJZcMovSQGTzTHRrY3Lo3hyD/zHJ4xQ+fnWw==
+
 react-native-picker-select@^9.0.0:
   version "9.0.0"
   resolved "https://registry.npmjs.org/react-native-picker-select/-/react-native-picker-select-9.0.0.tgz"
@@ -6787,10 +6807,10 @@ react-native-ratings@8.0.4:
   dependencies:
     lodash "^4.17.15"
 
-react-native-reanimated@~3.3.0:
-  version "3.3.0"
-  resolved "https://registry.npmjs.org/react-native-reanimated/-/react-native-reanimated-3.3.0.tgz"
-  integrity sha512-LzfpPZ1qXBGy5BcUHqw3pBC0qSd22qXS3t8hWSbozXNrBkzMhhOrcILE/nEg/PHpNNp1xvGOW8NwpAMF006roQ==
+react-native-reanimated@^3.6.1:
+  version "3.6.1"
+  resolved "https://registry.npmjs.org/react-native-reanimated/-/react-native-reanimated-3.6.1.tgz"
+  integrity sha512-F4vG9Yf9PKmE3GaWtVGUpzj3SM6YY2cx1yRHCwiMd1uY7W0gU017LfcVUorboJnj0y5QZqEriEK1Usq2Y8YZqg==
   dependencies:
     "@babel/plugin-transform-object-assign" "^7.16.7"
     "@babel/preset-typescript" "^7.16.7"
