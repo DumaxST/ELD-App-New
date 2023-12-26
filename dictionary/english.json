@@ -79,5 +79,6 @@
     "certify": "Certify",
     "loading": "Loading",
     "incorrectUserOrPassword": "Incorrect user or password",
-    "SelectaCarrier": "Select a Carrier"
+    "SelectaCarrier": "Select a Carrier",
+    "thereIsnoDevicesAvailable": "There is no devices available"
 }

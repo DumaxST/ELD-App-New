@@ -836,7 +836,7 @@ const BluetoothScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Dispositivos</Text>
+      <Text style={styles.title}>{languageModule.lang(language, 'devicesECM')}</Text>
       {!scanning && (
         <FlatList
           data={devices}
@@ -844,7 +844,7 @@ const BluetoothScreen = ({navigation}) => {
           keyExtractor={item => item.id.toString()}
           style={styles.deviceList}
           ListEmptyComponent={() => (
-            <Text style={styles.noDevicesText}>No hay dispositivos cerca</Text>
+            <Text style={styles.noDevicesText}>{languageModule.lang(language, 'thereIsnoDevicesAvailable')}</Text>
           )}
         />
       )}
@@ -854,10 +854,10 @@ const BluetoothScreen = ({navigation}) => {
         showButtons && (
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.scanButton} onPress={handleScan}>
-              <Text style={styles.buttonText}>Escaneo</Text>
+              <Text style={styles.buttonText}>{languageModule.lang(language, 'searchDevices')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-              <Text style={styles.buttonText}>Continuar</Text>
+              <Text style={styles.buttonText}>{languageModule.lang(language, 'continue')}</Text>
             </TouchableOpacity>
           </View>
         )

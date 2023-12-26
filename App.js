@@ -30,12 +30,12 @@ const App = () => {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => {
-    const token = AsyncStorage.getItem('token');
-    if (token) {
-      setIsAuthenticated(true); 
-    }
-  }, []);
+  // useEffect(() => {
+  //   const token = AsyncStorage.getItem('token');
+  //   if (token) {
+  //     setIsAuthenticated(true); 
+  //   }
+  // }, []);
 
   const handleLogout = () => {
     AsyncStorage.removeItem('token'); 
