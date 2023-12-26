@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import {View,Text,TextInput,TouchableOpacity,SafeAreaView,StyleSheet,Dimensions,StatusBar,} from 'react-native';
+import {View,Text,TextInput,TouchableOpacity,ScrollView,SafeAreaView,StyleSheet,Dimensions,StatusBar,} from 'react-native';
 import { Colors, Fonts, Sizes } from '../../../constants/styles';
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentDriver, currentCMV } from "../../../config/localStorage";
 import { startVehicleMeters } from "../../../redux/actions";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get('window');
 const languageModule = require('../../../global_functions/variables');
 
 const PerfilVehiculo = ({ navigation }) => {
-    
+  const dispatch = useDispatch();
   //Declaracion de variables
   const [language, setlanguage] = useState("");
   const [state, setState] = useState({
@@ -39,6 +40,7 @@ const PerfilVehiculo = ({ navigation }) => {
     const getPreferredLanguage = async () => {
        try {
          setlanguage(await AsyncStorage.getItem("preferredLanguage"));
+         console.log(language);
        } catch (error) {
          console.log(error);
        }
@@ -74,7 +76,7 @@ const PerfilVehiculo = ({ navigation }) => {
   return await AsyncStorage.setItem("currentCMV", JSON.stringify(state)).then(
     async () => {
       dispatch(startVehicleMeters());
-      navigation.push("NavigationsTab");
+      navigation.push("PrincipalScreen");
     }
   );
   };
@@ -147,14 +149,16 @@ const PerfilVehiculo = ({ navigation }) => {
       <StatusBar translucent={false} backgroundColor={Colors.primaryColor} />
       <Text style={styles.title}>{languageModule.lang(language, 'vehicleProfile')}</Text>
       <View style={styles.formContainer}>
+      <ScrollView showsVerticalScrollIndicator={false}>
        {truckNumberInput()}
         {truckVINInput()}
         {truckTrailerInput()}
         {truckShippingDocumentInput()}
         {odometroVisualInput()}
+        </ScrollView>
       </View>
       <TouchableOpacity style={styles.submitButton} onPress={updateCMVProfile}>
-        <Text style={styles.submitButtonText}>{languageModule.lang(language, 'submit')}</Text>
+        <Text style={styles.submitButtonText}>{languageModule.lang(language, 'save')}</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
