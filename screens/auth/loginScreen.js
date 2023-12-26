@@ -22,7 +22,7 @@ import { checkAndRequestBluetoothScanPermission } from '../bluetooth/constructor
 const languageModule = require('../../global_functions/variables');
 const { width } = Dimensions.get("window");
 
-const LoginScreen = ({navigation}) => {
+const LoginScreen = ({navigation, handleLogin}) => {
 
   const dispatch = useDispatch();
 
@@ -44,8 +44,6 @@ const LoginScreen = ({navigation}) => {
   const [currentCords, setCurrentCords] = useState({});
   const [driverDistance, setDrivedDistance] = useState(0);
   const [backClickCount, setBackClickCount] = useState(0);
-
-  console.log("status: ", driverStatus);
   
   //Obtenemos los permisos de ubicacion con efectos
   useEffect(() => {
@@ -328,7 +326,10 @@ const LoginScreen = ({navigation}) => {
                     lastDriverStatus
                   )
                 );  
-              navigation.push("BluetoothScreen")                                
+              handleLogin(); 
+              navigation.push("BluetoothScreen")  
+              console.log(typeof user.uid)
+              AsyncStorage.setItem('token', user.uid);                              
               }catch(error){
                 console.log("Error al pasar al driver:" + error)
               }
@@ -410,22 +411,6 @@ const LoginScreen = ({navigation}) => {
         >
           <Text>{"Version 1.0"}</Text> 
           </View>
-          <View style={{ marginTop: Sizes.fixPadding, alignItems: 'center', width: 200 }}>
-        <RNPickerSelect
-          value={selectedCarrier}
-          onValueChange={(value) => setSelectedCarrier(value)}
-          items={carriers}
-          placeholder={{ label: languageModule.lang(language, 'SelectaCarrier'), value: null }}
-          style={{
-            inputIOS: {
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: 50,
-              width: 200,
-            },
-          }}
-        />
-      </View>
       <View style={{ marginTop: Sizes.fixPadding, alignItems: 'center', width: 200 }}>
         <RNPickerSelect
           value={selectedLanguage}
@@ -477,6 +462,22 @@ const LoginScreen = ({navigation}) => {
   return (
     <View style={styles.container}>
       {logoIcon()}
+      <View style={styles.form}>
+        <RNPickerSelect
+          value={selectedCarrier}
+          onValueChange={(value) => setSelectedCarrier(value)}
+          items={carriers}
+          placeholder={{ label: languageModule.lang(language, 'SelectaCarrier'), value: null }}
+          style={{
+            inputIOS: {
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: 50,
+              width: 200,
+            },
+          }}
+        />
+      </View>
       <View style={styles.form}>
         <Input
           placeholder= {languageModule.lang(language,'userHOS')}
@@ -600,6 +601,7 @@ const styles = StyleSheet.create({
     container: {
       justifyContent: "center",
       alignItems: "center",
+      top: 23,
     },
     logo: {
       width: width / 2,

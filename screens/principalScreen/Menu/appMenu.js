@@ -9,7 +9,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 const languageModule = require('../../../global_functions/variables');
 const { width } = Dimensions.get("window");
 
-const AppMenu = ({ navigation }) => {
+const AppMenu = ({ navigation, handleLogout }) => {
 
   const [language, setlanguage] = useState("");  
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
@@ -28,6 +28,14 @@ const AppMenu = ({ navigation }) => {
     getPreferredLanguage();
   }, []);
 
+  const logOutDriver = async () => {
+      await AsyncStorage.removeItem('token');
+      handleLogout();
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'LoginScreen' }],
+      });
+  }
 
   function header() {
     return (
@@ -45,7 +53,7 @@ const AppMenu = ({ navigation }) => {
         <Text style={{ ...Fonts.whiteColor22SemiBold }}>
           {languageModule.lang(language,'Menu')}
         </Text>
-        <TouchableOpacity onPress={() => logOutDriver()}>
+        <TouchableOpacity onPress={logOutDriver}>
           <MaterialIcons
             name="logout"
             size={24}

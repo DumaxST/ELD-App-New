@@ -74,6 +74,10 @@ const PerfilDelVehiculo = ({ navigation }) => {
     );
   };
 
+  const saveAndExit = async () => {
+    navigation.push("PrincipalScreen");
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.primaryColor }}>
       <StatusBar translucent={false} backgroundColor={Colors.primaryColor} />
@@ -221,9 +225,7 @@ const PerfilDelVehiculo = ({ navigation }) => {
             ...styles.continueBtn.btnStyle,
             ...styles.continueBtn.touchableOpacity,
           }}
-        //   onPress={async () => {
-        //     await updateCMVProfile();
-        //   }}
+          onPress={() => saveAndExit()}
         >
           <Text
             numberOfLines={1}

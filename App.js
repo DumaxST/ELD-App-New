@@ -22,11 +22,29 @@ import IngresoSegundoChofer from './screens/principalScreen/entradaSegundoChofer
 import Notificaciones from './screens/principalScreen/notificaciones/notificaciones';
 import Envios from './screens/principalScreen/envios/envios';
 import NuevoEnvio from './screens/principalScreen/envios/nuevoEnvio';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Stack = createStackNavigator();
 
 const App = () => {
 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const token = AsyncStorage.getItem('token');
+    if (token) {
+      setIsAuthenticated(true); 
+    }
+  }, []);
+
+  const handleLogout = () => {
+    AsyncStorage.removeItem('token'); 
+    setIsAuthenticated(false); 
+  };
+
+  const handleLogin = () => {
+    setIsAuthenticated(true); // Establecemos el estado de autenticación como verdadero
+  };
 
 
   return (
@@ -38,11 +56,21 @@ const App = () => {
             ...TransitionPresets.SlideFromRightIOS,
           }}
         >
+          {isAuthenticated ? (
+            <Stack.Screen name="PrincipalScreen" component={PrincipalScreen} />
+          ) : (
+            <Stack.Screen name="LoginScreen">
+              {props => <LoginScreen {...props} handleLogin={handleLogin} />}
+            </Stack.Screen>
+          )}
+          <Stack.Screen name="AppMenu">
+            {props => <AppMenu {...props} handleLogout={handleLogout} />}
+          </Stack.Screen>
 
-          <Stack.Screen name="LoginScreen" component={LoginScreen} />
+          {/* <Stack.Screen name="LoginScreen" component={LoginScreen} /> */}
           <Stack.Screen name="BluetoothScreen" component={BluetoothScreen} />
-          <Stack.Screen name="PrincipalScreen" component={PrincipalScreen} />
-          <Stack.Screen name="AppMenu" component={AppMenu} />
+          {/* <Stack.Screen name="PrincipalScreen" component={PrincipalScreen} /> */}
+          {/* <Stack.Screen name="AppMenu" component={AppMenu} /> */}
           <Stack.Screen name="LogBook" component={LogBook} />
           <Stack.Screen name="Diagnostico" component={Diagnostico} />
           <Stack.Screen name="PerfilVehiculo" component={PerfilVehiculo} />
