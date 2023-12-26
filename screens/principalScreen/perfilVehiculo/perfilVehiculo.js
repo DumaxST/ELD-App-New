@@ -11,6 +11,7 @@ const languageModule = require('../../../global_functions/variables');
 const PerfilDelVehiculo = ({ navigation }) => {
 
   const [language, setlanguage] = useState("");  
+  const micambio = false;
 
   //Uso de efectos de inicio del screen
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
