@@ -32,7 +32,6 @@ const PerfilVehiculo = ({ navigation }) => {
     (state) => state.eldReducer
   );
 
-
   //Uso de efectos de inicio del screen
 
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
