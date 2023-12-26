@@ -1,19 +1,39 @@
-import {StyleSheet,Text,View,SafeAreaView,StatusBar,ScrollView,TouchableOpacity,Dimensions,} from "react-native";
-import React, { useEffect, useState } from "react";
-import { Fonts, Colors, Sizes } from "../../../constants/styles";
-import { TextInput } from "react-native-paper";
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useState, useEffect } from 'react';
+import {View,Text,TextInput,TouchableOpacity,SafeAreaView,StyleSheet,Dimensions,StatusBar,} from 'react-native';
+import { Colors, Fonts, Sizes } from '../../../constants/styles';
+import { useDispatch, useSelector } from "react-redux";
+import { getCurrentDriver, currentCMV } from "../../../config/localStorage";
+import { startVehicleMeters } from "../../../redux/actions";
 
-const { width } = Dimensions.get("window");
+const { width } = Dimensions.get('window');
 const languageModule = require('../../../global_functions/variables');
 
-const PerfilDelVehiculo = ({ navigation }) => {
+const PerfilVehiculo = ({ navigation }) => {
+    
+  //Declaracion de variables
+  const [language, setlanguage] = useState("");
+  const [state, setState] = useState({
+    numeroDelCamion: "",
+    numeroDelTrailer: "",
+    vinDelCamion: "",
+    odometroVisual: "",
+  });
+  const {
+      numeroDelCamion,
+      vinDelCamion,
+      numeroDelTrailer,
+      numeroDeDocumentoDeEnvio,
+      odometroVisual,
+  } = state;
 
-  const [language, setlanguage] = useState("");  
-  const micambio = false;
+  const updateState = (data) => setState((state) => ({ ...state, ...data }));
+  
+  const { acumulatedVehicleKilometers } = useSelector(
+    (state) => state.eldReducer
+  );
 
   //Uso de efectos de inicio del screen
+
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
   useEffect(() => {
     const getPreferredLanguage = async () => {
@@ -26,29 +46,12 @@ const PerfilDelVehiculo = ({ navigation }) => {
     getPreferredLanguage();
   }, []);
 
-//   const { acumulatedVehicleKilometers } = useSelector(
-//     (state) => state.eldReducer
-//   );
-  
-  const [state, setState] = useState({
-    numeroDelCamion: "",
-    numeroDelTrailer: "",
-    vinDelCamion: "",
-    odometroVisual: "",
-  });
-  const {
-    numeroDelCamion,
-    vinDelCamion,
-    numeroDelTrailer,
-    numeroDeDocumentoDeEnvio,
-    odometroVisual,
-  } = state;
-  const updateState = (data) => setState((state) => ({ ...state, ...data }));
-
+  //Aqui obtenemos la data del api 
   useEffect(() => {
     const setData = async () => {
       await currentCMV().then(async (currentCMV) => {
         if (currentCMV) {
+          
           currentCMV.odometroVisual = `${Math.round(
             acumulatedVehicleKilometers * 0.621371 + currentCMV.odometroVisual
           )}`;
@@ -66,241 +69,144 @@ const PerfilDelVehiculo = ({ navigation }) => {
     setData();
   }, []);
 
+  //funcines de la pantalla
   const updateCMVProfile = async () => {
-    return await AsyncStorage.setItem("currentCMV", JSON.stringify(state)).then(
-      async () => {
-        dispatch(startVehicleMeters());
-        navigation.push("NavigationsTab");
-      }
-    );
+  return await AsyncStorage.setItem("currentCMV", JSON.stringify(state)).then(
+    async () => {
+      dispatch(startVehicleMeters());
+      navigation.push("NavigationsTab");
+    }
+  );
   };
 
-  const saveAndExit = async () => {
-    navigation.push("PrincipalScreen");
+ //funciones de renderizado 
+
+  const truckNumberInput = () => {
+    return(
+    <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>{languageModule.lang(language, 'truckNumber')}</Text>
+          <TextInput
+            style={styles.input}
+            value={numeroDelCamion}
+             onChangeText={(text) => updateState({ numeroDelCamion: text })}
+          />
+        </View>)
   }
+
+  const truckVINInput = () => {
+    return(
+    <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>{languageModule.lang(language, 'truckVIN')}</Text>
+          <TextInput
+            style={styles.input}
+            value={vinDelCamion}
+             onChangeText={(text) => updateState({ vinDelCamion: text })}
+          />
+        </View>)
+  }
+
+  const truckTrailerInput = () => {
+    return(
+    <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>{languageModule.lang(language, 'trailerNumber')}</Text>
+          <TextInput
+            style={styles.input}
+            value={numeroDelTrailer}
+             onChangeText={(text) => updateState({ numeroDelTrailer: text })}
+          />
+        </View>)
+  }
+
+  const truckShippingDocumentInput = () => {
+    return(
+    <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>{languageModule.lang(language, 'shippingDocumentNumber')}</Text>
+          <TextInput
+            style={styles.input}
+            value={numeroDeDocumentoDeEnvio}
+             onChangeText={(text) => updateState({ numeroDeDocumentoDeEnvio: text })}
+          />
+        </View>)
+  }
+
+  const odometroVisualInput = () => {
+    return(
+    <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>{languageModule.lang(language, 'visualOdometer')}</Text>
+          <TextInput
+            style={styles.input}
+            value={odometroVisual}
+             onChangeText={(text) => updateState({ odometroVisual: text })}
+          />
+        </View>)
+  }
+ 
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.primaryColor }}>
+    <SafeAreaView style={styles.container}>
       <StatusBar translucent={false} backgroundColor={Colors.primaryColor} />
-      <View style={{ flex: 1 }}>
-        {header()}
-        <View style={styles.sheetStyle}>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={{ marginTop: Sizes.fixPadding * 2.0 }}>
-              {numeroDelCamionInput()}
-              {vinDelCamionInput()}
-              {numeroDelTrailerInput()}
-              {shippingDocumentNumber()}
-              {odometroVisualInput()}
-            </View>
-          </ScrollView>
-          {btnsOptions()}
-        </View>
+      <Text style={styles.title}>{languageModule.lang(language, 'vehicleProfile')}</Text>
+      <View style={styles.formContainer}>
+       {truckNumberInput()}
+        {truckVINInput()}
+        {truckTrailerInput()}
+        {truckShippingDocumentInput()}
+        {odometroVisualInput()}
       </View>
+      <TouchableOpacity style={styles.submitButton} onPress={updateCMVProfile}>
+        <Text style={styles.submitButtonText}>{languageModule.lang(language, 'submit')}</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
-
-  function header() {
-    return (
-        <View
-        style={{
-          flexDirection: "row",
-          margin: Sizes.fixPadding * 2.0,
-          flex: 0.05,
-        //   justifyContent: "space-between",
-          alignItems: "center",
-          paddingHorizontal: Sizes.fixPadding * 2.0,
-        }}
-      >
-      <Ionicons name={"arrow-back-circle-outline"} onPress={() => navigation.pop()} size={27} color="white" />
-        <Text style={{ ...Fonts.whiteColor22SemiBold }}>
-          {"    " + languageModule.lang(language,'vehicleProfile')}
-        </Text>
-      </View>
-    );
-  }
-
-  function numeroDelCamionInput() {
-    return (
-      <View style={{ margin: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.grayColor14Regular }}>
-          {languageModule.lang(language,'truckNumber')}
-        </Text>
-        <TextInput
-          value={"121231"}
-        //   onChangeText={(text) => updateState({ numeroDelCamion: text })}
-          style={styles.textFieldStyle}
-          activeUnderlineColor={Colors.primaryColor}
-          underlineColor={Colors.grayColor}
-        />
-      </View>
-    );
-  }
-
-  function vinDelCamionInput() {
-    return (
-      <View style={{ margin: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.grayColor14Regular }}>
-          {languageModule.lang(language,'truckVIN')}
-        </Text>
-        <TextInput
-          value={"KMA91202"}
-        //   onChangeText={(text) => updateState({ vinDelCamion: text })}
-          style={styles.textFieldStyle}
-          activeUnderlineColor={Colors.primaryColor}
-          underlineColor={Colors.grayColor}
-        />
-      </View>
-    );
-  }
-
-  function numeroDelTrailerInput() {
-    return (
-      <View style={{ margin: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.grayColor14Regular }}>
-          {languageModule.lang(language,'trailerNumber')}
-        </Text>
-        <TextInput
-          value={"742"}
-        //   onChangeText={(text) => updateState({ numeroDelTrailer: text })}
-          style={styles.textFieldStyle}
-          activeUnderlineColor={Colors.primaryColor}
-          underlineColor={Colors.grayColor}
-        />
-      </View>
-    );
-  }
-
-  function shippingDocumentNumber() {
-    return (
-      <View style={{ margin: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.grayColor14Regular }}>
-          {languageModule.lang(language,'shippingDocumentNumber')}
-        </Text>
-        <TextInput
-          value={"21212123"}
-        //   onChangeText={(text) =>
-        //     updateState({ numeroDeDocumentoDeEnvio: text })
-        //   }
-          style={styles.textFieldStyle}
-          activeUnderlineColor={Colors.primaryColor}
-          underlineColor={Colors.grayColor}
-        />
-      </View>
-    );
-  }
-
-  function odometroVisualInput() {
-    return (
-      <View style={{ margin: Sizes.fixPadding * 2.0 }}>
-        {/* {acumulatedVehicleKilometers * 0.621371 > 0 ? ( */}
-          <Text style={{ ...Fonts.grayColor14Regular }}>
-            {languageModule.lang(language,'accumulatedMiles')}
-            {/* {`${tr("millasAcomumuladas")} ${(
-              acumulatedVehicleKilometers * 0.621371
-            ).toFixed(2)}`} */}
-          </Text>
-        {/* ) : null} */}
-
-        <Text style={{ ...Fonts.grayColor14Regular }}>
-          {languageModule.lang(language,'visualOdometer')}
-        </Text>
-        <TextInput
-          value={""}
-        //   onChangeText={(text) => updateState({ odometroVisual: text })}
-          style={styles.textFieldStyle}
-          activeUnderlineColor={Colors.primaryColor}
-          underlineColor={Colors.grayColor}
-          keyboardType="numeric"
-        />
-      </View>
-    );
-  }
-
-  function btnsOptions() {
-    return (
-      <View style={styles.continueBtn.wrap}>
-        <TouchableOpacity
-          activeOpacity={0.99}
-          style={{
-            ...styles.continueBtn.btnStyle,
-            ...styles.continueBtn.touchableOpacity,
-          }}
-          onPress={() => saveAndExit()}
-        >
-          <Text
-            numberOfLines={1}
-            style={{
-              marginHorizontal: Sizes.fixPadding - 5.0,
-              ...Fonts.whiteColor18SemiBold,
-            }}
-          >
-            {languageModule.lang(language,'save')}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
 };
 
-export default PerfilDelVehiculo;
-
 const styles = StyleSheet.create({
-  textFieldWrapStyle: {
-    borderColor: Colors.grayColor,
-    borderWidth: 1.0,
-    borderRadius: Sizes.fixPadding - 2.0,
-    padding: Sizes.fixPadding,
-    marginHorizontal: Sizes.fixPadding * 2.0,
-    marginBottom: Sizes.fixPadding * 2.0,
-  },
-  textFieldStyle: {
-    ...Fonts.blackColor14Medium,
-    elevation: 1.3,
-    borderRadius: Sizes.fixPadding - 2.0,
-    paddingVertical: Sizes.fixPadding,
-    paddingHorizontal: Sizes.fixPadding,
-  },
-  logoutIconWrapStyle: {
-    width: 28.0,
-    height: 28.0,
-    borderRadius: 14.0,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.whiteColor,
-    position: "absolute",
-    right: 20.0,
-    top: 20.0,
-  },
-  sheetStyle: {
+  container: {
     flex: 1,
     backgroundColor: Colors.whiteColor,
-    borderTopLeftRadius: Sizes.fixPadding * 3.0,
-    borderTopRightRadius: Sizes.fixPadding * 3.0,
-    marginTop: Sizes.fixPadding * 2.0,
+    paddingHorizontal: Sizes.fixPadding * 2,
+    paddingTop: Sizes.fixPadding * 2,
   },
-  continueBtn: {
-    wrap: {
-      marginHorizontal: Sizes.fixPadding * 2.0,
-      marginTop: Sizes.fixPadding * 2.0,
-      marginBottom: Sizes.fixPadding * 3.0,
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    touchableOpacity: {
-      elevation: 2.0,
-      alignItems: "center",
-      justifyContent: "center",
-      borderRadius: Sizes.fixPadding - 2.0,
-      paddingVertical: Sizes.fixPadding + 2.0,
-      flex: 1,
-      borderWidth: 1.0,
-      borderBottomWidth: 0.0,
-    },
-    btnStyle: {
-      backgroundColor: Colors.primaryColor,
-      marginLeft: Sizes.fixPadding,
-      borderColor: Colors.primaryColor,
-    },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: Colors.primaryColor,
+    marginBottom: Sizes.fixPadding * 2,
+  },
+  formContainer: {
+    flex: 1,
+  },
+  inputContainer: {
+    marginBottom: Sizes.fixPadding * 2,
+  },
+  inputLabel: {
+    fontSize: 16,
+    color: Colors.primaryColor,
+    marginBottom: Sizes.fixPadding,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: Colors.primaryColor,
+    borderRadius: Sizes.fixPadding,
+    paddingHorizontal: Sizes.fixPadding,
+    paddingVertical: Sizes.fixPadding * 1.5,
+    fontSize: 16,
+  },
+  submitButton: {
+    top: -39,
+    backgroundColor: Colors.primaryColor,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: Sizes.fixPadding,
+    paddingVertical: Sizes.fixPadding * 1.5,
+    marginTop: Sizes.fixPadding * 2,
+  },
+  submitButtonText: {
+    color: Colors.whiteColor,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
+
+export default PerfilVehiculo;
+

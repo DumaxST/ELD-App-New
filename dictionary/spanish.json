@@ -78,5 +78,6 @@
     "certify": "Certificar",
     "loading": "Cargando",
     "incorrectUserOrPassword": "Usuario o contraseña incorrectos",
-    "SelectaCarrier": "Selecciona una empresa"
+    "SelectaCarrier": "Selecciona una empresa",
+    "thereIsnoDevicesAvailable": "No hay dispositivos disponibles"
 }
