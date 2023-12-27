@@ -80,5 +80,9 @@
     "loading": "Loading",
     "incorrectUserOrPassword": "Incorrect user or password",
     "SelectaCarrier": "Select a Carrier",
-    "thereIsnoDevicesAvailable": "There is no devices available"
+    "thereIsnoDevicesAvailable": "There is no devices available",
+    "StopMovementDetected": "Stop Movement Detected",
+    "changeTo": "change to",
+    "areYouSureYouWantTo": "Are you sure you want to",
+    "confirm": "Confirm"
 }

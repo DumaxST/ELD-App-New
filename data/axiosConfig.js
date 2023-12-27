@@ -1,6 +1,6 @@
 import axios from "axios";
 
- export const axiosURL = "https://3aef-2806-10ae-17-6859-7846-63ab-c502-2057.ngrok-free.app/dumax-eld/us-central1/userApp";
+ export const axiosURL = "https://52e1-2806-10ae-17-6859-b099-cb85-fe8d-7465.ngrok-free.app/dumax-eld/us-central1/userApp";
 // export const axiosURL ="https://us-central1-dumax-eld.cloudfunctions.net/userApp";
 // export const axiosURL = "http://localhost:5000/dumax-eld/us-central1/userApp";
 // export const axiosURL = "http://192.168.100.4:5001/dumax-eld/us-central1/userApp";

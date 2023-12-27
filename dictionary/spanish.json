@@ -79,5 +79,9 @@
     "loading": "Cargando",
     "incorrectUserOrPassword": "Usuario o contraseña incorrectos",
     "SelectaCarrier": "Selecciona una empresa",
-    "thereIsnoDevicesAvailable": "No hay dispositivos disponibles"
+    "thereIsnoDevicesAvailable": "No hay dispositivos disponibles",
+    "StopMovementDetected": "Se detectó una parada en el movimiento",
+    "changeTo": "cambiar a",
+    "areYouSureYouWantTo": "¿Estás seguro de que quieres",
+    "confirm": "Aceptar"
 }
