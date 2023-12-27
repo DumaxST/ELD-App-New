@@ -634,7 +634,7 @@ const BluetoothScreen = ({navigation}) => {
 
   //Declaracion de variables
   const [language, setlanguage] = useState('');
-  const manager = new BleManager();
+  // const manager = new BleManager();
   const [connectingBluetoothDeviceDialog, setConnectingBluetoothDeviceDialog] = useState(false);
   const [showAdvertenciaDialog, setShowAdvertenciaDialog] = useState(false);
   const [searchingDevices, setSearchingForDevices] = useState(false);
@@ -854,7 +854,7 @@ const BluetoothScreen = ({navigation}) => {
         showButtons && (
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.scanButton} onPress={handleScan}>
-              <Text style={styles.buttonText}>{languageModule.lang(language, 'searchDevices')}</Text>
+              <Text style={styles.buttonText}>{languageModule.lang(language, 'searchDevices').replace('dispositivos', '')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
               <Text style={styles.buttonText}>{languageModule.lang(language, 'continue')}</Text>
@@ -875,8 +875,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   title: {
-    top: -25,
-    fontSize: 28,
+    top: -15,
+    fontSize: 23,
     fontWeight: 'bold',
     color: '#4CAF50',
     marginBottom: 20,

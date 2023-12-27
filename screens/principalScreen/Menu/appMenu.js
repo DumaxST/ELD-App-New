@@ -1,5 +1,6 @@
 import {StyleSheet,Text,View,SafeAreaView,StatusBar,ScrollView,Image,TouchableOpacity,Dimensions,} from "react-native";
 import React, { useState, useEffect } from "react";
+import {hasItStoped,setCurrentDriver,setDriverStatus,setELD,setTrackingTimeStamp,startEldApp,startVehicleMeters,} from "../../../redux/actions";
 import { Fonts, Colors, Sizes } from "../../../constants/styles";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Overlay } from "react-native-elements";
@@ -30,6 +31,7 @@ const AppMenu = ({ navigation, handleLogout }) => {
 
   const logOutDriver = async () => {
       await AsyncStorage.removeItem('token');
+      setCurrentDriver(null);
       handleLogout();
       navigation.reset({
         index: 0,
