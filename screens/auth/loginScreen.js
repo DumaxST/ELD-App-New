@@ -145,7 +145,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
               JSON.stringify({ accuracy: accuracy })
               ).then(async () => {
                     return await startLocationTraking().then(async () => {
-
+                      AsyncStorage.setItem('token', currentDriver.id);
                 });
               })
            });
@@ -424,6 +424,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
               height: 50,
               width: 200,
             },
+            inputAndroid: { color: 'black' } 
           }}
         />
       </View>
@@ -475,6 +476,9 @@ const LoginScreen = ({navigation, handleLogin}) => {
               height: 50,
               width: 200,
             },
+            inputAndroid: { 
+              color: 'black' 
+            } 
           }}
         />
       </View>
