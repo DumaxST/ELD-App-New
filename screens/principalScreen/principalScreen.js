@@ -27,8 +27,7 @@ const PrincipalScreen = ({ navigation }) => {
   const [tempDriverStatus, setTempDriverStatus] = useState("");
   const [selectedObservaciones, setSelectedObservaciones] = useState([]);
   const {eldData,currentDriver,driverStatus,acumulatedVehicleKilometers,lastDriverStatus,trackingTimestamp} = useSelector((state) => state.eldReducer);
-
-
+  
   //Uso de efectos de inicio del screen
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
   useEffect(() => {
@@ -45,23 +44,33 @@ const PrincipalScreen = ({ navigation }) => {
   useEffect(() => {
     switch (driverStatus) {
       case "ON":
-        setSelected("On");
+        setSelected("ON");
+        break;
       case "D":
         setSelected("D");
+        break;
       case "SB":
         setSelected("SB");
+        break;
       case "PS":
         setSelected("PS");
+        break;
       case "YM":
         setSelected("yard");
+        break;
       case "PC":
         setSelected("personal");
+        break;
       case "OFF-DUTY":
         setSelected("OFF-DUTY");
-      setTempDriverStatus(driverStatus);
-      break;
+        break;
+      default:
+        setSelected("default");
+        break;
     }
-  }, []);
+    setTempDriverStatus(driverStatus);
+  }, [driverStatus]);
+  
 
   useEffect(() => {
     getCurrentDriver().then((currentDriver) => {
@@ -84,6 +93,7 @@ const PrincipalScreen = ({ navigation }) => {
     }
   }, [driverStatus]);
 
+  //resolver
   useEffect(() => {
     const aksTheDriverIfHeStoped = setTimeout(() => {
       postEvent(1);
@@ -239,11 +249,11 @@ const PrincipalScreen = ({ navigation }) => {
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  selected === 'On' && styles.selectedButton,
+                  selected === 'ON' && styles.selectedButton,
                 ]}
-                onPress={() => handleStateChange('On')}
+                onPress={() => handleStateChange('ON')}
               >
-                <Text style={[styles.buttonText, selected === 'On' && styles.selectedText]}>
+                <Text style={[styles.buttonText, selected === 'ON' && styles.selectedText]}>
                   {languageModule.lang(language, 'onDuty')}
                 </Text>
               </TouchableOpacity>
@@ -367,7 +377,7 @@ const PrincipalScreen = ({ navigation }) => {
               ...Fonts.blackColor16Medium,
             }}
           >
-            {languageModule.lang(language, 'Are you sure you want to') + " " + languageModule.lang(language, 'changeTo') + " " + tempDriverStatus + "?"}
+            {languageModule.lang(language, 'areYouSureYouWantTo') + " " + languageModule.lang(language, 'changeTo') + " " + tempDriverStatus + "?"}
           </Text>
           <Text
             style={{
