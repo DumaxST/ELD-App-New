@@ -83,5 +83,8 @@
     "StopMovementDetected": "Se detectó una parada en el movimiento",
     "changeTo": "cambiar a",
     "areYouSureYouWantTo": "¿Estás seguro de que quieres",
-    "confirm": "Aceptar"
+    "confirm": "Aceptar",
+    "comment": "Comentario",
+    "ifyouWish": "si deseas",
+    "youCanAddAComment": "puedes agregar un comentario"
 }

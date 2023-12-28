@@ -262,6 +262,7 @@ const PrincipalScreen = ({ navigation }) => {
                 style={[
                   styles.stateButton,
                   driverStatus === 'YM' && styles.selectedButton,
+                  !currentDriver?.yard && styles.disabledButton,
                 ]}
                 onPress={() => currentDriver?.yard == true ? changeDriverStatus("YM") : null}
               >
@@ -273,6 +274,7 @@ const PrincipalScreen = ({ navigation }) => {
                 style={[
                   styles.stateButton,
                   driverStatus === 'PC' && styles.selectedButton,
+                  !currentDriver?.personalUse && styles.disabledButton,
                 ]}
                 onPress={() => currentDriver?.personalUse == true ? changeDriverStatus("PC"): null}
               >
@@ -393,7 +395,7 @@ const PrincipalScreen = ({ navigation }) => {
           }}
         >
           <Text style={{ textAlign: "center", ...Fonts.blackColor18Bold }}>
-            {"comentario"}
+            {languageModule.lang(language, 'comment')}
           </Text>
           <Text
             style={{
@@ -402,7 +404,7 @@ const PrincipalScreen = ({ navigation }) => {
               ...Fonts.blackColor16Medium,
             }}
           >
-            {`${"escribeUnCommentarioSiAsiLoDeseas"}`}
+            {`${languageModule.lang(language, 'ifyouWish')} ${languageModule.lang(language, 'youCanAddAComment')}`}
           </Text>
           <TextInput
             value={currentAnnotation}
@@ -429,13 +431,13 @@ const PrincipalScreen = ({ navigation }) => {
             }}
             style={styles.buttonStyle}
           >
-            <Text style={{ ...Fonts.whiteColor16Bold }}>{"aceptar"}</Text>
+            <Text style={{ ...Fonts.whiteColor16Bold }}>{languageModule.lang(language, 'confirm')}</Text>
           </TouchableOpacity>
           <Text
             onPress={() => setAnnotationDialog(false)}
             style={{ textAlign: "center", ...Fonts.grayColor16SemiBold }}
           >
-            {"cancelar"}
+            {languageModule.lang(language, 'cancel')}
           </Text>
         </View>
       </Overlay>
@@ -887,6 +889,9 @@ const PrincipalScreen = ({ navigation }) => {
   };
   
   const styles = StyleSheet.create({
+    disabledButton: {
+      opacity: 0.5,
+    },
     radioButtonStyle: {
       width: 18.0,
       height: 18.0,

@@ -84,5 +84,8 @@
     "StopMovementDetected": "Stop Movement Detected",
     "changeTo": "change to",
     "areYouSureYouWantTo": "Are you sure you want to",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "comment": "Comment",
+    "ifyouWish": "If you wish",
+    "youCanAddAComment": "you can add a comment"
 }
