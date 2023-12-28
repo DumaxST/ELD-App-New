@@ -15,9 +15,8 @@ import { getCurrentDriver } from "../../config/localStorage";
 import { TextInput } from "react-native-paper";
 
 const PrincipalScreen = ({ navigation }) => {
-
+  const dispatch = useDispatch();
   //Declaración de variables
-  const [selected, setSelected] = useState('');
   const [language, setlanguage] = useState('');
   const [showAnnotationDialog, setAnnotationDialog] = useState(false);
   const [currentAnnotation, setCurrentAnnotarion] = useState("");
@@ -40,37 +39,6 @@ const PrincipalScreen = ({ navigation }) => {
     };
     getPreferredLanguage();
   }, []);
-  
-  useEffect(() => {
-    switch (driverStatus) {
-      case "ON":
-        setSelected("ON");
-        break;
-      case "D":
-        setSelected("D");
-        break;
-      case "SB":
-        setSelected("SB");
-        break;
-      case "PS":
-        setSelected("PS");
-        break;
-      case "YM":
-        setSelected("yard");
-        break;
-      case "PC":
-        setSelected("personal");
-        break;
-      case "OFF-DUTY":
-        setSelected("OFF-DUTY");
-        break;
-      default:
-        setSelected("default");
-        break;
-    }
-    setTempDriverStatus(driverStatus);
-  }, [driverStatus]);
-  
 
   useEffect(() => {
     getCurrentDriver().then((currentDriver) => {
@@ -85,15 +53,15 @@ const PrincipalScreen = ({ navigation }) => {
     });
   }, []);
 
-  useEffect(() => {
-    if (driverStatus == "ON" && acumulatedVehicleKilometers > 0) {
-      setShowStopDialog(true);
-    } else {
-      setShowStopDialog(false);
-    }
-  }, [driverStatus]);
+  //resolver el problema de que no se actualiza el estado del driver
+  // useEffect(() => {
+  //   if (driverStatus == "ON" && acumulatedVehicleKilometers > 0) {
+  //     setShowStopDialog(true);
+  //   } else {
+  //     setShowStopDialog(false);
+  //   }
+  // }, [driverStatus]);
 
-  //resolver
   useEffect(() => {
     const aksTheDriverIfHeStoped = setTimeout(() => {
       postEvent(1);
@@ -134,13 +102,9 @@ const PrincipalScreen = ({ navigation }) => {
       setTempDriverStatus(status);
       switch (status) {
         case "ON":
-          setSelected("On");
         case "D":
-          setSelected("D");
         case "SB":
-          setSelected("SB");
         case "PS":
-          setSelected("PS");
         case "OFF-DUTY":
           if (dialog == undefined) {
             setShowStatusDialog(true);
@@ -159,9 +123,7 @@ const PrincipalScreen = ({ navigation }) => {
           }
           return;
         case "YM":
-          setSelected("yard");
         case "PC":
-          setSelected("personal");
           return setAnnotationDialog(true);
         default:
           return postEvent(1);
@@ -172,10 +134,7 @@ const PrincipalScreen = ({ navigation }) => {
   const handleMenuPress = () => {
     navigation.push('AppMenu');
   };
-  
-  const handleStateChange = (state) => {
-    setSelected(state);
-  };
+
 
   //Funciones de renderizado
   function header() {
@@ -235,11 +194,11 @@ const PrincipalScreen = ({ navigation }) => {
               style={[
                 styles.centerButton,
                 { position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -60 }, { translateY: -60 }] },
-                selected === 'OFF-DUTY' && styles.selectedButton,
+                driverStatus === 'OFF-DUTY' && styles.selectedButton,
               ]}
               onPress={() => changeDriverStatus('OFF-DUTY')}
             >
-              <Text style={[styles.buttonText, selected === 'OFF-DUTY' && styles.selectedText]}>
+              <Text style={[styles.buttonText, driverStatus === 'OFF-DUTY' && styles.selectedText]}>
                 {languageModule.lang(language, 'offDuty')}
               </Text>
             </TouchableOpacity>
@@ -248,22 +207,22 @@ const PrincipalScreen = ({ navigation }) => {
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  selected === 'ON' && styles.selectedButton,
+                  driverStatus === 'ON' && styles.selectedButton,
                 ]}
-                onPress={() => handleStateChange('ON')}
+                onPress={() => changeDriverStatus('ON')}
               >
-                <Text style={[styles.buttonText, selected === 'ON' && styles.selectedText]}>
+                <Text style={[styles.buttonText, driverStatus === 'ON' && styles.selectedText]}>
                   {languageModule.lang(language, 'onDuty')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  selected === 'D' && styles.selectedButton,
+                  driverStatus === 'D' && styles.selectedButton,
                 ]}
-                onPress={() => handleStateChange('D')}
+                onPress={() => changeDriverStatus('D')}
               >
-                <Text style={[styles.buttonText, selected === 'D' && styles.selectedText]}>
+                <Text style={[styles.buttonText, driverStatus === 'D' && styles.selectedText]}>
                   {languageModule.lang(language, 'driving')}
                 </Text>
               </TouchableOpacity>
@@ -274,25 +233,25 @@ const PrincipalScreen = ({ navigation }) => {
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  selected === 'SB' && styles.selectedButton,
+                  driverStatus === 'SB' && styles.selectedButton,
                   { right: -25 },
                   
                 ]}
-                onPress={() => handleStateChange('SB')}
+                onPress={() => changeDriverStatus('SB')}
               >
-                <Text style={[styles.buttonText, selected === 'SB' && styles.selectedText]}>
+                <Text style={[styles.buttonText, driverStatus === 'SB' && styles.selectedText]}>
                   {languageModule.lang(language, 'Sleeper')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  selected === 'PS' && styles.selectedButton,
+                  driverStatus === 'PS' && styles.selectedButton,
                   { marginLeft: 80 },
                 ]}
-                onPress={() => handleStateChange('PS')}
+                onPress={() => changeDriverStatus('PS')}
               >
-                <Text style={[styles.buttonText, selected === 'PS' && styles.selectedText]}>
+                <Text style={[styles.buttonText, driverStatus === 'PS' && styles.selectedText]}>
                   {languageModule.lang(language, 'passenger')}
                 </Text>
               </TouchableOpacity>
@@ -302,22 +261,22 @@ const PrincipalScreen = ({ navigation }) => {
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  selected === 'yard' && styles.selectedButton,
+                  driverStatus === 'YM' && styles.selectedButton,
                 ]}
-                onPress={() => handleStateChange('yard')}
+                onPress={() => currentDriver?.yard == true ? changeDriverStatus("YM") : null}
               >
-                <Text style={[styles.buttonText, selected === 'yard' && styles.selectedText]}>
+                <Text style={[styles.buttonText, driverStatus === 'YM' && styles.selectedText]}>
                   YARD
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  selected === 'personal' && styles.selectedButton,
+                  driverStatus === 'PC' && styles.selectedButton,
                 ]}
-                onPress={() => handleStateChange('personal')}
+                onPress={() => currentDriver?.personalUse == true ? changeDriverStatus("PC"): null}
               >
-                <Text style={[styles.buttonText, selected === 'personal' && styles.selectedText]}>
+                <Text style={[styles.buttonText, driverStatus === 'PC' && styles.selectedText]}>
                   PERSONAL
                 </Text>
               </TouchableOpacity>
@@ -400,7 +359,6 @@ const PrincipalScreen = ({ navigation }) => {
                 )
               );
               setShowStatusDialog(false);
-              setSelected("OFF-DUTY");
             }}
             style={styles.buttonStyle}
           >
