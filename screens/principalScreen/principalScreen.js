@@ -142,7 +142,6 @@ const PrincipalScreen = ({ navigation }) => {
         case "PS":
           setSelected("PS");
         case "OFF-DUTY":
-          setSelected("OFF-DUTY");
           if (dialog == undefined) {
             setShowStatusDialog(true);
           } else if (dialog == false) {
@@ -401,6 +400,7 @@ const PrincipalScreen = ({ navigation }) => {
                 )
               );
               setShowStatusDialog(false);
+              setSelected("OFF-DUTY");
             }}
             style={styles.buttonStyle}
           >
