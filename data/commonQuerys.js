@@ -52,10 +52,12 @@ export const getDriverEvents = async (certified, undefined) => {
   return await getCurrentDriver()
     .then(async (currentDriver) => {
       return await getAxios("/api/carrier/driver/events", {
+        userID: "WhnYqXKAhEeCFDmLWlg5M3MYc1R2",
         carrierID: currentDriver.carrier.id,
         driverID: undefined ? "Jg6XvXYVCvPCrdIZMOQeZ8WeH3d2" : currentDriver.id, // PLACE UNDEFINED DRIVER ID
-        eldID: "bWuPuaLFPVQxdWH9eGdX",
-        certified: certified,
+        eldID: "oKl1QCP8vXnLHj37ACJX", //Cambiar cuando API este actualizada
+        certified: "undefined",  //agregar un tipo de dato desde API
+        timeFrame: JSON.stringify({ from: "2023-05-11"}) //Agregar un dropdown para seleccionar el timeFrame,
       });
     })
     .catch((err) => console.error(err));

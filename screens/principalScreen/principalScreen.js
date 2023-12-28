@@ -136,6 +136,27 @@ const PrincipalScreen = ({ navigation }) => {
     navigation.push('AppMenu');
   };
 
+  function traducirStatus(status){
+    switch (status) {
+      case "ON":
+        return "onDuty";
+      case "OFF-DUTY":
+        return "offDuty";
+      case "D":
+        return "driving";
+      case "SB":
+        return "Sleeper";
+      case "PS":
+        return "passenger";
+      case "PC":
+        return "PERSONAL";
+      case "YM":
+        return "Movimiento de patio";
+      default:
+        return "No identificado";
+    }
+  }
+
   
   //Funciones de renderizado
   function header() {
@@ -338,7 +359,7 @@ const PrincipalScreen = ({ navigation }) => {
               ...Fonts.blackColor16Medium,
             }}
           >
-            {languageModule.lang(language, 'areYouSureYouWantTo') + " " + languageModule.lang(language, 'changeTo') + " " + tempDriverStatus + "?"}
+            {languageModule.lang(language, 'areYouSureYouWantTo') + " " + languageModule.lang(language, 'changeTo') + " " + languageModule.lang(language, traducirStatus(tempDriverStatus)) + "?"}
           </Text>
           <Text
             style={{

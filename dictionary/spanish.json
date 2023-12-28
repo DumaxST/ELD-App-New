@@ -93,5 +93,14 @@
     "repairing": "Reparando",
     "DOTInspection": "Inspección DOT",
     "other": "Otro",
-    "observations": "Observaciones"
+    "observations": "Observaciones",
+    "status": "Estado",
+    "sequenceIDNumber": "Número de ID de secuencia",
+    "startTime": "Hora de inicio",
+    "finishTime": "Hora de finalización",
+    "elapsedTime": "Tiempo transcurrido",
+    "location": "Localización",
+    "carrier": "Empresa",
+    "certified": "Certificado",
+    "thereIsNoDataAvailable": "No hay datos disponibles"
 }

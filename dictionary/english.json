@@ -94,5 +94,14 @@
     "repairing": "Repairing",
     "DOTInspection": "DOT Inspection",
     "other": "Other",
-    "observations": "Observations"
+    "observations": "Observations",
+    "status": "Status",
+    "sequenceIDNumber": "Sequence ID Number",
+    "startTime": "Start Time",
+    "finishTime": "Finish Time",
+    "elapsedTime": "Elapsed Time",
+    "location": "Location",
+    "carrier": "Carrier",
+    "certified": "Certified",
+    "thereIsNoDataAvailable": "There is no data available"
 }
