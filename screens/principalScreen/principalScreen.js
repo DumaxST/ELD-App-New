@@ -72,7 +72,6 @@ const PrincipalScreen = ({ navigation }) => {
   }, [showStopDialog]);
 
   //Funciones
-
   const postEvent = async (recordOrigin, observaciones) => {
     await postDriverEvent(
       {
@@ -91,8 +90,10 @@ const PrincipalScreen = ({ navigation }) => {
       setShowStatusDialog(false);
       setAnnotationDialog(false);
       setCurrentAnnotarion("");
+      console.log("dutystatus:", eventData.dutyStatus)
+      console.log("Observaciones:", observaciones)
       if (eventData?.dutyStatus == "ON" && observaciones == undefined) {
-        //     setShowObservacionesDialog(true);
+             setShowObservacionesDialog(true);
       }
     });
   };
@@ -135,7 +136,7 @@ const PrincipalScreen = ({ navigation }) => {
     navigation.push('AppMenu');
   };
 
-
+  
   //Funciones de renderizado
   function header() {
     return (
@@ -448,13 +449,13 @@ const PrincipalScreen = ({ navigation }) => {
     const observaciones = [
       "Pre-TI",
       "Post-TI",
-      "Loading",
-      "Unloading",
-      "Hooking",
-      "Dropping",
-      "Repairing",
-      "DOT Inspection",
-      "Other",
+      languageModule.lang(language, 'loading'),
+      languageModule.lang(language, 'unloading'),
+      languageModule.lang(language, 'hooking'),
+      languageModule.lang(language, 'dropping'),
+      languageModule.lang(language, 'repairing'),
+      languageModule.lang(language, 'DOTInspection'),
+      languageModule.lang(language, 'other'),
     ];
 
     const Checkbox = ({ label }) => {
@@ -462,7 +463,7 @@ const PrincipalScreen = ({ navigation }) => {
         <TouchableOpacity
           activeOpacity={0.99}
           style={{
-            flexDirection: isRtl ? "row-reverse" : "row",
+            flexDirection: "row",
           }}
           onPress={() => {
             seleccionarObservacion(label);
@@ -486,8 +487,8 @@ const PrincipalScreen = ({ navigation }) => {
           </View>
           <Text
             style={{
-              marginLeft: isRtl ? 0.0 : Sizes.fixPadding,
-              marginRight: isRtl ? Sizes.fixPadding : 0.0,
+              marginLeft:  Sizes.fixPadding,
+              marginRight: Sizes.fixPadding,
               ...Fonts.blackColor16Medium,
             }}
           >
@@ -530,7 +531,7 @@ const PrincipalScreen = ({ navigation }) => {
               />
               <View>
                 <Text style={{ ...Fonts.grayColor14Regular }}>
-                  {"otro"}
+                  {languageModule.lang(language, 'other')}
                 </Text>
                 <TextInput
                   // value={numeroDelCamion}
@@ -575,7 +576,7 @@ const PrincipalScreen = ({ navigation }) => {
               ...Fonts.blackColor18Bold,
             }}
           >
-            {"observaciones"}
+            {languageModule.lang(language, 'observations')}
           </Text>
           <ScrollView showsVerticalScrollIndicator={false} height={400}>
             {observaciones.map((observacion, i) => {
@@ -593,13 +594,13 @@ const PrincipalScreen = ({ navigation }) => {
             }}
             style={styles.buttonStyle}
           >
-            <Text style={{ ...Fonts.whiteColor16Bold }}>{"aceptar"}</Text>
+            <Text style={{ ...Fonts.whiteColor16Bold }}>{languageModule.lang(language,'confirm')}</Text>
           </TouchableOpacity>
           <Text
             onPress={() => setShowObservacionesDialog(false)}
             style={{ textAlign: "center", ...Fonts.grayColor16SemiBold }}
           >
-            {"cancelar"}
+            {languageModule.lang(language, 'cancel')}
           </Text>
         </View>
       </Overlay>

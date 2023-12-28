@@ -86,5 +86,12 @@
     "confirm": "Aceptar",
     "comment": "Comentario",
     "ifyouWish": "si deseas",
-    "youCanAddAComment": "puedes agregar un comentario"
+    "youCanAddAComment": "puedes agregar un comentario",
+    "unloading": "Descargando",
+    "hooking": "Enganchando",
+    "dropping": "Desenganchar",
+    "repairing": "Reparando",
+    "DOTInspection": "Inspección DOT",
+    "other": "Otro",
+    "observations": "Observaciones"
 }
