@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView,View, Text, TouchableOpacity, StyleSheet, Image,Dimensions,} from 'react-native';
+import { ScrollView,View, Text, TouchableOpacity, StyleSheet, Image,Dimensions, Modal} from 'react-native';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { Entypo } from '@expo/vector-icons';
 import * as Progress from "react-native-progress";
@@ -18,6 +18,7 @@ const PrincipalScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   //Declaración de variables
   const [language, setlanguage] = useState('');
+  const [exemptModal, setexemptModal] = useState(false);
   const [showAnnotationDialog, setAnnotationDialog] = useState(false);
   const [currentAnnotation, setCurrentAnnotarion] = useState("");
   const [showStatusDialog, setShowStatusDialog] = useState(false);
@@ -26,7 +27,7 @@ const PrincipalScreen = ({ navigation }) => {
   const [tempDriverStatus, setTempDriverStatus] = useState("");
   const [selectedObservaciones, setSelectedObservaciones] = useState([]);
   const {eldData,currentDriver,driverStatus,acumulatedVehicleKilometers,lastDriverStatus,trackingTimestamp} = useSelector((state) => state.eldReducer);
-  
+
   //Uso de efectos de inicio del screen
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
   useEffect(() => {
@@ -40,18 +41,19 @@ const PrincipalScreen = ({ navigation }) => {
     getPreferredLanguage();
   }, []);
 
-  useEffect(() => {
-    getCurrentDriver().then((currentDriver) => {
-      dispatch(
-        setCurrentDriver(
-          currentDriver,
-          eldData,
-          acumulatedVehicleKilometers,
-          lastDriverStatus
-        )
-      );
-    });
-  }, []);
+  //Esta funcion triplica los posteos de eventos checar!!
+  // useEffect(() => {
+  //   getCurrentDriver().then((currentDriver) => {
+  //     dispatch(
+  //       setCurrentDriver(
+  //         currentDriver,
+  //         eldData,
+  //         acumulatedVehicleKilometers,
+  //         lastDriverStatus
+  //       )
+  //     );
+  //   });
+  // }, []);
 
   //resolver el problema de que no se actualiza el estado del driver
   // useEffect(() => {
@@ -99,37 +101,42 @@ const PrincipalScreen = ({ navigation }) => {
   };
 
   const changeDriverStatus = (status, dialog) => {
-    if (driverStatus != status) {
-      setTempDriverStatus(status);
-      switch (status) {
-        case "ON":
-        case "D":
-        case "SB":
-        case "PS":
-        case "OFF-DUTY":
-          if (dialog == undefined) {
-            setShowStatusDialog(true);
-          } else if (dialog == false) {
-            // postEvent(2);
-            dispatch(
-              setDriverStatus(
-                eldData,
-                currentDriver,
-                status,
-                acumulatedVehicleKilometers,
-                driverStatus,
-                2
-              )
-            );
-          }
-          return;
-        case "YM":
-        case "PC":
-          return setAnnotationDialog(true);
-        default:
-          return postEvent(1);
+    if(currentDriver.exemptDriverConfiguration.value == "E"){
+      setexemptModal(true)
+    }else{
+      if (driverStatus != status) {
+        setTempDriverStatus(status);
+        switch (status) {
+          case "ON":
+          case "D":
+          case "SB":
+          case "PS":
+          case "OFF-DUTY":
+            if (dialog == undefined) {
+              setShowStatusDialog(true);
+            } else if (dialog == false) {
+              // postEvent(2);
+              dispatch(
+                setDriverStatus(
+                  eldData,
+                  currentDriver,
+                  status,
+                  acumulatedVehicleKilometers,
+                  driverStatus,
+                  2
+                )
+              );
+            }
+            return;
+          case "YM":
+          case "PC":
+            return setAnnotationDialog(true);
+          default:
+            return postEvent(1);
+        }
       }
     }
+
   };
 
   const handleMenuPress = () => {
@@ -157,7 +164,11 @@ const PrincipalScreen = ({ navigation }) => {
     }
   }
 
-  
+  const desactivarExemptModal = () => {
+    setexemptModal(false);
+  };
+
+
   //Funciones de renderizado
   function header() {
     return (
@@ -217,6 +228,7 @@ const PrincipalScreen = ({ navigation }) => {
                 styles.centerButton,
                 { position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -60 }, { translateY: -60 }] },
                 driverStatus === 'OFF-DUTY' && styles.selectedButton,
+                currentDriver?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
               ]}
               onPress={() => changeDriverStatus('OFF-DUTY')}
             >
@@ -230,6 +242,7 @@ const PrincipalScreen = ({ navigation }) => {
                 style={[
                   styles.stateButton,
                   driverStatus === 'ON' && styles.selectedButton,
+                  currentDriver?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
                 ]}
                 onPress={() => changeDriverStatus('ON')}
               >
@@ -241,6 +254,7 @@ const PrincipalScreen = ({ navigation }) => {
                 style={[
                   styles.stateButton,
                   driverStatus === 'D' && styles.selectedButton,
+                  currentDriver?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
                 ]}
                 onPress={() => changeDriverStatus('D')}
               >
@@ -257,7 +271,7 @@ const PrincipalScreen = ({ navigation }) => {
                   styles.stateButton,
                   driverStatus === 'SB' && styles.selectedButton,
                   { right: -25 },
-                  
+                  currentDriver?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
                 ]}
                 onPress={() => changeDriverStatus('SB')}
               >
@@ -270,6 +284,7 @@ const PrincipalScreen = ({ navigation }) => {
                   styles.stateButton,
                   driverStatus === 'PS' && styles.selectedButton,
                   { marginLeft: 80 },
+                  currentDriver?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
                 ]}
                 onPress={() => changeDriverStatus('PS')}
               >
@@ -285,6 +300,7 @@ const PrincipalScreen = ({ navigation }) => {
                   styles.stateButton,
                   driverStatus === 'YM' && styles.selectedButton,
                   !currentDriver?.yard && styles.disabledButton,
+                  currentDriver?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
                 ]}
                 onPress={() => currentDriver?.yard == true ? changeDriverStatus("YM") : null}
               >
@@ -297,6 +313,7 @@ const PrincipalScreen = ({ navigation }) => {
                   styles.stateButton,
                   driverStatus === 'PC' && styles.selectedButton,
                   !currentDriver?.personalUse && styles.disabledButton,
+                  currentDriver?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
                 ]}
                 onPress={() => currentDriver?.personalUse == true ? changeDriverStatus("PC"): null}
               >
@@ -627,7 +644,7 @@ const PrincipalScreen = ({ navigation }) => {
       </Overlay>
     );
   }
-  
+
   function stopDialog() {
     return (
       <Overlay
@@ -694,7 +711,7 @@ const PrincipalScreen = ({ navigation }) => {
               textAlign: "center",
             }}
           >
-            {"exemptDriver"}
+            {languageModule.lang(language, "exemptDriver")}
           </Text>
           <Text
             style={{
@@ -708,7 +725,28 @@ const PrincipalScreen = ({ navigation }) => {
       </View>
     );
   }
-  
+
+  function showAlertExempt() {
+    return (
+      <Modal
+        visible={exemptModal}
+        transparent={true}
+        // animationType="slide"
+        onRequestClose={desactivarExemptModal}
+      >
+        <View style={styles2.modalContainer}>
+          <View style={styles2.modalContent}>
+            <Text style={styles2.textoAlerta}>{`${languageModule.lang(language, 'exemptDriver')}`}</Text>
+            <Text>{`${languageModule.lang(language, 'youAreNotAllowed')} ${currentDriver?.exemptDriverConfiguration?.comment}`}</Text>
+            <TouchableOpacity onPress={desactivarExemptModal}>
+              <Text style={styles2.botonCerrar}>{languageModule.lang(language, 'close')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+
   //Graficas de estadisticas
   function onTurnoInfo() {
       return (
@@ -768,7 +806,7 @@ const PrincipalScreen = ({ navigation }) => {
         </View>
       );
   }
-  
+
   function onCicloInfo() {
       return (
         <View>
@@ -821,7 +859,7 @@ const PrincipalScreen = ({ navigation }) => {
         </View>
       );
   }
-    
+
   function manejandoInfo() {
     return (
       <View>
@@ -880,7 +918,7 @@ const PrincipalScreen = ({ navigation }) => {
       </View>
     );
   }
-  
+
   //pantalla a retornar
   return (
       <ScrollView showsVerticalScrollIndicator={false} >
@@ -902,6 +940,7 @@ const PrincipalScreen = ({ navigation }) => {
         {onCicloInfo()}
       </View>
       </View>
+      {showAlertExempt()}
       {statusDialog()}
       {anotationDialog()}
       {observacionesDialog()}
@@ -909,7 +948,7 @@ const PrincipalScreen = ({ navigation }) => {
       </ScrollView>
   );
   };
-  
+
   const styles = StyleSheet.create({
     disabledButton: {
       opacity: 0.5,
@@ -1177,10 +1216,43 @@ const PrincipalScreen = ({ navigation }) => {
       borderRadius: 20,
     },
   });
-  
+
+  const styles2 = StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    boton: {
+      padding: 10,
+      backgroundColor: 'lightblue',
+      borderRadius: 5,
+    },
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+      backgroundColor: 'white',
+      padding: 20,
+      borderRadius: 10,
+      alignItems: 'center',
+    },
+    textoAlerta: {
+      fontSize: 18,
+      marginBottom: 10,
+    },
+    botonCerrar: {
+      color: "#cc0b0a",
+      fontSize: 16,
+    },
+  });
+
   export default PrincipalScreen;
-  
 
-  
 
-  
+
+
+

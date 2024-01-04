@@ -55,9 +55,9 @@ export const getDriverEvents = async (certified, undefined) => {
         userID: "WhnYqXKAhEeCFDmLWlg5M3MYc1R2",
         carrierID: currentDriver.carrier.id,
         driverID: undefined ? "Jg6XvXYVCvPCrdIZMOQeZ8WeH3d2" : currentDriver.id, // PLACE UNDEFINED DRIVER ID
-        eldID: "oKl1QCP8vXnLHj37ACJX", //Cambiar cuando API este actualizada
+        eldID: "mHlqeeq5rfz3Cizlia23", //Cambiar cuando API este actualizada
         certified: "undefined",  //agregar un tipo de dato desde API
-        timeFrame: JSON.stringify({ from: "2023-05-11"}) //Agregar un dropdown para seleccionar el timeFrame,
+        timeFrame: JSON.stringify({ from: "2024-01-02"}) //Agregar un dropdown para seleccionar el timeFrame,
       });
     })
     .catch((err) => console.error(err));
@@ -146,7 +146,6 @@ export const postDriverEvent = async (
       //   eldID: "bWuPuaLFPVQxdWH9eGdX",
       //   event: eventData,
       // });
-      console.log("chofer", currentChofer.id)
       return await postAxios("/api/driverEvent", {
         carrierID: currentChofer?.carrier?.id
           ? currentChofer?.carrier?.id

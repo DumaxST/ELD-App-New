@@ -685,6 +685,856 @@ const ListSection = () => {
       );
     }
 
+    function eventDetailsDialogFn() {
+      return (
+        <Overlay
+          isVisible={eventDetailsDialog}
+          onBackdropPress={() => setEventDetailsDialog(false)}
+          overlayStyle={{
+            width: width - 40.0,
+            borderRadius: Sizes.fixPadding - 2.0,
+            padding: 0.0,
+          }}
+        >
+          <View
+            style={{
+              marginVertical: Sizes.fixPadding * 2.5,
+              marginHorizontal: Sizes.fixPadding * 2.0,
+            }}
+          >
+            <Text style={{ textAlign: "center", ...Fonts.blackColor18Bold }}>
+              {"eventDetails"}
+            </Text>
+  
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {"eventSequenceIdNumber"}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {`${currentEventDetails?.sequenceIDNumber?.decimal} - ${currentEventDetails?.sequenceIDNumber?.hexadecimal}`}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {"recordStatus"}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {currentEventDetails?.recordStatus}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {"recordOrigin"}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {currentEventDetails?.recordOrigin}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {"type"}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {currentEventDetails?.type}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {"code"}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {currentEventDetails?.code}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {`${"date"} & ${"time"}`}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {currentEventDetails?.geoTimeStamp?.timeStamp}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {"accumulatedVehicleMiles"}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {currentEventDetails?.acumulatedVehicleMiles}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {"elapsedEngineHours"}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {currentEventDetails?.elapsedEngineHours}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {`${"latitude"} & ${"longitude"}`}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {`${currentEventDetails?.geoTimeStamp?.latitude} , ${currentEventDetails?.geoTimeStamp?.longitude}`}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection:  "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {"distanceSinceLastValidCoordinates"}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {currentEventDetails?.distanceSinceLastValidCoordinates}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {"malfunctionIndicatorStatus"}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {currentEventDetails?.malfunctionIndicatorStatusforELD}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {"dataDiagnosticEventIndicatorStatus"}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {
+                    currentEventDetails?.dataDiagnosticEventIndicatorStatusforDriver
+                  }
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {"commentOrAnnotation"}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {currentEventDetails?.commentOrAnnotation}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {"driversLocationDescription"}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {currentEventDetails?.locationDescription}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {"dataCheckValue"}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {currentEventDetails?.eventDataCheckValue}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {"cmvNum"}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {currentEventDetails?.cmv?.number}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.99}
+              // onPress={onPress}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {"cmvVIN"}
+                </Text>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    marginLeft: Sizes.fixPadding,
+                    marginRight: Sizes.fixPadding,
+                    flex: 1,
+                    ...Fonts.blackColor16SemiBold,
+                  }}
+                >
+                  {currentEventDetails?.cmv?.vin}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <Text
+              onPress={() => setEventDetailsDialog(false)}
+              style={{ textAlign: "center", ...Fonts.grayColor16SemiBold }}
+            >
+              {"cerrar"}
+            </Text>
+          </View>
+        </Overlay>
+      );
+    }
+
 
   return (
     <View style={styles.sectionContainer}>
@@ -697,6 +1547,7 @@ const ListSection = () => {
       ) : (
         <Logs />
       )}
+      {eventDetailsDialogFn()}
     </View>
   );
 };

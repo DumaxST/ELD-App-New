@@ -102,5 +102,8 @@
     "location": "Localización",
     "carrier": "Empresa",
     "certified": "Certificado",
-    "thereIsNoDataAvailable": "No hay datos disponibles"
+    "thereIsNoDataAvailable": "No hay datos disponibles",
+    "exemptDriver": "Conductor Exento",
+    "close": "cerrar",
+    "youAreNotAllowed": "No tienes permitido realizar ninguna acción, por favor contacta al administrador, razón: "
 }

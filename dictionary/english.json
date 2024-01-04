@@ -103,5 +103,8 @@
     "location": "Location",
     "carrier": "Carrier",
     "certified": "Certified",
-    "thereIsNoDataAvailable": "There is no data available"
+    "thereIsNoDataAvailable": "There is no data available",
+    "exemptDriver": "Exempt Driver",
+    "close": "close",
+    "youAreNotAllowed": "You are not allowed to perform any action, please contact the administrator, reason: "
 }
