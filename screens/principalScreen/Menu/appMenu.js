@@ -13,6 +13,7 @@ const languageModule = require('../../../global_functions/variables');
 const { width } = Dimensions.get("window");
 
 const AppMenu = ({ navigation, handleLogout }) => {
+  const dispatch = useDispatch();
 
   const [language, setlanguage] = useState("");  
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
@@ -21,6 +22,7 @@ const AppMenu = ({ navigation, handleLogout }) => {
     currentDriver,
     acumulatedVehicleKilometers,
     lastDriverStatus,
+    driverStatus
   } = useSelector((state) => state.eldReducer);
 
   //Uso de efectos de inicio del screen
@@ -41,8 +43,8 @@ const AppMenu = ({ navigation, handleLogout }) => {
       dispatch(
         logOutCurrentDriver(
           currentDriver,
-          eldData,
-          acumulatedVehicleKilometers,
+          eldData,                           //Arreglar!!
+          acumulatedVehicleKilometers,      //Aqui es importante borrar bien el currentDriver y los datos del async
           lastDriverStatus
         )
       );

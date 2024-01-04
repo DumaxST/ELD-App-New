@@ -130,7 +130,7 @@ export const postDriverEvent = async (
       },
       carrier: currentChofer?.carrier,
     };
-
+    
     if (
       (eventData.dutyStatus != lastDriverStatus &&
         currentChofer?.exemptDriverConfiguration?.value === "0") ||
@@ -147,13 +147,14 @@ export const postDriverEvent = async (
       //   event: eventData,
       // });
       return await postAxios("/api/driverEvent", {
+        userID: "WhnYqXKAhEeCFDmLWlg5M3MYc1R2",
         carrierID: currentChofer?.carrier?.id
           ? currentChofer?.carrier?.id
-          : "lqdU1ErwDswdjSTiVEWp",
+          : "lqdU1ErwDswdjSTiVEWp",         
         driverID: currentChofer?.id
           ? currentChofer.id
           : "Jg6XvXYVCvPCrdIZMOQeZ8WeH3d2",
-        eldID: "bWuPuaLFPVQxdWH9eGdX",
+        eldID: "mHlqeeq5rfz3Cizlia23",       //Aqui el ELD es importante obtenerlo de algún lado 
         event: eventData,
       })
         .then(() => {

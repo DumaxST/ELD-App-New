@@ -156,33 +156,34 @@ const LoginScreen = ({navigation, handleLogin}) => {
     }
     getData();
   }, []);
-
-  //Usamos el efecto para obtener datos del ELD 
-  useEffect(() => {
-    if (eldData) {
-      dispatch(
-        setDriverStatus(
-          eldData,
-          currentDriver,
-          driverStatus,
-          acumulatedVehicleKilometers,
-          lastDriverStatus,
-          1
-        )
-      );
-      setTimeout(() => {
-        dispatch(
-          hasItStoped(
-            eldData,
-            currentDriver,
-            driverStatus,
-            acumulatedVehicleKilometers,
-            lastDriverStatus
-          )
-        );
-      }, 3000);
-    }
-  }, [eldData]);
+  
+  //Hay un error en los efectos con REDUX, chacalo junto con principalScreen!!
+  //Aqui asignamos el currentDriver y los estados del conductor
+  // useEffect(() => {
+  //   if (eldData) {
+  //     dispatch(
+  //       setDriverStatus(
+  //         eldData,
+  //         currentDriver,
+  //         driverStatus,
+  //         acumulatedVehicleKilometers,
+  //         lastDriverStatus,
+  //         1
+  //       )
+  //     );
+  //     setTimeout(() => {
+  //       dispatch(
+  //         hasItStoped(
+  //           eldData,
+  //           currentDriver,
+  //           driverStatus,
+  //           acumulatedVehicleKilometers,
+  //           lastDriverStatus
+  //         )
+  //       );
+  //     }, 3000);
+  //   }
+  // }, [eldData]);
 
   // Obtenermos nuestro current language desde el AsyncStorage
   useEffect(() => {
