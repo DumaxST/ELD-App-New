@@ -6,6 +6,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Overlay } from "react-native-elements";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useDispatch, useSelector } from "react-redux";
+import { logOutCurrentDriver } from "../../../redux/actions";
 
 const languageModule = require('../../../global_functions/variables');
 const { width } = Dimensions.get("window");
@@ -14,7 +16,12 @@ const AppMenu = ({ navigation, handleLogout }) => {
 
   const [language, setlanguage] = useState("");  
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-
+  const {
+    eldData,
+    currentDriver,
+    acumulatedVehicleKilometers,
+    lastDriverStatus,
+  } = useSelector((state) => state.eldReducer);
 
   //Uso de efectos de inicio del screen
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
@@ -31,7 +38,14 @@ const AppMenu = ({ navigation, handleLogout }) => {
 
   const logOutDriver = async () => {
       await AsyncStorage.removeItem('token');
-      setCurrentDriver(null);
+      dispatch(
+        logOutCurrentDriver(
+          currentDriver,
+          eldData,
+          acumulatedVehicleKilometers,
+          lastDriverStatus
+        )
+      );
       handleLogout();
       navigation.reset({
         index: 0,
