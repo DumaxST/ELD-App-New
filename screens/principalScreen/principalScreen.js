@@ -220,7 +220,6 @@ const PrincipalScreen = ({ navigation }) => {
   function controlesNavegacion() {
     return (
       <View style={styles.body}>
-          <View style={styles.controlContainer}>
           <TouchableOpacity
               style={[
                 styles.centerButton,
@@ -233,7 +232,8 @@ const PrincipalScreen = ({ navigation }) => {
               <Text style={[styles.buttonText, driverStatus === 'OFF-DUTY' && styles.selectedText]}>
                 {languageModule.lang(language, 'offDuty')}
               </Text>
-            </TouchableOpacity>
+            </TouchableOpacity>           
+          <View style={styles.controlContainer}>
             {/* Botones ON-D */}
             <View style={styles.stateButtonsRow}>
               <TouchableOpacity
@@ -1179,6 +1179,7 @@ const PrincipalScreen = ({ navigation }) => {
       borderColor: '#4CAF50',
       borderRadius: 10,
       margin: 5,
+      zIndex: 1,
     },
     centerButton: {
       width: 120,
@@ -1195,7 +1196,10 @@ const PrincipalScreen = ({ navigation }) => {
       },
       shadowOpacity: 0.3,
       shadowRadius: 3.84,
-      elevation: 5,
+      elevation: 35,
+      zIndex: 2,
+      borderWidth: 1,
+      borderColor: '#4CAF50'
     },
     buttonText: {
       color: '#000000',
