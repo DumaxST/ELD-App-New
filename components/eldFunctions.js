@@ -7,26 +7,28 @@ export const geoTimeStamp = (eldData) => {
     date.setHours(date.getHours() + hours);
     return date;
   }
+
   const date = utcParser(new Date(), 6);
 
-  const month =
-    date.getMonth() + 1 <= 9 ? `0${date.getMonth() + 1}` : date.getMonth() + 1;
-  const day = date.getDate() <= 9 ? `0${date.getDate()}` : date.getDate();
-  const year = date.getFullYear().toString().substr(-2);
+  const month = `${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+  const day = `${date.getDate().toString().padStart(2, '0')}`;
+  const year = date.getFullYear().toString().slice(-2);
 
-  const hour = date.getHours() <= 9 ? `0${date.getHours()}` : date.getHours();
-  const minutes =
-    date.getMinutes() <= 9 ? `0${date.getMinutes()}` : date.getMinutes();
-  const seconds =
-    date.getSeconds() <= 9 ? `0${date.getSeconds()}` : date.getSeconds();
+  const hour = `${date.getHours().toString().padStart(2, '0')}`;
+  const minutes = `${date.getMinutes().toString().padStart(2, '0')}`;
+  const seconds = `${date.getSeconds().toString().padStart(2, '0')}`;
+
+  const latitude = eldData?.coords?.latitude?.toFixed(2) || '';
+  const longitude = eldData?.coords?.longitude?.toFixed(2) || '';
 
   return {
     date: `${month}${day}${year}`,
     time: `${hour}${minutes}${seconds}`,
-    latitude: `${eldData?.coords?.latitude.toFixed(2)}`,
-    longitude: `${eldData?.coords?.longitude.toFixed(2)}`,
+    latitude,
+    longitude,
   };
 };
+
 
 export const drivedDistance = (prevCoords, currentCoords) => {
   if (!prevCoords || !currentCoords) {
