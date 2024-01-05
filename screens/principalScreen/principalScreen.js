@@ -72,7 +72,7 @@ const PrincipalScreen = ({ navigation }) => {
       clearTimeout(aksTheDriverIfHeStoped);
     }
   }, [showStopDialog]);
-
+  
   //Funciones
   const postEvent = async (recordOrigin, observaciones) => {
     await postDriverEvent(
@@ -92,8 +92,6 @@ const PrincipalScreen = ({ navigation }) => {
       setShowStatusDialog(false);
       setAnnotationDialog(false);
       setCurrentAnnotarion("");
-      console.log("dutystatus:", eventData.dutyStatus)
-      console.log("Observaciones:", observaciones)
       if (eventData?.dutyStatus == "ON" && observaciones == undefined) {
              setShowObservacionesDialog(true);
       }

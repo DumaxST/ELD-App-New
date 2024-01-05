@@ -49,6 +49,7 @@ const ListSection = () => {
       getData();
     }, []);
 
+    //funciones de logica de screen
     function traducirStatus(status){
       switch (status) {
         case "ON":
@@ -59,6 +60,8 @@ const ListSection = () => {
           return "driving";
         case "SB":
           return "Sleeper";
+        case "PS":
+          return "passenger";
         case "PC":
           return "PERSONAL";
         case "YM":
@@ -68,256 +71,60 @@ const ListSection = () => {
       }
     }
 
+
     //funciones de renderizado
+    
     function Logs() {
-      const convertTiempoTranscurrido = (seconds) => {
-        const horas = seconds / 3600;
-        const minutes = (horas - Math.floor(horas)) * 60;
-        return `${Math.trunc(horas)} hrs ${Math.trunc(minutes)} min`;
-      };
-  
+      const convertElapsedTime = (currentTimeStamp, previousTimeStamp) => {
+        const secondsDiff = previousTimeStamp - currentTimeStamp;
+        const millisecondsDiff = secondsDiff * 1000;
+        const dateDiff = new Date(millisecondsDiff);
+        
+        const hours = dateDiff.getUTCHours();
+        const minutes = dateDiff.getUTCMinutes();
+        return `${hours} hrs ${minutes} min`;
+      };      
+
+      function utcParser(date, hours) {
+        date.setHours(date.getHours() + hours);
+        return date;
+      }
+
+      const date = utcParser(new Date(), 6);
+      const month = `${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+      const day = `${date.getDate().toString().padStart(2, '0')}`;
+      const year = date.getFullYear().toString().slice(-2);
+    
+      const hour = `${date.getHours().toString().padStart(2, '0')}`;
+      const minutes = `${date.getMinutes().toString().padStart(2, '0')}`;
+      const seconds = `${date.getSeconds().toString().padStart(2, '0')}`;
+
+      const currentSeconds = Math.floor(Date.now() / 1000);
+      const tiempoEventoUTC6 = driverEvents[0].geoTimeStamp.timeStamp._seconds;
+      const tiempoTranscurrido = currentSeconds - tiempoEventoUTC6;
+      const horas = Math.floor(tiempoTranscurrido / 3600);
+      const minutos = Math.floor((tiempoTranscurrido % 3600) / 60);
+
       return (
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={{ marginTop: Sizes.fixPadding * 2.0 }}>
-            {Array.isArray(driverEvents) &&
-            driverEvents.map((event, i) => {
-              return (
-                <View
-                  key={`driverEvents_${i}_${event.id}`}
-                  style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}
-                >
-                  <TouchableOpacity
-                    activeOpacity={0.99}
-                    // onPress={onPress}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft: Sizes.fixPadding,
-                          marginRight:Sizes.fixPadding ,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {`${languageModule.lang(language, "status")} - ${languageModule.lang(language,traducirStatus(event.dutyStatus))}` }
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection:"row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <TouchableOpacity
-                        activeOpacity={0.99}
-                        style={{
-                          flexDirection:"row",
-                          alignItems: "center",
-                        }}
-                        onPress={() => {
-                          setCurretEventDetails(event);
-                          setEventDetailsDialog(true);
-                        }}
-                      >
-                        <View
-                          style={{
-                            marginLeft: Sizes.fixPadding,
-                            marginRight: Sizes.fixPadding,
-                          }}
-                        >
-                          <MaterialCommunityIcons
-                            name="clipboard-edit-outline"
-                            size={24}
-                            color={Colors.grayColor}
-                          />
-                        </View>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        activeOpacity={0.99}
-                        style={{
-                          flexDirection:"row",
-                          alignItems: "center",
-                        }}
-                      >
-                        <View
-                          style={{
-                            marginLeft:Sizes.fixPadding,
-                            marginRight: Sizes.fixPadding,
-                          }}
-                        >
-                          <MaterialCommunityIcons
-                            name="trash-can"
-                            size={24}
-                            color={Colors.grayColor}
-                          />
-                        </View>
-                      </TouchableOpacity>
-                      {event.history ? (
-                        event.history.filter((evnt) => {
-                          return (
-                            evnt.original == undefined &&
-                            evnt.rejected == undefined
-                          );
-                        }).length > 0 ? (
-                          <TouchableOpacity
-                            activeOpacity={0.99}
-                            onPress={() => {
-                              dispatch(editDriverLogEvent(event));
-                              navigation.push("HistoryLogEvent");
-                            }}
-                            style={styles.buttonStyle}
-                          >
-                            <Text
-                              style={{
-                                ...Fonts.whiteColor14SemiBold,
-                                marginHorizontal: Sizes.fixPadding + 5.0,
-                              }}
-                            >
-                              {`${
-                                event.history.filter((evnt) => {
-                                  return (
-                                    evnt.original == undefined &&
-                                    evnt.rejected == undefined
-                                  );
-                                }).length
-                              } ${"porEditar"}`}
-                            </Text>
-                          </TouchableOpacity>
-                        ) : (
-                          <TouchableOpacity
-                            activeOpacity={0.99}
-                            style={{
-                              flexDirection:  "row",
-                              alignItems: "center",
-                            }}
-                            onPress={() => {
-                              dispatch(editDriverLogEvent(event));
-                              navigation.push("HistoryLogEvent");
-                            }}
-                          >
-                            <View
-                              style={{
-                                marginLeft:  Sizes.fixPadding,
-                                marginRight: Sizes.fixPadding,
-                              }}
-                            >
-                              <MaterialCommunityIcons
-                                name="format-list-group"
-                                size={24}
-                                color={Colors.grayColor}
-                              />
-                            </View>
-                          </TouchableOpacity>
-                        )
-                      ) : null}
-                    </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    activeOpacity={0.99}
-                    // onPress={onPress}
-                    style={{
-                      flexDirection:"row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft: Sizes.fixPadding,
-                          marginRight: Sizes.fixPadding,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {languageModule.lang(language, "sequenceIDNumber")}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection:"row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft: Sizes.fixPadding,
-                          marginRight: Sizes.fixPadding,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {`${event.sequenceIDNumber.decimal} - ${event.sequenceIDNumber.hexadecimal}`}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    activeOpacity={0.99}
-                    // onPress={onPress}
-                    style={{
-                      flexDirection:  "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft: Sizes.fixPadding,
-                          marginRight: Sizes.fixPadding,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {languageModule.lang(language, "startTime")}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft: Sizes.fixPadding,
-                          marginRight: Sizes.fixPadding ,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {`${event?.geoTimeStamp?.date.substring(
+        <ScrollView>
+      <View style={{ marginTop: 20 }}>
+        {Array.isArray(driverEvents) &&
+          driverEvents.map((event, i) => (
+            <View
+              key={`driverEvent_${event.id}`}
+              style={{
+                marginHorizontal: 20,
+                padding: 15,
+                backgroundColor: '#E6F4EA', // Color verde del diseño
+                borderRadius: 10,
+                marginBottom: 20,
+              }}
+            >
+              {/* Detalles del evento */}
+              <Text>{languageModule.lang(language, "status")}{": "}{languageModule.lang(language,traducirStatus(event.dutyStatus))}</Text>
+              <Text>{languageModule.lang(language, "sequenceIDNumber")}{": "}{`${event.sequenceIDNumber.decimal} - ${event.sequenceIDNumber.hexadecimal}`}</Text>
+              <Text>{languageModule.lang(language, "startTime")}{": "}
+                    {`${event?.geoTimeStamp?.date.substring(
                           0,
                           2
                         )}/${event?.geoTimeStamp?.date.substring(
@@ -333,321 +140,25 @@ const ListSection = () => {
                           2,
                           4
                         )}:${event?.geoTimeStamp?.time.substring(4, 6)} `}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    activeOpacity={0.99}
-                    // onPress={onPress}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft: Sizes.fixPadding,
-                          marginRight: Sizes.fixPadding,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {languageModule.lang(language, "finishTime")}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft: Sizes.fixPadding,
-                          marginRight: Sizes.fixPadding ,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {i == 0
-                          ? "Currentnt"
-                          : `${driverEvents[i - 1]?.geoTimeStamp?.date.substring(
-                              0,
-                              2
-                            )}/${driverEvents[
-                              i - 1
-                            ]?.geoTimeStamp?.date.substring(2, 4)}/${driverEvents[
-                              i - 1
-                            ]?.geoTimeStamp?.date.substring(
-                              4,
-                              6
-                            )} - ${driverEvents[
-                              i - 1
-                            ]?.geoTimeStamp?.time.substring(0, 2)}:${driverEvents[
-                              i - 1
-                            ]?.geoTimeStamp?.time.substring(2, 4)}:${driverEvents[
-                              i - 1
-                            ]?.geoTimeStamp?.time.substring(4, 6)} `}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    activeOpacity={0.99}
-                    // onPress={onPress}
-                    style={{
-                      flexDirection:  "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft: Sizes.fixPadding,
-                          marginRight: Sizes.fixPadding,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {languageModule.lang(language, "elapsedTime")}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft:Sizes.fixPadding,
-                          marginRight: Sizes.fixPadding ,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {i == 0
-                          ? "Currentnt"
-                          : convertTiempoTranscurrido(
-                              (new Date(
-                                driverEvents[i - 1].geoTimeStamp.timeStamp
-                              ) -
-                                new Date(event.geoTimeStamp.timeStamp)) /
-                                1000
-                            )}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    activeOpacity={0.99}
-                    // onPress={onPress}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft: Sizes.fixPadding,
-                          marginRight: Sizes.fixPadding,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {languageModule.lang(language, "location")}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft: Sizes.fixPadding,
-                          marginRight: Sizes.fixPadding,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {/* IDEALMENTE DEBERÍA DE MOSTRAR LA UBICACION EN TEXTO, NO EN COORDENADAS */}
-                        {`${event?.geoTimeStamp?.latitude} , ${event?.geoTimeStamp?.longitude}`}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    activeOpacity={0.99}
-                    // onPress={onPress}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft:  Sizes.fixPadding,
-                          marginRight: Sizes.fixPadding ,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {languageModule.lang(language, "observations")}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft: Sizes.fixPadding,
-                          marginRight: Sizes.fixPadding,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {"Pre - TI"}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    activeOpacity={0.99}
-                    // onPress={onPress}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft: Sizes.fixPadding,
-                          marginRight: Sizes.fixPadding,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {languageModule.lang(language, "carrier")}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft: Sizes.fixPadding,
-                          marginRight: Sizes.fixPadding,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {event.carrier.name}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    activeOpacity={0.99}
-                    // onPress={onPress}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft: Sizes.fixPadding,
-                          marginRight: Sizes.fixPadding,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {languageModule.lang(language, "certified")}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft: Sizes.fixPadding,
-                          marginRight: Sizes.fixPadding,
-                          flex: 1,
-                          ...Fonts.blackColor16SemiBold,
-                        }}
-                      >
-                        {`${
+              </Text>
+              <Text>{languageModule.lang(language, "finishTime")}{": "}                        
+              {i === 0
+              ? `${month}/${day}/${year} - ${hour}:${minutes}:${seconds}`
+              : `${driverEvents[i - 1]?.geoTimeStamp?.date.substring(0, 2)}/${driverEvents[i - 1]?.geoTimeStamp?.date.substring(2, 4)}/${driverEvents[i - 1]?.geoTimeStamp?.date.substring(4, 6)} - ${driverEvents[i - 1]?.geoTimeStamp?.time.substring(0, 2)}:${driverEvents[i - 1]?.geoTimeStamp?.time.substring(2, 4)}:${driverEvents[i - 1]?.geoTimeStamp?.time.substring(4, 6)} `}
+              </Text>
+              <Text>{languageModule.lang(language, "elapsedTime")}{": "}                        
+                          {i == 0
+                          ? `${horas} hrs ${minutos} min`
+                          : convertElapsedTime(event.geoTimeStamp.timeStamp._seconds,
+                           driverEvents[i - 1].geoTimeStamp.timeStamp._seconds
+                          )}
+              </Text>
+              <Text>{languageModule.lang(language, "location")}{": "}{event?.geoTimeStamp?.latitude}{" "}{event?.geoTimeStamp?.longitude}</Text>
+              <Text>{languageModule.lang(language, "observations")}{": "}{"Pre - TI"}</Text>
+              <Text>{languageModule.lang(language, "carrier")}{": "}{event.carrier.name}</Text>
+              <Text>
+              {languageModule.lang(language, "certified")}{": "}
+              {`${
                           event?.certified?.value
                             ? `${new Date(
                                 event.certified.timeStamp
@@ -662,26 +173,32 @@ const ListSection = () => {
                               ).getMinutes()}`
                             : "No"
                         } `}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-  
-                  {false ? (
-                    <View style={{ marginVertical: Sizes.fixPadding * 2.0 }} />
-                  ) : (
-                    <View
-                      style={{
-                        marginVertical: Sizes.fixPadding * 2.0,
-                        backgroundColor: Colors.lightGrayColor,
-                        height: 1.0,
-                      }}
-                    />
-                  )}
-                </View>
-              );
-            })}
-          </View>
-        </ScrollView>
+              </Text>
+
+              {/* Opciones de edición/visualización/eliminación */}
+              <View style={{ position: 'absolute', top: 10, right: 10 }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    // Acción para ver/editar el evento
+                    console.log('Ver/Editar evento:', event.id);
+                  }}
+                >
+                  <MaterialIcons name="edit" size={24} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ marginTop: 10 }}
+                  onPress={() => {
+                    // Acción para eliminar el evento
+                    console.log('Eliminar evento:', event.id);
+                  }}
+                >
+                  <MaterialIcons name="delete" size={24} />
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+      </View>
+    </ScrollView>
       );
     }
 
