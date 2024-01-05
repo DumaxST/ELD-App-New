@@ -173,7 +173,7 @@ const PrincipalScreen = ({ navigation }) => {
       <View style={styles.header}>
       <Image
       source={require("../../assets/images/icons/appIcon.png")}
-      style={{ width: 45.0, height: 45.0, borderRadius: 22.5, left: -20 }}
+      style={{ width: 45.0, height: 45.0, borderRadius: 22.5, left: -8 }}
       />
       <Text style={styles.title}>{languageModule.lang(language, 'hoursofservice')}</Text>
       <View >
@@ -203,7 +203,7 @@ const PrincipalScreen = ({ navigation }) => {
       <View style={styles.userInfo}>
       <Text style={styles.userName}>{languageModule.lang(language, 'driverName') + ": "+ currentDriver?.displayName}</Text>
       <View style={styles.innerSeparator} />
-      <Text style={{color:"#cc0b0a"}}>{languageModule.lang(language, 'driverStatus') + ": "}{"M"}</Text>
+      <Text style={{color:"#4CAF50"}}>{languageModule.lang(language, 'driverStatus') + ": "}{driverStatus}</Text>
       <Text >{`${languageModule.lang(language, 'latitude')}: ${eldData?.coords?.latitude? eldData?.coords?.latitude.toFixed(3): `${languageModule.lang(language, 'loading')}`}`}</Text>
       <Text >{`${languageModule.lang(language, 'longitude')}: ${eldData?.coords?.longitude? eldData?.coords?.longitude.toFixed(3): `${languageModule.lang(language, 'loading')}`}`}</Text>
       <Text>
@@ -1137,12 +1137,12 @@ const PrincipalScreen = ({ navigation }) => {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginTop: -35, // Mover el encabezado hacia arriba
-      marginBottom: 10, // Agregar un poco de espacio debajo del encabezado
+      marginTop: -37, // Mover el encabezado hacia arriba
+      marginBottom: 8, // Agregar un poco de espacio debajo del encabezado
     },
     title: {
-      left: -30,
-      fontSize: 18, // Aumentar el tamaño del título
+      left: -18,
+      fontSize: 20, // Aumentar el tamaño del título
       fontWeight: 'bold',
       color: '#4CAF50',
     },
