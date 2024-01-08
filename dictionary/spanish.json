@@ -105,5 +105,18 @@
     "thereIsNoDataAvailable": "No hay datos disponibles",
     "exemptDriver": "Conductor Exento",
     "close": "cerrar",
-    "youAreNotAllowed": "No tienes permitido realizar ninguna acción, por favor contacta al administrador, razón: "
+    "youAreNotAllowed": "No tienes permitido realizar ninguna acción, por favor contacta al administrador, razón: ",
+    "recordStatus": "Estado del registro",
+    "recordOrigin": "Origen del registro",
+    "type": "Tipo",
+    "code": "Código",
+    "accumulatedVehicleMiles": "Millas acumuladas del vehículo",
+    "elapsedEngineHours": "Horas del motor transcurridas",
+    "distanceSinceLastValidCoordinates": "Distancia desde las últimas coordenadas válidas",
+    "malfunctionIndicatorStatus": "Estado del indicador de mal funcionamiento",
+    "dataDiagnosticEventIndicatorStatus": "Estado del indicador de evento de diagnóstico de datos",
+    "commentOrAnnotation": "Comentario o anotación",
+    "driversLocationDescription": "Descripción de la ubicación del conductor",
+    "dataCheckValue": "Valor de verificación de datos",
+    "powerUnitNumber": "Número de unidad de potencia"
 }
