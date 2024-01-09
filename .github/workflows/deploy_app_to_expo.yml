@@ -49,7 +49,7 @@ jobs:
           
     
         - name: Deploy to Expo
-          if: steps.check_ready.outputs.ready == 'ready'
+          if: steps.check_ready.outputs.ready != 'ready'
           run: npx eas channel:create ${{ env.JIRAISSUEID }}
           env:
             EXPO_CLI_USERNAME: ${{ secrets.EXPO_CLI_USERNAME }}
