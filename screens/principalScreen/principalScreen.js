@@ -1198,7 +1198,7 @@ const PrincipalScreen = ({ navigation }) => {
       shadowOpacity: 0.3,
       shadowRadius: 3.84,
       elevation: 35,
-      zIndex: 2,
+      zIndex: 2,                 // Numero superior en zIndex para superponer el boton, issue completado en otro anterior
       borderWidth: 1,
       borderColor: '#4CAF50'
     },
