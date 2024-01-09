@@ -118,5 +118,7 @@
     "commentOrAnnotation": "Comentario o anotación",
     "driversLocationDescription": "Descripción de la ubicación del conductor",
     "dataCheckValue": "Valor de verificación de datos",
-    "powerUnitNumber": "Número de unidad de potencia"
+    "powerUnitNumber": "Número de unidad de potencia",
+    "Agree": "Aceptar",
+    "NotReady": "No estoy listo"
 }
