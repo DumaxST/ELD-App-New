@@ -126,8 +126,9 @@ const PrincipalScreen = ({ navigation }) => {
               );
             }
             return;
-          case "YM":
-          case "PC":
+            //Issue terminado desde otro punto del sprint
+          case "YM":  //Agregamos solo un comentario 
+          case "PC":  //Aqui tambien
             return setAnnotationDialog(true);
           default:
             return postEvent(1);

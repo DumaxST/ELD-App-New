@@ -14,35 +14,35 @@ const { height, width } = Dimensions.get("window");
 const languageModule = require('../../../global_functions/variables');
 
 const ListSection = () => {
-    const dispatch = useDispatch();
-    const [language, setlanguage] = useState(""); 
-    const [isLoading, setIsLoading] = useState(true);
-    const [eventDetailsDialog, setEventDetailsDialog] = useState(false);
-    const [currentEventDetails, setCurretEventDetails] = useState({});
-    const [driverEvents, setDriverEvents] = useState([]);
-    const [unidentifiedEvents, setUnidentifiedEvents] = useState([]);
-    const [selectedEvent, setSelectedEvent] = useState(null);
-    const [modalVisible, setModalVisible] = useState(false);
-    const [state, setState] = useState({
-      numeroDelCamion: "",
-      numeroDelTrailer: "",
-      vinDelCamion: "",
-      odometroVisual: "",
-    });
-    const {
-        numeroDelCamion,
-        vinDelCamion,
-        numeroDelTrailer,
-        numeroDeDocumentoDeEnvio,
-        odometroVisual,
-    } = state;
+  const dispatch = useDispatch();
+  const [language, setlanguage] = useState(""); 
+  const [isLoading, setIsLoading] = useState(true);
+  const [eventDetailsDialog, setEventDetailsDialog] = useState(false);
+  const [currentEventDetails, setCurretEventDetails] = useState({});
+  const [driverEvents, setDriverEvents] = useState([]);
+  const [unidentifiedEvents, setUnidentifiedEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [state, setState] = useState({
+    numeroDelCamion: "",
+    numeroDelTrailer: "",
+    vinDelCamion: "",
+    odometroVisual: "",
+  });
+  const {
+      numeroDelCamion,
+      vinDelCamion,
+      numeroDelTrailer,
+      numeroDeDocumentoDeEnvio,
+      odometroVisual,
+  } = state;
   
 
   const updateState = (data) => setState((state) => ({ ...state, ...data }));
 
-    //Uso de efectos de inicio del screen
-    //Aqui obtenemos el idioma seleccionado desde la primera pantalla
-    useEffect(() => {
+  //Uso de efectos de inicio del screen
+  //Aqui obtenemos el idioma seleccionado desde la primera pantalla
+  useEffect(() => {
       const getPreferredLanguage = async () => {
          try {
            setlanguage(await AsyncStorage.getItem("preferredLanguage"));
@@ -51,9 +51,9 @@ const ListSection = () => {
          }
       };
       getPreferredLanguage();
-    }, []);
+  }, []);
 
-    useEffect(() => {
+  useEffect(() => {
       const getData = async () => {
         await getDriverEvents().then(async (events) => {
           await getDriverEvents(undefined, true).then((undefinedEvents) => {
@@ -65,10 +65,10 @@ const ListSection = () => {
         });
       };
       getData();
-    }, []);
+  }, []);
 
-    //funciones de logica de screen
-    function traducirStatus(status){
+  //funciones de logica de screen
+  function traducirStatus(status){
       switch (status) {
         case "ON":
           return "onDuty";
@@ -87,21 +87,21 @@ const ListSection = () => {
         default:
           return "No identificado";
       }
-    }
+  }
 
-    const openModal = (event) => {
+  const openModal = (event) => {
       setSelectedEvent(event);
       setModalVisible(true);
-    };
-  
-    const closeModal = () => {
+  };
+
+  const closeModal = () => {
       setSelectedEvent(null);
       setModalVisible(false);
-    };
+  };
 
-    //funciones de renderizado
+  //funciones de renderizado
     
-    function Logs() {
+  function Logs() {
       const convertElapsedTime = (currentTimeStamp, previousTimeStamp) => {
         const secondsDiff = previousTimeStamp - currentTimeStamp;
         const millisecondsDiff = secondsDiff * 1000;
@@ -224,9 +224,9 @@ const ListSection = () => {
       </View>
     </ScrollView>
       );
-    }
+  }
 
-    function eventDetailsDialogFn() {
+  function eventDetailsDialogFn() {
       return (
         <Overlay
           isVisible={eventDetailsDialog}
@@ -1074,9 +1074,9 @@ const ListSection = () => {
           </View>
         </Overlay>
       );
-    }
+  }
 
-    function editEvent() {
+  function editEvent() {
       return (
         <View>
           <Modal visible={modalVisible} animationType="slide">
@@ -1280,7 +1280,7 @@ const ListSection = () => {
       </Modal>
         </View>
       );
-    }
+  }
 
   return (
     <View style={styles.sectionContainer}>
