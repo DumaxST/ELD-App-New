@@ -23,9 +23,6 @@ jobs:
           with:
                 node-version: '14'
 
-        - name: Install Dependencies
-          run: npm ci
-        
         - name: Extract PR Number
           id: pr
           run: echo "::set-output name=number::${{ github.event.pull_request.number }}"
@@ -47,16 +44,21 @@ jobs:
                 echo "Pull request is not ready to be merged."
             fi
           
-    
+        - name: Install Dependencies
+          run: npm ci
+
         - name: Install Expo Application Services CLI
           run: npm install -g eas-cli
 
-        - name: Deploy to Expo
-          if: steps.check_ready.outputs.ready != 'ready'
-          run: npx eas channel:create ${{ github.event.pull_request.head.ref }}
+        - name: Install Expo Application Services CLI
+          run: npm install -g eas-cli
+
+        - name: Deploy to Expo Preview Channel
+          run: eas build --platform all --profile preview --non-interactive
           env:
-            EXPO_CLI_USERNAME: ${{ secrets.EXPO_CLI_USERNAME }}
-            EXPO_CLI_PASSWORD: ${{ secrets.EXPO_CLI_PASSWORD }}
+            EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+            EAS_BUILD_PROFILE: preview
+            EAS_CHANNEL: pr-${{ steps.pr.outputs.number }}
                 
       
         - name: Check if PR is ready
