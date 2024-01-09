@@ -2,18 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, StyleSheet, Modal, Pressable } from 'react-native';
 const languageModule = require('../../../global_functions/variables');
 import AsyncStorage from '@react-native-async-storage/async-storage'
-
+import {certifyDriverEvents,getDriverEvents,postDriverEvent,} from "../../../data/commonQuerys";
+import { getCurrentDriver } from "../../../config/localStorage";
+import { setDriverStatus } from "../../../redux/actions";
+import { useDispatch, useSelector } from "react-redux";
+import { FontAwesome } from '@expo/vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const CertificarRegistros = ({navigation}) => {
+  const dispatch = useDispatch();
 
   const [language, setlanguage] = useState('');
   const [loading, setLoading] = useState(true);
   const [registros, setRegistros] = useState([]);
+  const [driverEvents, setDriverEvents] = useState([]);
+  const [idEvents, setIdEvents] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRange, setSelectedRange] = useState(null);
+  const [newModalVisible, setNewModalVisible] = useState(false);
+  const updateState = (data) => setState((state) => ({ ...state, ...data }));
   const today = new Date();
   const twentyFourHoursAgo = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-
+  const { driverStatus, eldData, acumulatedVehicleKilometers } = useSelector(
+    (state) => state.eldReducer
+  );
 
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
   useEffect(() => {
@@ -29,19 +41,57 @@ const CertificarRegistros = ({navigation}) => {
   }, []);
 
   useEffect(() => {
+    const getData = async () => {
+      await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: formatDate(twentyFourHoursAgo), to: formatDate(today)}).then(async (events) => {
+        if(events.length > 0){
+          setDriverEvents(events);
+          const nuevosIds = events.map(evento => evento.id);
+          const uniqueIds = [...new Set(nuevosIds)]; 
+          setIdEvents(uniqueIds);
+          return;
+        }else{
+          setDriverEvents(0);
+          return;
+        }
+      });
+    };
+    getData();
+
     setTimeout(() => {
-      const registrosSimulados = [
+      const registros24HoursPeriod = [
         {
           id: 1,
           fechaInicio: formatDate(twentyFourHoursAgo),
           fechaFin: formatDate(today),
           seleccionado: false,
+          certified : true,
         },
       ];
-      setRegistros(registrosSimulados);
+      setRegistros(registros24HoursPeriod);
       setLoading(false);
     }, 2000); 
   }, []);
+
+  //funciones de logica de la pantalla
+
+  const postEvent = async (recordOrigin, status) => {
+    await getCurrentDriver().then(async (currentDriver) => {
+      // CHER FOR RECERTIFICATIONS "n"
+      await postDriverEvent(
+        {
+          recordStatus: 1,
+          recordOrigin: recordOrigin,
+          type: 4,
+          code: 1,
+        },
+        "",
+        status,
+        currentDriver,
+        eldData,
+        acumulatedVehicleKilometers
+      );
+    });
+  };
 
   const formatDate = (date) => {
     const year = date.getFullYear();
@@ -50,11 +100,24 @@ const CertificarRegistros = ({navigation}) => {
     return `${year}-${month}-${day}`;
   };
 
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setSelectedRange(null);
+  }
+
+  const handleCloseNewModal = () => {
+    setNewModalVisible(false);
+  };
+
   const handleCertify = () => {
+    if(driverEvents === 0){
+     setNewModalVisible(true);
+    }else{
     if (selectedRange) {
       setModalVisible(true);
     } else {
       console.log('No se ha seleccionado ningún rango');
+    }
     }
   };
 
@@ -106,17 +169,24 @@ const CertificarRegistros = ({navigation}) => {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Text style={styles.modalText}>{`Rango seleccionado: ${selectedRange?.fechaInicio} a ${selectedRange?.fechaFin}`}</Text>
+            <Text style={styles.modalText}>{languageModule.lang(language, 'termsOfCertification')}</Text>
             <View style={styles.modalButtons}>
             <Pressable
                 style={[styles.modalButton, styles.buttonNotReady]}
-                onPress={() => setModalVisible(!modalVisible)}
+                onPress={() => handleCloseModal()}
               >
                 <Text style={styles.modalButtonText}>{languageModule.lang(language, 'NotReady')}</Text>
               </Pressable>
               <Pressable
                 style={[styles.modalButton, styles.buttonAgree]}
-                onPress={() => setModalVisible(!modalVisible)}
+                onPress={async () => {
+                  await certifyDriverEvents(idEvents, "mHlqeeq5rfz3Cizlia23").then(() => {
+                    // dispatch(setDriverStatus("ON"));
+                    // postEvent(1, "ON");
+                    handleCloseModal();
+                    navigation.push("AppMenu");
+                  });
+                }}
               >
                 <Text style={styles.modalButtonText}>{languageModule.lang(language, 'Agree')}</Text>
               </Pressable>
@@ -128,13 +198,37 @@ const CertificarRegistros = ({navigation}) => {
     )
   }  
 
+  function advmodal (){
+    return (
+      <View>
+         <Modal
+        animationType="slide"
+        transparent={true}
+        visible={newModalVisible}
+        onRequestClose={() => setNewModalVisible(false)}
+      >
+        <View style={styles.newModalContainer}>
+          <View style={styles.newModalContent}>
+            <Text style={styles.newModalText}>
+              {languageModule.lang(language, 'youCantCertify')}
+            </Text>
+            <TouchableOpacity onPress={handleCloseNewModal} style={styles.newCloseButton}>
+              <Text style={styles.newButtonText}>{languageModule.lang(language, 'close')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+        </View>
+    )
+  }
+
   return (
     <View style={styles.container}>
       {header()}
       {loading ? (
         <ActivityIndicator style={styles.loadingIndicator} size="large" color="#4CAF50" />
       ) : registros.length === 0 ? (
-        <Text style={styles.noRecordsText}>No hay registros disponibles</Text>
+        <Text style={styles.noRecordsText}>{languageModule.lang(language, 'thereIsNoDataAvailable')}</Text>
       ) : (
         <FlatList
           data={registros}
@@ -142,13 +236,26 @@ const CertificarRegistros = ({navigation}) => {
             <TouchableOpacity
               style={[
                 styles.registroItem,
-                { backgroundColor: item.seleccionado ? '#4CAF50' : '#FFFFFF' },
+                {
+                  backgroundColor: item.seleccionado ? '#4CAF50' : driverEvents[0]?.certified?.value ? '#FFFFFF' : '#FFFFFF',
+                  pointerEvents: driverEvents[0]?.certified?.value ? 'none' : 'auto',
+                },
               ]}
-              onPress={() => handleSelectRange(item)} // Modificado para manejar la selección
-            >
+              onPress={() => handleSelectRange(item)}
+              >
               <Text style={{ color: item.seleccionado ? '#FFFFFF' : '#333333' }}>
-                {`${item.fechaInicio} a ${item.fechaFin}`}
+                {`${item.fechaInicio} ${'12:00'} ${'    a    '} ${item.fechaFin} ${'12:00'}`}
               </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {driverEvents[0]?.certified?.value && (
+                      <Ionicons name={"medal-outline"} size={27} color="#48d1cc" />
+              )}
+              <Text style={{ color: item.seleccionado ? '#FFFFFF' : '#333333' }}>
+                {driverEvents[0]?.certified?.value
+                  ? `${languageModule.lang(language, 'allRecordsAreCertified')}`
+                  : `${languageModule.lang(language, 'logs')}: ${driverEvents.length}`}
+              </Text>
+            </View>
             </TouchableOpacity>
           )}
           keyExtractor={(item) => item.id.toString()}
@@ -157,6 +264,7 @@ const CertificarRegistros = ({navigation}) => {
       )}
       {footer()}
       {modal()}
+      {advmodal()}
     </View>
   );
 };
@@ -265,6 +373,34 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  newModalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  newModalContent: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 8,
+    width: '80%',
+    alignItems: 'center',
+  },
+  newModalText: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  newCloseButton: {
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 8,
+  },
+  newButtonText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
 });
 
