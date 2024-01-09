@@ -1,26 +1,25 @@
 {
   "expo": {
-    "name": "Dumax-ELD-App",
-    "slug": "Dumax-ELD-App",
+    "name": "Dumax ELD",
+    "slug": "dumax_eld",
+    "owner": "dumax_st",
     "version": "1.0.0",
     "assetBundlePatterns": [
       "**/*"
     ],
     "plugins": [
-      [      
+      [
         "@config-plugins/react-native-ble-plx",
         {
           "isBackgroundEnabled": true,
-          "modes": ["peripheral", "central"],
+          "modes": [
+            "peripheral",
+            "central"
+          ],
           "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to bluetooth devices"
         }
       ]
     ],
-    "extra": {
-      "eas": {
-        "projectId": "8ba5bb38-abbc-41a1-abd1-a87720b682ab"
-      }
-    },
     "runtimeVersion": "1.0.0",
     "updates": {
       "url": "https://u.expo.dev/8ba5bb38-abbc-41a1-abd1-a87720b682ab"
@@ -32,6 +31,11 @@
         "android.permission.BLUETOOTH_CONNECT"
       ]
     },
-    "ios": {}
+    "ios": {},
+    "extra": {
+      "eas": {
+        "projectId": "788f8c23-b433-47ae-8b94-5379da423fec"
+      }
+    }
   }
 }
