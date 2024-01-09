@@ -23,7 +23,7 @@ jobs:
           with:
                 node-version: '14'
 
-        - name: Install Dependencies 
+        - name: Install Dependencies with lightningcss
           run: npm ci
         
         - name: Extract PR Number
