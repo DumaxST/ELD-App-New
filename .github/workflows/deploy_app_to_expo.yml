@@ -48,9 +48,12 @@ jobs:
             fi
           
     
+        - name: Install Expo Application Services CLI
+          run: npm install -g eas-cli
+
         - name: Deploy to Expo
           if: steps.check_ready.outputs.ready != 'ready'
-          run: npx eas channel:create ${{ env.JIRAISSUEID }}
+          run: npx eas channel:create ${{ github.event.pull_request.head.ref }}
           env:
             EXPO_CLI_USERNAME: ${{ secrets.EXPO_CLI_USERNAME }}
             EXPO_CLI_PASSWORD: ${{ secrets.EXPO_CLI_PASSWORD }}
