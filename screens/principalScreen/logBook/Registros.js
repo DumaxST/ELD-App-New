@@ -54,14 +54,19 @@ const ListSection = () => {
   }, []);
 
   useEffect(() => {
+      //vamos a obtener la fecha actual, pero existe un dropdown en el demo referencia, checar con Isaias
+      // en otro issue
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0'); 
+      const day = String(today.getDate()).padStart(2, '0');
+      
+      const formattedDate = `${year}-${month}-${day}`;
       const getData = async () => {
-        await getDriverEvents().then(async (events) => {
-          await getDriverEvents(undefined, true).then((undefinedEvents) => {
+        await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: "", to: formattedDate}).then(async (events) => {
             setDriverEvents(events);
-            setUnidentifiedEvents(undefinedEvents);
             setIsLoading(false);
             return;
-          });
         });
       };
       getData();
@@ -115,6 +120,23 @@ const ListSection = () => {
       function utcParser(date, hours) {
         date.setHours(date.getHours() + hours);
         return date;
+      }
+
+      function convertirTimestampAFechaYHora(timestamp) {
+        const date = new Date(timestamp * 1000); 
+        const dia = date.getDate();
+        const mes = date.getMonth() + 1; 
+        const año = date.getFullYear();
+        const horas = date.getHours();
+        const minutos = date.getMinutes();
+        const diaFormatado = dia < 10 ? `0${dia}` : dia;
+        const mesFormatado = mes < 10 ? `0${mes}` : mes;
+        const horasFormatadas = horas < 10 ? `0${horas}` : horas;
+        const minutosFormatados = minutos < 10 ? `0${minutos}` : minutos;
+      
+        const fechaHoraFormateada = `${diaFormatado}/${mesFormatado}/${año} - ${horasFormatadas}:${minutosFormatados}`;
+      
+        return fechaHoraFormateada;
       }
 
       const date = utcParser(new Date(), 6);
@@ -185,23 +207,10 @@ const ListSection = () => {
               <Text>{languageModule.lang(language, "carrier")}{": "}{event.carrier.name}</Text>
               <Text>
               {languageModule.lang(language, "certified")}{": "}
-              {`${
-                          event?.certified?.value
-                            ? `${new Date(
-                                event.certified.timeStamp
-                              ).getDate()} / ${new Date(
-                                event.certified.timeStamp
-                              ).getMonth()} / ${new Date(
-                                event.certified.timeStamp
-                              ).getYear()} - ${new Date(
-                                event.certified.timeStamp
-                              ).getHours()}:${new Date(
-                                event.certified.timeStamp
-                              ).getMinutes()}`
-                            : "No"
-                        } `}
+              {event?.certified?.value
+                ? convertirTimestampAFechaYHora(event.certified.timeStamp._seconds)
+                : "No"}
               </Text>
-
               {/* Opciones de edición/visualización/eliminación */}
               <View style={{ position: 'absolute', top: 10, right: 10 }}>
                 <TouchableOpacity
@@ -1289,7 +1298,7 @@ const ListSection = () => {
           <ActivityIndicator size="large" color="#4CAF50" />
         </View>
       ) : driverEvents.length === 0 ? (
-        <Text>No hay registros disponibles</Text>
+        <Text>{languageModule.lang(language, 'thereAreNoRecords')}</Text>
       ) : (
         <Logs />
       )}
