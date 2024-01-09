@@ -50,6 +50,8 @@ jobs:
         - name: Install Expo Application Services CLI
           run: npm install -g eas-cli
 
+        
+
         - name: Deploy to Expo Preview Channel
           run: eas build --platform all --profile preview --non-interactive
           env:
