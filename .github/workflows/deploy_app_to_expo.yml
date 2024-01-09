@@ -50,14 +50,15 @@ jobs:
         - name: Install Expo Application Services CLI
           run: npm install -g eas-cli
 
-        
-
         - name: Deploy to Expo Preview Channel
           run: eas build --platform all --profile preview --non-interactive
           env:
             EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
             EAS_BUILD_PROFILE: preview
             EAS_CHANNEL: ${{ github.event.pull_request.head.ref }}
+            EXPO_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.EXPO_ANDROID_KEYSTORE_PASSWORD }}
+            EXPO_ANDROID_KEY_PASSWORD: ${{ secrets.EXPO_ANDROID_KEY_PASSWORD }}
+            EXPO_ANDROID_KEY_ALIAS: ${{ secrets.EXPO_ANDROID_KEY_ALIAS }}
                 
       
         - name: Check if PR is ready
