@@ -119,5 +119,7 @@
     "commentOrAnnotation": "Comment or Annotation",
     "driversLocationDescription": "Driver's Location Description",
     "dataCheckValue": "Data Check Value",
-    "powerUnitNumber": "Power Unit Number"
+    "powerUnitNumber": "Power Unit Number",
+    "Agree": "Agree",
+    "NotReady": "Not Ready"
 }
