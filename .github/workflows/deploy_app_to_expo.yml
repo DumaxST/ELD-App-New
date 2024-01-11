@@ -85,20 +85,8 @@ jobs:
                       "type": "paragraph",
                       "content": [
                         {
-                          "text": "Preview Branch Channel: ",
+                          "text": "Preview Branch Channel: ${{steps.firebase-deploy.outputs.details_url}} \n Expire in 5 days: ${{steps.firebase-deploy.outputs.expire_time}}",
                           "type": "text"
-                        },
-                        {
-                          "text": "'$EXPO_URL'",
-                          "type": "text",
-                          "marks": [
-                            {
-                              "type": "link",
-                              "attrs": {
-                                "href": "'$EXPO_URL'"
-                              }
-                            }
-                          ]
                         }
                       ]
                     }
@@ -106,7 +94,46 @@ jobs:
                 }
               }' \
               -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
-              https://codingcloud-online.atlassian.net/rest/api/3/issue/$JIRAISSUEID/comment
+              https://codingcloud-online.atlassian.net/rest/api/3/issue/$JIRAISSUEID/comment 
+
+        - name: Link Expo preview channel with JIRA issue
+          run: |
+
+            # Update the JIRA issue description with the Expo URL
+            curl -X PUT -H "Content-Type: application/json" \
+                -d '{
+                      "fields": {
+                        "description": {
+                          "type": "doc",
+                          "version": 1,
+                          "content": [
+                            {
+                              "type": "paragraph",
+                              "content": [
+                                {
+                                  "text": "Expo preview channel: ",
+                                  "type": "text"
+                                },
+                                {
+                                  "type": "text",
+                                  "text": "'$EXPO_URL'",
+                                  "marks": [
+                                    {
+                                      "type": "link",
+                                      "attrs": {
+                                        "href": "'$EXPO_URL'"
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }' \
+                -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+                https://codingcloud-online.atlassian.net/rest/api/3/issue/${{ env.JIRAISSUEID }}    
 
 
         - name: Transsiton JIRA issue to Testing when PR is approved
