@@ -44,9 +44,9 @@ jobs:
                 echo "Pull request is not ready to be merged."
             fi
 
-        - name: Install Expo Application Services CLI
-          run: npm install -g eas-cli
-        
+        - name: Install Expo CLI
+          run: npm install -g expo-cli
+          
         - name: Expo Login
           env:
             EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
