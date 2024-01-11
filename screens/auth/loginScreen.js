@@ -481,6 +481,8 @@ const LoginScreen = ({navigation, handleLogin}) => {
               color: 'black' 
             } 
           }}
+          fixAndroidTouchableBug={true}      //descomentar despues de cada ISSUE
+					useNativeAndroidPickerStyle={false}
         />
       </View>
       <View style={styles.form}>

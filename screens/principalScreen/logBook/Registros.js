@@ -1,4 +1,4 @@
-import {StyleSheet,Text,View, ActivityIndicator,SafeAreaView,ScrollView,FlatList,Dimensions,StatusBar,Image,TouchableOpacity,} from "react-native";
+import {TextInput,StyleSheet,Modal,Text,View, ActivityIndicator,SafeAreaView,ScrollView,FlatList,Dimensions,StatusBar,Image,TouchableOpacity,} from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { Fonts, Colors, Sizes } from "../../../constants/styles";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
@@ -14,17 +14,35 @@ const { height, width } = Dimensions.get("window");
 const languageModule = require('../../../global_functions/variables');
 
 const ListSection = () => {
-    const dispatch = useDispatch();
-    const [language, setlanguage] = useState(""); 
-    const [isLoading, setIsLoading] = useState(true);
-    const [eventDetailsDialog, setEventDetailsDialog] = useState(false);
-    const [currentEventDetails, setCurretEventDetails] = useState({});
-    const [driverEvents, setDriverEvents] = useState([]);
-    const [unidentifiedEvents, setUnidentifiedEvents] = useState([]);
+  const dispatch = useDispatch();
+  const [language, setlanguage] = useState(""); 
+  const [isLoading, setIsLoading] = useState(true);
+  const [eventDetailsDialog, setEventDetailsDialog] = useState(false);
+  const [currentEventDetails, setCurretEventDetails] = useState({});
+  const [driverEvents, setDriverEvents] = useState([]);
+  const [unidentifiedEvents, setUnidentifiedEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [state, setState] = useState({
+    numeroDelCamion: "",
+    numeroDelTrailer: "",
+    vinDelCamion: "",
+    odometroVisual: "",
+  });
+  const {
+      numeroDelCamion,
+      vinDelCamion,
+      numeroDelTrailer,
+      numeroDeDocumentoDeEnvio,
+      odometroVisual,
+  } = state;
+  
 
-    //Uso de efectos de inicio del screen
-    //Aqui obtenemos el idioma seleccionado desde la primera pantalla
-    useEffect(() => {
+  const updateState = (data) => setState((state) => ({ ...state, ...data }));
+
+  //Uso de efectos de inicio del screen
+  //Aqui obtenemos el idioma seleccionado desde la primera pantalla
+  useEffect(() => {
       const getPreferredLanguage = async () => {
          try {
            setlanguage(await AsyncStorage.getItem("preferredLanguage"));
@@ -33,24 +51,29 @@ const ListSection = () => {
          }
       };
       getPreferredLanguage();
-    }, []);
+  }, []);
 
-    useEffect(() => {
+  useEffect(() => {
+      //vamos a obtener la fecha actual, pero existe un dropdown en el demo referencia, checar con Isaias
+      // en otro issue
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0'); 
+      const day = String(today.getDate()).padStart(2, '0');
+      
+      const formattedDate = `${year}-${month}-${day}`;
       const getData = async () => {
-        await getDriverEvents().then(async (events) => {
-          await getDriverEvents(undefined, true).then((undefinedEvents) => {
+        await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: "", to: formattedDate}).then(async (events) => {
             setDriverEvents(events);
-            setUnidentifiedEvents(undefinedEvents);
             setIsLoading(false);
             return;
-          });
         });
       };
       getData();
-    }, []);
+  }, []);
 
-    //funciones de logica de screen
-    function traducirStatus(status){
+  //funciones de logica de screen
+  function traducirStatus(status){
       switch (status) {
         case "ON":
           return "onDuty";
@@ -69,12 +92,21 @@ const ListSection = () => {
         default:
           return "No identificado";
       }
-    }
+  }
 
+  const openModal = (event) => {
+      setSelectedEvent(event);
+      setModalVisible(true);
+  };
 
-    //funciones de renderizado
+  const closeModal = () => {
+      setSelectedEvent(null);
+      setModalVisible(false);
+  };
+
+  //funciones de renderizado
     
-    function Logs() {
+  function Logs() {
       const convertElapsedTime = (currentTimeStamp, previousTimeStamp) => {
         const secondsDiff = previousTimeStamp - currentTimeStamp;
         const millisecondsDiff = secondsDiff * 1000;
@@ -88,6 +120,23 @@ const ListSection = () => {
       function utcParser(date, hours) {
         date.setHours(date.getHours() + hours);
         return date;
+      }
+
+      function convertirTimestampAFechaYHora(timestamp) {
+        const date = new Date(timestamp * 1000); 
+        const dia = date.getDate();
+        const mes = date.getMonth() + 1; 
+        const año = date.getFullYear();
+        const horas = date.getHours();
+        const minutos = date.getMinutes();
+        const diaFormatado = dia < 10 ? `0${dia}` : dia;
+        const mesFormatado = mes < 10 ? `0${mes}` : mes;
+        const horasFormatadas = horas < 10 ? `0${horas}` : horas;
+        const minutosFormatados = minutos < 10 ? `0${minutos}` : minutos;
+      
+        const fechaHoraFormateada = `${diaFormatado}/${mesFormatado}/${año} - ${horasFormatadas}:${minutosFormatados}`;
+      
+        return fechaHoraFormateada;
       }
 
       const date = utcParser(new Date(), 6);
@@ -158,30 +207,14 @@ const ListSection = () => {
               <Text>{languageModule.lang(language, "carrier")}{": "}{event.carrier.name}</Text>
               <Text>
               {languageModule.lang(language, "certified")}{": "}
-              {`${
-                          event?.certified?.value
-                            ? `${new Date(
-                                event.certified.timeStamp
-                              ).getDate()} / ${new Date(
-                                event.certified.timeStamp
-                              ).getMonth()} / ${new Date(
-                                event.certified.timeStamp
-                              ).getYear()} - ${new Date(
-                                event.certified.timeStamp
-                              ).getHours()}:${new Date(
-                                event.certified.timeStamp
-                              ).getMinutes()}`
-                            : "No"
-                        } `}
+              {event?.certified?.value
+                ? convertirTimestampAFechaYHora(event.certified.timeStamp._seconds)
+                : "No"}
               </Text>
-
               {/* Opciones de edición/visualización/eliminación */}
               <View style={{ position: 'absolute', top: 10, right: 10 }}>
                 <TouchableOpacity
-                  onPress={() => {
-                    // Acción para ver/editar el evento
-                    console.log('Ver/Editar evento:', event.id);
-                  }}
+                  onPress={() => openModal(event)}
                 >
                   <MaterialIcons name="edit" size={24} />
                 </TouchableOpacity>
@@ -200,9 +233,9 @@ const ListSection = () => {
       </View>
     </ScrollView>
       );
-    }
+  }
 
-    function eventDetailsDialogFn() {
+  function eventDetailsDialogFn() {
       return (
         <Overlay
           isVisible={eventDetailsDialog}
@@ -1050,8 +1083,213 @@ const ListSection = () => {
           </View>
         </Overlay>
       );
-    }
+  }
 
+  function editEvent() {
+      return (
+        <View>
+          <Modal visible={modalVisible} animationType="slide">
+          <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>{languageModule.lang(language,traducirStatus(selectedEvent?.dutyStatus))}</Text>
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "sequenceIDNumber")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.sequenceIDNumber?.decimal} - ${selectedEvent?.sequenceIDNumber?.hexadecimal}`}
+            // onChangeText={(text) => {
+            //   setSelectedEvent({ ...selectedEvent, id: text });
+            // }}
+            placeholder={`${selectedEvent?.sequenceIDNumber?.decimal} - ${selectedEvent?.sequenceIDNumber?.hexadecimal}`}
+          />
+          {/*-----------------------*/}
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "truckVIN")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.cmv?.vin}`}
+            placeholder={`${selectedEvent?.cmv?.vin}`}
+            onChangeText={(text) => {
+              setSelectedEvent((prevEvent) => ({
+                ...prevEvent,
+                cmv: { ...prevEvent.cmv, vin: text },
+              }));
+            }}
+          />
+          {/*-----------------------*/}
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "truckNumber")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.cmv?.number}`}
+            placeholder={`${selectedEvent?.cmv?.number}`}
+            onChangeText={(text) => {
+              setSelectedEvent((prevEvent) => ({
+                ...prevEvent,
+                cmv: { ...prevEvent.cmv, number: text },
+              }));
+            }}
+          />
+          {/*-----------------------*/}
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "powerUnitNumber")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.cmv?.powerUnitNumber}`}
+            placeholder={`${selectedEvent?.cmv?.powerUnitNumber}`}
+            onChangeText={(text) => {
+              setSelectedEvent((prevEvent) => ({
+                ...prevEvent,
+                cmv: { ...prevEvent.cmv, powerUnitNumber: text },
+              }));
+            }}
+          />
+          {/*-----------------------*/}
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, 'shippingDocumentNumber')}</Text>
+          <TextInput
+            style={styles.input}
+            value={numeroDeDocumentoDeEnvio}
+            onChangeText={(text) => updateState({ numeroDeDocumentoDeEnvio: text })}
+          />
+          {/*-----------------------*/}
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "recordStatus")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.recordStatus}`}
+            placeholder={`${selectedEvent?.recordStatus}`}
+          />
+          {/*-----------------------*/}
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "recordOrigin")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.recordOrigin}`}
+            placeholder={`${selectedEvent?.recordOrigin}`}
+          />
+          {/*-----------------------*/}
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "type")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.type}`}
+            placeholder={`${selectedEvent?.type}`}
+          />
+          {/*-----------------------*/}
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "code")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.code}`}
+            placeholder={`${selectedEvent?.code}`}
+          />
+          {/*-----------------------*/}
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "startTime")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.geoTimeStamp?.date.substring(
+              0,
+              2
+            )}/${selectedEvent?.geoTimeStamp?.date.substring(
+              2,
+              4
+            )}/${selectedEvent?.geoTimeStamp?.date.substring(
+              4,
+              6
+            )} - ${selectedEvent?.geoTimeStamp?.time.substring(
+              0,
+              2
+            )}:${selectedEvent?.geoTimeStamp?.time.substring(
+              2,
+              4
+            )}:${selectedEvent?.geoTimeStamp?.time.substring(4, 6)} `}
+            placeholder={`${selectedEvent?.geoTimeStamp?.date.substring(
+              0,
+              2
+            )}/${selectedEvent?.geoTimeStamp?.date.substring(
+              2,
+              4
+            )}/${selectedEvent?.geoTimeStamp?.date.substring(
+              4,
+              6
+            )} - ${selectedEvent?.geoTimeStamp?.time.substring(
+              0,
+              2
+            )}:${selectedEvent?.geoTimeStamp?.time.substring(
+              2,
+              4
+            )}:${selectedEvent?.geoTimeStamp?.time.substring(4, 6)} `}
+          />
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "accumulatedVehicleMiles")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.acumulatedVehicleMiles}`}
+            placeholder={`${selectedEvent?.acumulatedVehicleMiles}`}
+          />
+          {/*-----------------------*/}
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "elapsedEngineHours")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.elapsedEngineHours}`}
+            placeholder={`${selectedEvent?.elapsedEngineHours}`}
+          />
+          {/*-----------------------*/}   
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "latitude")}{" & "}{languageModule.lang(language, "longitude")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.geoTimeStamp?.latitude} , ${selectedEvent?.geoTimeStamp?.longitude}`}
+            placeholder={`${selectedEvent?.geoTimeStamp?.latitude} , ${selectedEvent?.geoTimeStamp?.longitude}`}
+          />
+          {/*-----------------------*/}   
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "distanceSinceLastValidCoordinates")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.distanceSinceLastValidCoordinates}`}
+            placeholder={`${selectedEvent?.distanceSinceLastValidCoordinates}`}
+          />
+          {/*-----------------------*/}     
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "malfunctionIndicatorStatus")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.malfunctionIndicatorStatusforELD}`}
+            placeholder={`${selectedEvent?.malfunctionIndicatorStatusforELD}`}
+          />
+          {/*-----------------------*/}
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "dataDiagnosticEventIndicatorStatus")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.dataDiagnosticEventIndicatorStatusforDriver}`}
+            placeholder={`${selectedEvent?.dataDiagnosticEventIndicatorStatusforDriver}`}
+          />
+          {/*-----------------------*/}
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "commentOrAnnotation")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.commentOrAnnotation}`}
+            placeholder={`${selectedEvent?.commentOrAnnotation}`}
+          />
+          {/*-----------------------*/}
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "driversLocationDescription")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.locationDescription}`}
+            placeholder={`${selectedEvent?.locationDescription}`}
+          />
+          {/*-----------------------*/}
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "dataCheckValue")}</Text>
+          <TextInput
+            style={styles.input}
+            value={`${selectedEvent?.eventDataCheckValue}`}
+            placeholder={`${selectedEvent?.eventDataCheckValue}`}
+          />
+          {/*-----------------------*/}
+        </View>    
+        </ScrollView>  
+          {/* Botones */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.cancelButton} onPress={closeModal}>
+              <Text style={styles.buttonText}>{languageModule.lang(language, 'cancel')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.saveButton} onPress={closeModal}>
+              <Text style={styles.buttonText}>{languageModule.lang(language, 'save')}</Text>
+            </TouchableOpacity>
+          </View>
+      </Modal>
+        </View>
+      );
+  }
 
   return (
     <View style={styles.sectionContainer}>
@@ -1060,16 +1298,66 @@ const ListSection = () => {
           <ActivityIndicator size="large" color="#4CAF50" />
         </View>
       ) : driverEvents.length === 0 ? (
-        <Text>No hay registros disponibles</Text>
+        <Text>{languageModule.lang(language, 'thereAreNoRecords')}</Text>
       ) : (
         <Logs />
       )}
       {eventDetailsDialogFn()}
+      {editEvent()}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: '#ffffff', // Color verde del diseño
+    paddingHorizontal: 20,
+    paddingVertical: 50,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#888',
+    borderRadius: 5,
+    padding: 10,
+    marginVertical: 10,
+    width: '100%',
+    height: 40,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginTop: 45,
+    top: -25,
+  },
+  saveButton: {
+    borderWidth: 1,
+    borderColor: '#888',
+    padding: 10,
+    borderRadius: 5,
+    width: '45%',
+    alignItems: 'center',
+  },
+  cancelButton: {
+    borderWidth: 1,
+    borderColor: '#888',
+    padding: 10,
+    borderRadius: 5,
+    width: '45%',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'black',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   sectionContainer: {
     flex: 1,
     marginBottom: 20,

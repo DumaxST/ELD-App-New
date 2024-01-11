@@ -693,7 +693,7 @@ const ListSection = () => {
           <ActivityIndicator size="large" color="#4CAF50" />
         </View>
       ) : unidentifiedEvents.length === 0 ? (
-        <Text>{languageModule.lang(language, 'thereIsNoDataAvailable')}</Text>
+        <Text>{languageModule.lang(language, 'thereAreNoRecords')}</Text>
       ) : (
         <Logs />
       )}

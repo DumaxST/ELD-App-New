@@ -126,8 +126,9 @@ const PrincipalScreen = ({ navigation }) => {
               );
             }
             return;
-          case "YM":
-          case "PC":
+            //Issue terminado desde otro punto del sprint
+          case "YM":  //Agregamos solo un comentario 
+          case "PC":  //Aqui tambien
             return setAnnotationDialog(true);
           default:
             return postEvent(1);
@@ -1197,7 +1198,7 @@ const PrincipalScreen = ({ navigation }) => {
       shadowOpacity: 0.3,
       shadowRadius: 3.84,
       elevation: 35,
-      zIndex: 2,
+      zIndex: 2,                 // Numero superior en zIndex para superponer el boton, issue completado en otro anterior
       borderWidth: 1,
       borderColor: '#4CAF50'
     },
