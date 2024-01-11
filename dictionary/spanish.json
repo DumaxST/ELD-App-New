@@ -121,5 +121,9 @@
     "powerUnitNumber": "Número de unidad de potencia",
     "Agree": "Aceptar",
     "NotReady": "No estoy listo",
+    "youCantCertify": "No puedes certificar si no hay eventos durante el día de hoy. Inténtalo más tarde.",
+    "termsOfCertification": "“Por la presente certifico que mis entradas de datos y mi registro de estado de servicio durante este período de 24 horas son verdaderos y correctos.”",
+    "thereAreNoRecords": "No hay registros disponibles",
+    "allRecordsAreCertified": "Todos los registros de las ultimas 24hrs están certificados"
     "isNotAllowedanAdmin": "No está permitido que un usuario administrador inicie sesión, por favor contacte a soporte"
 }
