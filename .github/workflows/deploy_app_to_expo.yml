@@ -43,23 +43,16 @@ jobs:
             else
                 echo "Pull request is not ready to be merged."
             fi
-          
-        - name: Install Dependencies
-          run: npm ci
 
         - name: Install Expo Application Services CLI
           run: npm install -g eas-cli
 
-        - name: Deploy to Expo Preview Channel
-          run: eas build --platform all --profile preview --non-interactive
-          env:
-            EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-            EAS_BUILD_PROFILE: preview
-            EAS_CHANNEL: ${{ github.event.pull_request.head.ref }}
-            EXPO_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.EXPO_ANDROID_KEYSTORE_PASSWORD }}
-            EXPO_ANDROID_KEY_PASSWORD: ${{ secrets.EXPO_ANDROID_KEY_PASSWORD }}
-            EXPO_ANDROID_KEY_ALIAS: ${{ secrets.EXPO_ANDROID_KEY_ALIAS }}
-                
+        - name: EAS Login
+          run: eas login --non-interactive --apiKey ${{ secrets.EXPO_TOKEN }}
+  
+        - name: Publish Update to EAS
+          run: eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR #${{ github.event.pull_request.number }}"
+  
       
         - name: Check if PR is ready
           if: steps.check_ready.outputs.ready == 'ready'
