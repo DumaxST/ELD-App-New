@@ -48,9 +48,8 @@ jobs:
           run: npm install -g eas-cli
         
         - name: Expo Login
-          run: expo login --non-interactive --username ${{ secrets.EXPO_CLI_USERNAME }} --password ${{ secrets.EXPO_CLI_PASSWORD }}
+          run: eas login --non-interactive --username ${{ secrets.EXPO_CLI_USERNAME }} --password ${{ secrets.EXPO_CLI_PASSWORD }}
   
-
         - name: EAS Login
           run: eas login --non-interactive --apiKey ${{ secrets.EXPO_TOKEN }}
           
