@@ -35,7 +35,7 @@ jobs:
           run: |
             echo "PR is not ready for deployment; It is in "${{steps.check_ready.outputs.ready}} state". Exiting workflow."
             echo "::error::PR is not ready for deployment."
-            #exit 1
+            exit 1
 
 
         - name: Use Node.js
@@ -70,24 +70,50 @@ jobs:
           run: npm install @config-plugins/react-native-ble-plx
 
         - name: Publish Update to EAS
-          id: eas_update
+          run: eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR ${{ github.event.pull_request.number }}"
+  
+        - name: Link Expo preview channel with JIRA issue
           run: |
-            OUTPUT=$(eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR ${{ github.event.pull_request.number }}" 2>&1)
-            echo "::set-output name=result::$OUTPUT"
+            # Construct the Expo preview channel URL
+            EXPO_URL="exp://exp.host/@dumax_st/ELD?release-channel=${{ github.event.pull_request.head.ref }}"
 
-        - name: Comment PR
-          uses: actions/github-script@v5
-          with:
-            script: |
-              const issue_number = context.issue.number;
-              const output = `${{ steps.eas_update.outputs.result }}`;
-              github.rest.issues.createComment({
-                issue_number: issue_number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: output
-              });
-          
+            # Update the JIRA issue description with the Expo URL
+            curl -X PUT -H "Content-Type: application/json" \
+                -d '{
+                      "fields": {
+                        "description": {
+                          "type": "doc",
+                          "version": 1,
+                          "content": [
+                            {
+                              "type": "paragraph",
+                              "content": [
+                                {
+                                  "text": "Expo preview channel: ",
+                                  "type": "text"
+                                },
+                                {
+                                  "type": "text",
+                                  "text": "'$EXPO_URL'",
+                                  "marks": [
+                                    {
+                                      "type": "link",
+                                      "attrs": {
+                                        "href": "'$EXPO_URL'"
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }' \
+                -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+                https://codingcloud-online.atlassian.net/rest/api/3/issue/${{ env.JIRAISSUEID }}    
+
+
         - name: Check if PR is ready
           if: steps.check_ready.outputs.ready == 'approved'
           run: |
@@ -101,3 +127,4 @@ jobs:
                 -d '{"transition":{"id":"'$TRANSITION_ID'"}}' \
                 -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
                 https://codingcloud-online.atlassian.net/rest/api/3/issue/${{ env.JIRAISSUEID }}/transitions
+
