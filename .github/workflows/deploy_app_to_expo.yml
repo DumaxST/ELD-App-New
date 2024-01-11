@@ -18,6 +18,26 @@ jobs:
         steps:
         - uses: actions/checkout@v2
 
+        - name: Check if PR is ready
+          id: check_ready
+          run: |
+            ready="not approved"
+            if [[ "${{ github.event.review.state }}" == "approved" ]]; then
+              ready="approved"
+              echo "PR is ready for deployment and JIRA should be transitioned."
+            else
+              echo "PR is not ready for deployment and JIRA issue will not be transitioned."
+            fi
+            echo "::set-output name=ready::${ready}"
+
+        - name: PR is not ready
+          if: steps.check_ready.outputs.ready != 'approved'
+          run: |
+            echo "PR is not ready for deployment; It is in "${{steps.check_ready.outputs.ready}} state". Exiting workflow."
+            echo "::error::PR is not ready for deployment."
+            exit 1
+
+
         - name: Use Node.js
           uses: actions/setup-node@v2
           with:
@@ -33,16 +53,6 @@ jobs:
             FULL_STRING="${{ github.event.pull_request.head.ref }}"
             JIRAISSUEID=$(echo $FULL_STRING | cut -d'-' -f1,2)
             echo "JIRAISSUEID=$JIRAISSUEID" >> $GITHUB_ENV
-        
-            
-        - name: Check if PR is ready
-          id: check_ready
-          run: |
-            if [[ "${{ github.event.review.state }}" == "approved" ]]; then
-                echo "::set-output name=ready::$PR_READY"
-            else
-                echo "Pull request is not ready to be merged."
-            fi
 
         - name: Install Expo CLI
           run: npm install -g expo-cli
@@ -60,11 +70,26 @@ jobs:
           run: npm install @config-plugins/react-native-ble-plx
 
         - name: Publish Update to EAS
-          run: eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR ${{ github.event.pull_request.number }}"
-  
-      
+          id: eas_update
+          run: |
+            OUTPUT=$(eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR ${{ github.event.pull_request.number }}" 2>&1)
+            echo "::set-output name=result::$OUTPUT"
+
+        - name: Comment PR
+          uses: actions/github-script@v5
+          with:
+            script: |
+              const issue_number = context.issue.number;
+              const output = `${{ steps.eas_update.outputs.result }}`;
+              github.rest.issues.createComment({
+                issue_number: issue_number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              });
+          
         - name: Check if PR is ready
-          if: steps.check_ready.outputs.ready == 'ready'
+          if: steps.check_ready.outputs.ready == 'approved'
           run: |
             echo "Pull request is ready to be merged => Transitioning JIRA issue ${{ env.JIRAISSUEID }} to Testing."
             # Transition the JIRA issue.
@@ -76,8 +101,3 @@ jobs:
                 -d '{"transition":{"id":"'$TRANSITION_ID'"}}' \
                 -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
                 https://codingcloud-online.atlassian.net/rest/api/3/issue/${{ env.JIRAISSUEID }}/transitions
-
-        - name: PR is not ready
-          if: steps.check_ready.outputs.ready != 'ready'
-          run: echo "PR is not ready for deployment and JIRA issue will not be transitioned."
-                exit 1
