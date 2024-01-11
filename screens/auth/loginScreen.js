@@ -294,6 +294,11 @@ const LoginScreen = ({navigation, handleLogin}) => {
       openErrorModal();
       return;
     }else{
+      if (!usuario) {
+        errorMessages.push([languageModule.lang(language, 'userHOS').replace("UsuarioHOS", "El usuario HOS") + " " + languageModule.lang(language, 'isrequired')]);
+        openErrorModal();
+        return;
+      }else{
       await getTheUserIsAdmin(carrierID, usuario).then(async (res) => {
         //Aqui validamos si el usuario es admin o no
         if(res == false){
@@ -359,7 +364,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
         }
       })
     }
-
+    }
   };
   
   const openErrorModal = () => {
