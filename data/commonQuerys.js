@@ -2,16 +2,8 @@ import { geoTimeStamp } from "../components/eldFunctions";
 import { currentCMV, getCurrentDriver } from "../config/localStorage";
 import { getAxios, postAxios, putAxios } from "./axiosConfig";
 
-//*-----------------BEFORE AUTHENTICATION---------------------------------*//
-export const authCarrierDriver = async (userName, userPsw) => {
-  return await getAxios("/api/carrier/driver/auth", {
-    userName: userName,
-    userPsw: userPsw,
-  }).catch((err) => {
-    console.error("authCarrierDriver", err);
-  });
-};
-//*-----------------NEW AUTHENTICATION----------------------------------*//
+
+//*-----------------START-loginScreen----------------------------------*//
 
 export const authDriver = async (userName, carrierID, language, password) => {
   return await postAxios("/api/auth/login", {
@@ -33,6 +25,19 @@ export const getCarriersOptions = async () => {
     console.error("authDriver", err);
   });
 }
+
+export const getTheUserIsAdmin = async (carrierID, userName) => {
+  return await getAxios("/api/auth/isAdmin", {
+    carrierID: carrierID,
+    userName: userName
+  }).then((res) =>{
+    return res
+  }).catch((err) => {
+    console.error("isAdminAPI Fallo", err);
+  });
+}
+
+//*-----------------FINISH-loginScreen----------------------------------*//
 
 export const eld = {
   getAccuracy: async (carrierID, cmvID) => {
