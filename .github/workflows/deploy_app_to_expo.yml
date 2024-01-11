@@ -71,49 +71,45 @@ jobs:
         - name: Publish Update to EAS
           run: eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR ${{ github.event.pull_request.number }}"
   
-        - name: Link Expo preview channel with JIRA issue
+        - name: Add comment to JIRA issue
           run: |
             # Construct the Expo preview channel URL
             EXPO_URL="exp://exp.host/@dumax_st/ELD?release-channel=${{ github.event.pull_request.head.ref }}"
-
-            # Update the JIRA issue description with the Expo URL
-            curl -X PUT -H "Content-Type: application/json" \
-                -d '{
-                      "fields": {
-                        "description": {
-                          "type": "doc",
-                          "version": 1,
-                          "content": [
+            curl -X POST -H "Content-Type: application/json" \
+              -d '{
+                "body": {
+                  "type": "doc",
+                  "version": 1,
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "text": "Preview Branch Channel: ",
+                          "type": "text"
+                        },
+                        {
+                          "text": "'$EXPO_URL'",
+                          "type": "text",
+                          "marks": [
                             {
-                              "type": "paragraph",
-                              "content": [
-                                {
-                                  "text": "Expo preview channel: ",
-                                  "type": "text"
-                                },
-                                {
-                                  "type": "text",
-                                  "text": "'$EXPO_URL'",
-                                  "marks": [
-                                    {
-                                      "type": "link",
-                                      "attrs": {
-                                        "href": "'$EXPO_URL'"
-                                      }
-                                    }
-                                  ]
-                                }
-                              ]
+                              "type": "link",
+                              "attrs": {
+                                "href": "'$EXPO_URL'"
+                              }
                             }
                           ]
                         }
-                      }
-                    }' \
-                -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
-                https://codingcloud-online.atlassian.net/rest/api/3/issue/${{ env.JIRAISSUEID }}    
+                      ]
+                    }
+                  ]
+                }
+              }' \
+              -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+              https://codingcloud-online.atlassian.net/rest/api/3/issue/$JIRAISSUEID/comment
 
 
-        - name: Check if PR is ready
+        - name: Transsiton JIRA issue to Testing when PR is approved
           if: steps.check_ready.outputs.ready == 'approved'
           run: |
             echo "Pull request is ready to be merged => Transitioning JIRA issue ${{ env.JIRAISSUEID }} to Testing."
