@@ -85,7 +85,7 @@ jobs:
                       "type": "paragraph",
                       "content": [
                         {
-                          "text": "Preview Branch Channel: ${{steps.firebase-deploy.outputs.details_url}} \n Expire in 5 days: ${{steps.firebase-deploy.outputs.expire_time}}",
+                          "text": "Preview Branch Channel: $EXPO_URL",
                           "type": "text"
                         }
                       ]
