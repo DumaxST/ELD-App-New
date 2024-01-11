@@ -54,10 +54,10 @@ jobs:
           run: echo $EXPO_CLI_PASSWORD | expo login --non-interactive --username $EXPO_CLI_USERNAME
           
         - name: Publish Update to EAS
-          run: eas branch:publish ${{ github.event.pull_request.head.ref }} --message "Publish triggered by PR #${{ github.event.pull_request.number }}"
+          run: eas branch:publish ${{ github.event.pull_request.head.ref }} --message "Publish triggered by PR ${{ github.event.pull_request.number }}"
 
         - name: Publish Update to EAS
-          run: eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR #${{ github.event.pull_request.number }}"
+          run: eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR ${{ github.event.pull_request.number }}"
   
       
         - name: Check if PR is ready
