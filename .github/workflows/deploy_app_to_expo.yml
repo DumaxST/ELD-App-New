@@ -50,7 +50,9 @@ jobs:
         - name: Expo Login
           env:
             EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-          run: expo login --non-interactive
+          run: |
+            expo logout
+            expo login --non-interactive
           
         - name: Publish Update to EAS
           run: eas branch:publish ${{ github.event.pull_request.head.ref }} --message "Publish triggered by PR #${{ github.event.pull_request.number }}"
