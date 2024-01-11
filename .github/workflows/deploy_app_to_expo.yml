@@ -51,7 +51,7 @@ jobs:
           env:
             EXPO_CLI_USERNAME: ${{ secrets.EXPO_CLI_USERNAME }}
             EXPO_CLI_PASSWORD: ${{ secrets.EXPO_CLI_PASSWORD }}
-          run: expo login --non-interactive
+          run: echo $EXPO_CLI_PASSWORD | expo login --non-interactive --username $EXPO_CLI_USERNAME
           
         - name: Publish Update to EAS
           run: eas branch:publish ${{ github.event.pull_request.head.ref }} --message "Publish triggered by PR #${{ github.event.pull_request.number }}"
