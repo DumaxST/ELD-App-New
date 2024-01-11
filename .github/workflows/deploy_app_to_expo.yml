@@ -69,6 +69,8 @@ jobs:
           run: npm install @config-plugins/react-native-ble-plx
 
         - name: Publish Update to EAS
+          env:
+            NODE_OPTIONS: --max_old_space_size=4096
           run: eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR ${{ github.event.pull_request.number }}"
   
         - name: Add comment to JIRA issue
