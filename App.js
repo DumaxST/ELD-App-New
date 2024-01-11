@@ -7,7 +7,6 @@ import  store  from './redux/store'
 
 import LoginScreen from './screens/auth/loginScreen';
 import BluetoothScreen from './screens/bluetooth/bluetoothScreen';
-import Bluetooth1 from './screens/bluetooth/bluetoothScreenComp';
 import PrincipalScreen from './screens/principalScreen/principalScreen';
 import AppMenu from './screens/principalScreen/Menu/appMenu';
 import LogBook from './screens/principalScreen/logBook/logBook';
@@ -68,8 +67,10 @@ const App = () => {
             {props => <AppMenu {...props} handleLogout={handleLogout} />}
           </Stack.Screen>
 
+          {/* <Stack.Screen name="LoginScreen" component={LoginScreen} /> */}
           <Stack.Screen name="BluetoothScreen" component={BluetoothScreen} />
-          <Stack.Screen name="Bluetooth1" component={Bluetooth1} />
+          {/* <Stack.Screen name="PrincipalScreen" component={PrincipalScreen} /> */}
+          {/* <Stack.Screen name="AppMenu" component={AppMenu} /> */}
           <Stack.Screen name="LogBook" component={LogBook} />
           <Stack.Screen name="Diagnostico" component={Diagnostico} />
           <Stack.Screen name="PerfilVehiculo" component={PerfilVehiculo} />
