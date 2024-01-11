@@ -49,7 +49,8 @@ jobs:
           
         - name: Expo Login
           env:
-            EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+            EXPO_CLI_USERNAME: ${{ secrets.EXPO_CLI_USERNAME }}
+            EXPO_CLI_PASSWORD: ${{ secrets.EXPO_CLI_PASSWORD }}
           run: expo login --non-interactive
           
         - name: Publish Update to EAS
