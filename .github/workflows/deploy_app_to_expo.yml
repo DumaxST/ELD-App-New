@@ -1,4 +1,4 @@
-name: Deploy Firbase API
+name: Deploy APP to EXPO PREVIEW CHANNEL
 on: 
     pull_request:
         types: [opened, synchronize, reopened]
@@ -46,10 +46,17 @@ jobs:
 
         - name: Install Expo Application Services CLI
           run: npm install -g eas-cli
+        
+        - name: Expo Login
+          run: expo login --non-interactive --username ${{ secrets.EXPO_CLI_USERNAME }} --password ${{ secrets.EXPO_CLI_PASSWORD }}
+  
 
         - name: EAS Login
           run: eas login --non-interactive --apiKey ${{ secrets.EXPO_TOKEN }}
-  
+          
+        - name: Publish Update to EAS
+          run: eas branch:publish ${{ github.event.pull_request.head.ref }} --message "Publish triggered by PR #${{ github.event.pull_request.number }}"
+
         - name: Publish Update to EAS
           run: eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR #${{ github.event.pull_request.number }}"
   
