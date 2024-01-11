@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import RNPickerSelect from 'react-native-picker-select';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from "@react-navigation/native";
-import { authDriver, eld, getCarriersOptions} from "../../data/commonQuerys";
+import { authDriver, eld, getCarriersOptions, getTheUserIsAdmin} from "../../data/commonQuerys";
 import { getCurrentDriver } from "../../config/localStorage";
 import { useSelector, useDispatch } from "react-redux";
 import * as Location from "expo-location";
@@ -293,61 +293,73 @@ const LoginScreen = ({navigation, handleLogin}) => {
       errorMessages.push([languageModule.lang(language, 'SelectaCarrier')]);
       openErrorModal();
       return;
-    }
-    try {
-      return await authDriver(usuario, carrierID, language, password).then(
-        async (res) => {
-          //Aqui obtenemos las validaciones desde el API y las mandamos a traducir desde nuestro lenguaje APP
-          if(res.errors?.length > 0){
-            for (let i = 0; i < res.errors.length; i++) {
-              if(res.errors[i].param.includes('userName')){
-                errorMessages.push([languageModule.lang(language, 'userHOS').replace("UsuarioHOS", "El usuario HOS") + " " + res.errors[i].msg.toLowerCase().replace('vacío', 'vacia')]);
+    }else{
+      await getTheUserIsAdmin(carrierID, usuario).then(async (res) => {
+        //Aqui validamos si el usuario es admin o no
+        if(res == false){
+          //Si no es admin entonces lo mandamos a autenticar
+          try {
+            return await authDriver(usuario, carrierID, language, password).then(
+              async (res) => {
+                //Aqui obtenemos las validaciones desde el API y las mandamos a traducir desde nuestro lenguaje APP
+                if(res.errors?.length > 0){
+                  for (let i = 0; i < res.errors.length; i++) {
+                    if(res.errors[i].param.includes('userName')){
+                      errorMessages.push([languageModule.lang(language, 'userHOS').replace("UsuarioHOS", "El usuario HOS") + " " + res.errors[i].msg.toLowerCase().replace('vacío', 'vacia')]);
+                    }
+                    if(res.errors[i].param.includes('password')){
+                      errorMessages.push([languageModule.lang(language, 'password').replace("Contraseña", "La contraseña") + " " + res.errors[i].msg.toLowerCase().replace('vacío', 'vacia')]);
+                    }
+                    if(res.errors[i].param.includes('IsuserOnDB?')){
+                      errorMessages.push([res.errors[i].msg]);
+                    }
+                  }
+                  openErrorModal();  //Aqui mostramos el alerta de errores
+                  return;
+                }else{
+                  //Aqui autenticamos desde la funcion de firebase Auth y una vez logrado pasamos a la pantalla
+                   try{
+                    const userCredential = await signInWithEmailAndPassword(auth, res.data[0].email, password);
+                    const user = userCredential.user;
+                    if(user){              
+                      try{ 
+                      dispatch(
+                        setCurrentDriver(
+                          res.data[0],
+                          eldData,
+                          acumulatedVehicleKilometers,
+                          lastDriverStatus
+                        )
+                      );  
+                    handleLogin(); 
+                    navigation.push("BluetoothScreen")  
+                    console.log(typeof user.uid)
+                    AsyncStorage.setItem('token', user.uid);                              
+                    }catch(error){
+                      console.log("Error al pasar al driver:" + error)
+                    }
+                    }else {
+                    setDriver(undefined);
+                    }    
+                   }catch(error){
+                      console.log("Error en la autenticacion de firebase auth:" + error)
+                      errorMessages.push([languageModule.lang(language, 'incorrectUserOrPassword')]);
+                      openErrorModal(); 
+                   }
+                }
               }
-              if(res.errors[i].param.includes('password')){
-                errorMessages.push([languageModule.lang(language, 'password').replace("Contraseña", "La contraseña") + " " + res.errors[i].msg.toLowerCase().replace('vacío', 'vacia')]);
-              }
-              if(res.errors[i].param.includes('IsuserOnDB?')){
-                errorMessages.push([res.errors[i].msg]);
-              }
-            }
-            openErrorModal();  //Aqui mostramos el alerta de errores
-            return;
-          }else{
-            //Aqui autenticamos desde la funcion de firebase Auth y una vez logrado pasamos a la pantalla
-             try{
-              const userCredential = await signInWithEmailAndPassword(auth, res.data[0].email, password);
-              const user = userCredential.user;
-              if(user){              
-                try{ 
-                dispatch(
-                  setCurrentDriver(
-                    res.data[0],
-                    eldData,
-                    acumulatedVehicleKilometers,
-                    lastDriverStatus
-                  )
-                );  
-              handleLogin(); 
-              navigation.push("BluetoothScreen")  
-              console.log(typeof user.uid)
-              AsyncStorage.setItem('token', user.uid);                              
-              }catch(error){
-                console.log("Error al pasar al driver:" + error)
-              }
-              }else {
-              setDriver(undefined);
-              }    
-             }catch(error){
-                console.log("Error en la autenticacion de firebase auth:" + error)
-                errorMessages.push([languageModule.lang(language, 'incorrectUserOrPassword')]);
-                openErrorModal(); 
-             }
-          }
+            );
+          } catch (error) {
+            console.error('Error al iniciar sesión:', error.message);
+          }  
+        }else{
+          //Si es admin entonces le mandamos un error de que no puede iniciar sesion
+          errorMessages.push([languageModule.lang(language, 'isNotAllowedanAdmin')]);
+          openErrorModal();
         }
-      );
-    } catch (error) {
-      console.error('Error al iniciar sesión:', error.message);
-    }  
+      })
+    }
+
   };
   
   const openErrorModal = () => {

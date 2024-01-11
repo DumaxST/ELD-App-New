@@ -121,5 +121,6 @@
     "dataCheckValue": "Data Check Value",
     "powerUnitNumber": "Power Unit Number",
     "Agree": "Agree",
-    "NotReady": "Not Ready"
+    "NotReady": "Not Ready",
+    "isNotAllowedanAdmin": "It is not allowed for an administrator user to log in, please contact support"
 }

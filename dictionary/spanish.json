@@ -120,5 +120,6 @@
     "dataCheckValue": "Valor de verificación de datos",
     "powerUnitNumber": "Número de unidad de potencia",
     "Agree": "Aceptar",
-    "NotReady": "No estoy listo"
+    "NotReady": "No estoy listo",
+    "isNotAllowedanAdmin": "No está permitido que un usuario administrador inicie sesión, por favor contacte a soporte"
 }
