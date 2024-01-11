@@ -53,6 +53,9 @@ jobs:
             EXPO_CLI_PASSWORD: ${{ secrets.EXPO_CLI_PASSWORD }}
           run: echo $EXPO_CLI_PASSWORD | expo login --non-interactive --username $EXPO_CLI_USERNAME
           
+        - name: Install EAS CLI
+          run: npm install -g eas-cli
+
         - name: Publish Update to EAS
           run: eas branch:publish ${{ github.event.pull_request.head.ref }} --message "Publish triggered by PR ${{ github.event.pull_request.number }}"
 
