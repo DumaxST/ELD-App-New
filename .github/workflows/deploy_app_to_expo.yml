@@ -29,7 +29,6 @@ jobs:
               echo "PR is not ready for deployment and JIRA issue will not be transitioned."
             fi
             echo "::set-output name=ready::${ready}"
-
         # - name: PR is not ready
         #   if: steps.check_ready.outputs.ready != 'approved'
         #   run: |
@@ -52,7 +51,6 @@ jobs:
             FULL_STRING="${{ github.event.pull_request.head.ref }}"
             JIRAISSUEID=$(echo $FULL_STRING | cut -d'-' -f1,2)
             echo "JIRAISSUEID=$JIRAISSUEID" >> $GITHUB_ENV
-
         - name: Install Expo CLI
           run: npm install -g expo-cli
           
@@ -76,11 +74,10 @@ jobs:
           run: |
             ANDROID_UPDATE_ID=$(grep "Android update ID" output.txt | awk '{print $4}')
             echo "::set-output name=android_update_id::${ANDROID_UPDATE_ID}"
-
         - name: Add comment to JIRA issue
           run: |
             # Construct the Expo preview channel URL
-            EXPO_URL="exp://u.expo.dev/update/${{ steps.extract_id.outputs.android_update_id }}"
+            EXPO_URL="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=exp://u.expo.dev/update/${{ steps.extract_id.outputs.android_update_id }}"
             curl -X POST -H "Content-Type: application/json" \
               -d '{
                 "body": {
@@ -91,9 +88,9 @@ jobs:
                       "type": "paragraph",
                       "content": [
                         {
-                          "text": "Preview Branch Channel: https://api.qrserver.com/v1/create-qr-code/?size=500x500&data='"'"$EXPO_URL"'"' ",
+                          "text": "Preview Branch Channel: '"$EXPO_URL"'",
                           "type": "text"
-                        },
+                        }
                       ]
                     }
                   ]
@@ -101,7 +98,6 @@ jobs:
               }' \
               -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
               https://codingcloud-online.atlassian.net/rest/api/3/issue/$JIRAISSUEID/comment 
-
         - name: Transsiton JIRA issue to Testing when PR is approved
           if: steps.check_ready.outputs.ready == 'approved'
           run: |
@@ -115,4 +111,3 @@ jobs:
                 -d '{"transition":{"id":"'$TRANSITION_ID'"}}' \
                 -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
                 https://codingcloud-online.atlassian.net/rest/api/3/issue/${{ env.JIRAISSUEID }}/transitions
-
