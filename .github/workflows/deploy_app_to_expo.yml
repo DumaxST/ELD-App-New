@@ -19,7 +19,7 @@ jobs:
         - uses: actions/checkout@v2
 
         - name: Transsiton JIRA issue to Testing when PR is approved!
-          if: steps.check_ready.outputs.ready == 'approved'
+          if: steps.check_ready.outputs.ready != 'approved'
           run: |
             echo "Pull request is ready to be merged => Transitioning JIRA issue ${{ env.JIRAISSUEID }} to Testing."
             # Transition the JIRA issue.
