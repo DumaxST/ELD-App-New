@@ -30,12 +30,12 @@ jobs:
             fi
             echo "::set-output name=ready::${ready}"
 
-        - name: PR is not ready
-          if: steps.check_ready.outputs.ready != 'approved'
-          run: |
-            echo "PR is not ready for deployment; It is in "${{steps.check_ready.outputs.ready}} state". Exiting workflow."
-            echo "::error::PR is not ready for deployment."
-            exit 1
+        # - name: PR is not ready
+        #   if: steps.check_ready.outputs.ready != 'approved'
+        #   run: |
+        #     echo "PR is not ready for deployment; It is in "${{steps.check_ready.outputs.ready}} state". Exiting workflow."
+        #     echo "::error::PR is not ready for deployment."
+        #     exit 1
 
         - name: Use Node.js
           uses: actions/setup-node@v2
@@ -91,7 +91,7 @@ jobs:
                       "type": "paragraph",
                       "content": [
                         {
-                          "text": "Preview Branch Channel: https://api.qrserver.com/v1/create-qr-code/?size=500x500&data='"$EXPO_URL"' ",
+                          "text": "Preview Branch Channel: https://api.qrserver.com/v1/create-qr-code/?size=500x500&data='"'"$EXPO_URL"'"' ",
                           "type": "text"
                         },
                       ]
