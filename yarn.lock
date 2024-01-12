@@ -5529,15 +5529,6 @@ lightningcss@~1.19.0:
   integrity sha512-yV5UR7og+Og7lQC+70DA7a8ta1uiOPnWPJfxa0wnxylev5qfo4P+4iMpzWAdYWOca4jdNQZii+bDL/l+4hUXIA==
   dependencies:
     detect-libc "^1.0.3"
-  optionalDependencies:
-    lightningcss-darwin-arm64 "1.19.0"
-    lightningcss-darwin-x64 "1.19.0"
-    lightningcss-linux-arm-gnueabihf "1.19.0"
-    lightningcss-linux-arm64-gnu "1.19.0"
-    lightningcss-linux-arm64-musl "1.19.0"
-    lightningcss-linux-x64-gnu "1.19.0"
-    lightningcss-linux-x64-musl "1.19.0"
-    lightningcss-win32-x64-msvc "1.19.0"
 
 lilconfig@^2.1.0:
   version "2.1.0"
