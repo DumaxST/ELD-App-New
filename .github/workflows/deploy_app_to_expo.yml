@@ -18,6 +18,20 @@ jobs:
         steps:
         - uses: actions/checkout@v2
 
+        - name: Transsiton JIRA issue to Testing when PR is approved!
+          if: steps.check_ready.outputs.ready != 'approved'
+          run: |
+            echo "Pull request is ready to be merged => Transitioning JIRA issue ELD-556 to Testing."
+            # Transition the JIRA issue.
+            TRANSITION_ID=$(curl -X GET -H "Content-Type: application/json" \
+                -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+                https://codingcloud-online.atlassian.net/rest/api/3/issue/ELD-556/transitions | jq -r '.transitions[] | select(.name=="Functional Testing") | .id')
+            echo "Transition ID: $TRANSITION_ID"
+            curl -X POST -H "Content-Type: application/json" \
+                -d '{"transition":{"id":"'$TRANSITION_ID'"}}' \
+                -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+                https://codingcloud-online.atlassian.net/rest/api/3/issue/ELD-556/transitions
+
         - name: Check if PR is ready
           id: check_ready
           run: |
@@ -35,7 +49,6 @@ jobs:
           run: |
             echo "PR is not ready for deployment; It is in "${{steps.check_ready.outputs.ready}} state". Exiting workflow."
             echo "::error::PR is not ready for deployment."
-            #exit 1
 
         - name: Use Node.js
           uses: actions/setup-node@v2
