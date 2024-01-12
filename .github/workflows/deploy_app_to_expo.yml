@@ -106,7 +106,7 @@ jobs:
                 https://codingcloud-online.atlassian.net/rest/api/3/issue/${{ env.JIRAISSUEID }}/transitions | jq -r '.transitions[] | select(.name=="Functional Testing") | .id')
             echo "Transition ID: $TRANSITION_ID"
             curl -X POST -H "Content-Type: application/json" \
-                -d '{"transition":{"id":"'$TRANSITION_ID'"}}' \
+                -d '{"transition":{"id":"'6'"}}' \
                 -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
                 https://codingcloud-online.atlassian.net/rest/api/3/issue/${{ env.JIRAISSUEID }}/transitions
 
