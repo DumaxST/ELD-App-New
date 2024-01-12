@@ -81,6 +81,8 @@ jobs:
           run: |
             # Construct the Expo preview channel URL
             EXPO_URL="exp://u.expo.dev/update/${{ steps.extract_id.outputs.android_update_id }}"
+            IMAGE_URL="https://example.com/image.jpg"  # Replace with the actual image URL
+
             curl -X POST -H "Content-Type: application/json" \
               -d '{
                 "body": {
@@ -93,6 +95,16 @@ jobs:
                         {
                           "text": "Preview Branch Channel: '"$EXPO_URL"'",
                           "type": "text"
+                        },
+                        {
+                          "type": "hardBreak"
+                        },
+                        {
+                          "type": "image",
+                          "attrs": {
+                            "src": "https://api.qrserver.com/v1/create-qr-code/?size=500x500&data='$IMAGE_URL'",
+                            "alt": "Image"
+                          }
                         }
                       ]
                     }
