@@ -96,7 +96,7 @@ jobs:
               -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
               https://codingcloud-online.atlassian.net/rest/api/3/issue/$JIRAISSUEID/comment 
 
-        - name: Transsiton JIRA issue to Testing when PR is approved!
+        - name: Transsiton JIRA issue to Testing when PR is approved
           if: steps.check_ready.outputs.ready == 'approved'
           run: |
             echo "Pull request is ready to be merged => Transitioning JIRA issue ${{ env.JIRAISSUEID }} to Testing."
