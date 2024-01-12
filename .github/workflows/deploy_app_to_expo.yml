@@ -91,7 +91,7 @@ jobs:
                       "type": "paragraph",
                       "content": [
                         {
-                          "text": "Preview Branch Channel: $EXPO_URL",
+                          "text": "Preview Branch Channel: '"$EXPO_URL"'",
                           "type": "text"
                         }
                       ]
