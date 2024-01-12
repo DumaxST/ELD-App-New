@@ -18,20 +18,6 @@ jobs:
         steps:
         - uses: actions/checkout@v2
 
-        - name: Transsiton JIRA issue to Testing when PR is approved!
-          if: steps.check_ready.outputs.ready != 'approved'
-          run: |
-            echo "Pull request is ready to be merged => Transitioning JIRA issue ${{ env.JIRAISSUEID }} to Testing."
-            # Transition the JIRA issue.
-            TRANSITION_ID=$(curl -X GET -H "Content-Type: application/json" \
-                -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
-                https://codingcloud-online.atlassian.net/rest/api/3/issue/${{ env.JIRAISSUEID }}/transitions | jq -r '.transitions[] | select(.name=="Functional Testing") | .id')
-            echo "Transition ID: $TRANSITION_ID"
-            curl -X POST -H "Content-Type: application/json" \
-                -d '{"transition":{"id":"'6'"}}' \
-                -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
-                https://codingcloud-online.atlassian.net/rest/api/3/issue/${{ env.JIRAISSUEID }}/transitions
-
         - name: Check if PR is ready
           id: check_ready
           run: |
