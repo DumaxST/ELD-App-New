@@ -18,6 +18,7 @@ import { app, auth } from '../../config/firebase'
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import CountryFlag from "react-native-country-flag";
 import { checkAndRequestBluetoothScanPermission } from '../bluetooth/constructor';
+import { startGlobalLocationTracking } from '../../components/ELDlocation';
 
 const languageModule = require('../../global_functions/variables');
 const { width } = Dimensions.get("window");
@@ -40,10 +41,76 @@ const LoginScreen = ({navigation, handleLogin}) => {
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [languageOptions, setLanguageOptions] = useState([]);
   const {eldData,driverStatus,currentDriver,acumulatedVehicleKilometers,lastDriverStatus} = useSelector((state) => state.eldReducer);
-  const [eldAccuracy, setEldAccuracy] = useState(0.02);
+  const [eldAccuracy, setEldAccuracy] = useState();
   const [currentCords, setCurrentCords] = useState({});
   const [driverDistance, setDrivedDistance] = useState(0);
   const [backClickCount, setBackClickCount] = useState(0);
+
+  //necesitamos un undefined driver al cual darle los eventos indefinidos, ya que cada ELD tiene su undefined driver
+  //necesitamos que se pueda obtener un eld antes de que el usuario se loguee
+  const undefinedDriver =     {
+    "id": "Jg6XvXYVCvPCrdIZMOQeZ8WeH3d2",
+    "lastName": "Driver",
+    "emergencyContact": {
+        "phone": {
+            "number": "1234567890"
+        },
+        "name": "Undefined"
+    },
+    "userName": "Undefined",
+    "cmv": {
+        "number": "898562",
+        "vin": "88888888",
+        "id": "c72wNhF4KLheRrtJVaWD" //tiene que ser undefined para cierto cmv y cierto eld
+    },
+    "firstName": "Undefined",
+    "password": "123456789",
+    "eldAcountType": "D",
+    "phone": {
+        "number": "5511223344"
+    },
+    "carrierID": "lqdU1ErwDswdjSTiVEWp",
+    "email": "udriver@dumaxst.mx",
+    "status": true,
+    "yard": true,
+    "personalUse": true,
+    "exemptDriverConfiguration": {
+        "value": 0
+    },
+    "companyID": "XiFEG1Wu9skf3MvvhFNX",
+    "region": {
+        "name": "USA",
+        "id": "gkUCvaAFTlAlfyuC8Xu1"
+    },
+    "carrier": {
+        "name": "CONSOLIDATED TRUCKLOAD INC",
+        "id": "lqdU1ErwDswdjSTiVEWp"
+    },
+    "company": {
+        "name": "CONSOLIDATED TRUCKLOAD INC",
+        "id": "XiFEG1Wu9skf3MvvhFNX"
+    },
+    "base": {
+        "name": "Base Puebla",
+        "id": "IX76nRVfgVDkA6OFE2k8"
+    },
+    "dvirWIFI": false,
+    "exception": false,
+    "yarda": false,
+    "allowException": false,
+    "regla": {
+        "value": "Oilfields, 60 Hours/7 Days",
+        "option": "Oilfields, 60 Hours/7 Days"
+    },
+    "gasUnit": "Int",
+    "hosrasDeComienzo24h": "Midnight",
+    "driverLicense": {
+        "issuingState": "ID",
+        "licenseID": "111111111111111",
+        "expirationDate": "082923"
+    },
+    "displayName": "Undefined Driver"
+};
   
   //Obtenemos los permisos de ubicacion con efectos
   useEffect(() => {
@@ -64,37 +131,16 @@ const LoginScreen = ({navigation, handleLogin}) => {
 
     requestPermissions();
   }, []);
+  
   //Obtenemos la ubicacion con efectos
   useEffect(() => {
-    const startLocationTracking = async () => {
-      const foregroundPermission = await Location.requestForegroundPermissionsAsync();
-
-      if (!foregroundPermission.granted) {
-        console.log("Please grant location permissions");
-        return;
-      }
-
-      const locationOptions = {
-        accuracy: Location.Accuracy.High,
-        distanceInterval: 5,
-      };
-
-      const updateLocation = async () => {
-        const currentLocation = await Location.getCurrentPositionAsync(locationOptions);
-        setCurrentCords({ ...currentLocation.coords, timestamp: currentLocation.timestamp });
-      };
-
-      // Actualizar la ubicación inicial
-      updateLocation();
-
-      // Establecer un intervalo para actualizar continuamente la ubicación
-      const locationInterval = setInterval(updateLocation, 5000); // Actualizar cada 5 segundos (ajústalo según tu necesidad)
-
-      return () => clearInterval(locationInterval); // Limpiar el intervalo al desmontar el componente
-    };
-
-    startLocationTracking();
-  }, []);
+    startGlobalLocationTracking(async (Location) => {
+      setDrivedDistance(await isStillDriving(Location));
+      setCurrentCords({ ...Location?.coords, timestamp: Location.timestamp });
+      dispatch(setTrackingTimeStamp(Location.timestamp));
+      dispatch(setELD({ ...Location, id: "mHlqeeq5rfz3Cizlia23" })); //tenemos que ver de donde sacamos el ELD
+    });
+  }, [currentCords]);
 
   // Obtener la lista de carriers cuando el componente se monta
   useEffect(() => {
@@ -112,7 +158,6 @@ const LoginScreen = ({navigation, handleLogin}) => {
 
     fetchCarriers();
   }, []);
-
 
   //usamos el efecto focus para usar la funcion backaction
   useFocusEffect(
@@ -137,6 +182,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
         dispatch(startEldApp());
   
         await getCurrentDriver().then(async (currentDriver) => {
+        //si ya estamos logeados pasamos a la pantalla de horas de servicio
         if (currentDriver) {    
         return await eld.getAccuracy(currentDriver.carrierID,currentDriver.cmv.id).then(async (accuracy) => {
             setEldAccuracy(accuracy);
@@ -144,12 +190,24 @@ const LoginScreen = ({navigation, handleLogin}) => {
               "eldAccuracy",
               JSON.stringify({ accuracy: accuracy })
               ).then(async () => {
-                    return await startLocationTraking().then(async () => {
-                      AsyncStorage.setItem('token', currentDriver.id);
-                });
+                const userCredential = await signInWithEmailAndPassword(auth, currentDriver.email, password);
+                    const user = userCredential.user;
+                    if(user){
+                        handleLogin(); 
+                        AsyncStorage.setItem('token', user.uid); 
+                        navigation.push("PrincipalScreen")  
+                    }
               })
            });
-        }});
+           //Si no estamos logueados asignamos un accuracy por defecto y esperamos el logueo
+        }else{
+          setEldAccuracy(0.015)
+          return await AsyncStorage.setItem(
+            "eldAccuracy",
+            JSON.stringify({ accuracy: 0.015 })
+            )
+        }
+      });
       } catch (error) {
         console.log("Error al obtener datos del ELD:", error);
       }
@@ -157,34 +215,40 @@ const LoginScreen = ({navigation, handleLogin}) => {
     getData();
   }, []);
   
-  //Hay un error en los efectos con REDUX, chacalo junto con principalScreen!!
-  //Aqui asignamos el currentDriver y los estados del conductor
-  // useEffect(() => {
-  //   if (eldData) {
-  //     dispatch(
-  //       setDriverStatus(
-  //         eldData,
-  //         currentDriver,
-  //         driverStatus,
-  //         acumulatedVehicleKilometers,
-  //         lastDriverStatus,
-  //         1
-  //       )
-  //     );
-  //     setTimeout(() => {
-  //       dispatch(
-  //         hasItStoped(
-  //           eldData,
-  //           currentDriver,
-  //           driverStatus,
-  //           acumulatedVehicleKilometers,
-  //           lastDriverStatus
-  //         )
-  //       );
-  //     }, 3000);
-  //   }
-  // }, [eldData]);
+  //Aqui asignamos el undefined driver y cambiamos el estado si continua o si para el camion
+  const updateDriverStatus = () => {
+    if (eldData) {
+      dispatch(
+        setDriverStatus(
+          eldData,
+          undefinedDriver,
+          driverStatus,
+          acumulatedVehicleKilometers,
+          lastDriverStatus,
+          1
+        )
+      );
+  
+      dispatch(
+        hasItStoped(
+          eldData,
+          undefinedDriver,
+          driverStatus,
+          acumulatedVehicleKilometers,
+          lastDriverStatus
+        )
+      );
+    }
+  };
+  
+  useEffect(() => {
+    updateDriverStatus();
 
+     const updateIntervalId = setInterval(updateDriverStatus, 60000);
+   
+     return () => clearInterval(updateIntervalId);
+  }, [eldData]);
+  
   // Obtenermos nuestro current language desde el AsyncStorage
   useEffect(() => {
     const getPreferredLanguage = async () => {
@@ -203,46 +267,6 @@ const LoginScreen = ({navigation, handleLogin}) => {
 
   
   //Funciones a usar
-  const startLocationTraking = async () => {
-    const foregroundPermission =
-      await Location.requestForegroundPermissionsAsync();
-
-    if (!foregroundPermission.granted) {
-      console.log("Please grant location permissions");
-      return;
-    }
-
-    return Location.watchPositionAsync(
-      {
-        // Tracking options
-        accuracy: Location.Accuracy.High,
-        // timeInterval: 3000,
-        distanceInterval: 5,
-      },
-      async (location) => {
-        /* Location object example:
-        {
-          coords: {
-            accuracy: 20.100000381469727,
-            altitude: 61.80000305175781,
-            altitudeAccuracy: 1.3333333730697632,
-            heading: 288.87445068359375,
-            latitude: 36.7384213,
-            longitude: 3.3463877,
-            speed: 0.051263172179460526,
-          },
-          mocked: false,
-          timestamp: 1640286855545,
-        };
-      */
-        setDrivedDistance(await isStillDriving(location));
-        setCurrentCords({ ...location?.coords, timestamp: location.timestamp });
-        dispatch(setTrackingTimeStamp(location.timestamp));
-        return dispatch(setELD({ ...location, id: "bWuPuaLFPVQxdWH9eGdX" }));
-      }
-    );
-  };
-
   const backAction = () => {
     backClickCount == 1 ? BackHandler.exitApp() : _spring();
     return true;
@@ -287,22 +311,18 @@ const LoginScreen = ({navigation, handleLogin}) => {
   };
 
   const authUser = async () => {
-    //Vamos a obtenerlo desde la base pero lo ocuparemos local por ahora por ser elcarrier de prueba
-    const carrierID = selectedCarrier;
-    if (!carrierID) {
+    if(!currentCords){
+      errorMessages.push([languageModule.lang(language, 'locationNotAvailable')]);
+      openErrorModal();
+      return;
+    }else{     
+         //Vamos a obtenerlo desde la base pero lo ocuparemos local por ahora por ser elcarrier de prueba
+         const carrierID = selectedCarrier;
+         if (!carrierID) {
       errorMessages.push([languageModule.lang(language, 'SelectaCarrier')]);
       openErrorModal();
       return;
-    }else{
-      if (!usuario) {
-        errorMessages.push([languageModule.lang(language, 'userHOS').replace("UsuarioHOS", "El usuario HOS") + " " + languageModule.lang(language, 'isrequired')]);
-        openErrorModal();
-        return;
-      }else{
-      await getTheUserIsAdmin(carrierID, usuario).then(async (res) => {
-        //Aqui validamos si el usuario es admin o no
-        if(res == false){
-          //Si no es admin entonces lo mandamos a autenticar
+         }else{
           try {
             return await authDriver(usuario, carrierID, language, password).then(
               async (res) => {
@@ -322,8 +342,17 @@ const LoginScreen = ({navigation, handleLogin}) => {
                   openErrorModal();  //Aqui mostramos el alerta de errores
                   return;
                 }else{
-                  //Aqui autenticamos desde la funcion de firebase Auth y una vez logrado pasamos a la pantalla
-                   try{
+                  //cambiamos el orden de los factores para manejar errores de formulario
+                  //Antes de realizar el request de isAdmin
+                  //Aqui verificamos que el usuario nosea un admin
+                  return await getTheUserIsAdmin(carrierID, usuario).then(async (isAdmin) => {
+                  if(isAdmin){
+                    errorMessages.push([languageModule.lang(language, 'isNotAllowedanAdmin')]);
+                    openErrorModal();  //Aqui mostramos el alerta de errores
+                    return;
+                    }else{
+                        //Aqui autenticamos desde la funcion de firebase Auth y una vez logrado pasamos a la pantalla
+                        try{
                     const userCredential = await signInWithEmailAndPassword(auth, res.data[0].email, password);
                     const user = userCredential.user;
                     if(user){              
@@ -336,34 +365,37 @@ const LoginScreen = ({navigation, handleLogin}) => {
                           lastDriverStatus
                         )
                       );  
-                    handleLogin(); 
-                    navigation.push("BluetoothScreen")  
-                    console.log(typeof user.uid)
-                    AsyncStorage.setItem('token', user.uid);                              
+                    return await eld.getAccuracy(res.data[0].carrierID,res.data[0].cmv.id).then(async (accuracy) => {
+                      setEldAccuracy(accuracy);
+                      return await AsyncStorage.setItem(
+                      "eldAccuracy",
+                      JSON.stringify({ accuracy: accuracy })
+                      ).then(async () => {
+                        handleLogin(); 
+                        AsyncStorage.setItem('token', user.uid); 
+                        navigation.push("BluetoothScreen")  
+                      })
+                    });                             
                     }catch(error){
                       console.log("Error al pasar al driver:" + error)
                     }
                     }else {
                     setDriver(undefined);
                     }    
-                   }catch(error){
+                        }catch(error){
                       console.log("Error en la autenticacion de firebase auth:" + error)
                       errorMessages.push([languageModule.lang(language, 'incorrectUserOrPassword')]);
                       openErrorModal(); 
-                   }
+                        }
+                    }
+                  })
                 }
               }
             );
           } catch (error) {
             console.error('Error al iniciar sesión:', error.message);
           }  
-        }else{
-          //Si es admin entonces le mandamos un error de que no puede iniciar sesion
-          errorMessages.push([languageModule.lang(language, 'isNotAllowedanAdmin')]);
-          openErrorModal();
-        }
-      })
-    }
+         }
     }
   };
   
@@ -671,31 +703,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     height: 40,
   }
-});
-
-const pickerSelectStyles = StyleSheet.create({
-  pickerIOS: {
-    fontSize: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: 'gray',
-    borderRadius: 4,
-    color: 'black',
-    paddingRight: 30,
-    backgroundColor: '#f0f0f0',
-  },
-  pickerAndroid: {
-    fontSize: 14,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderWidth: 0.5,
-    borderColor: 'purple',
-    borderRadius: 8,
-    color: 'black',
-    paddingRight: 30,
-    backgroundColor: '#fff', // Cambia el color de fondo para Android aquí
-  },
 });
 
 export default LoginScreen;

@@ -126,5 +126,6 @@
     "termsOfCertification": "“I hereby certify that my data entries and my record of duty status for this 24‐hour period are true and correct.”",
     "thereAreNoRecords": "There are no records available",
     "allRecordsAreCertified": "All records have been certified in the last 24 hours.",
-    "isNotAllowedanAdmin": "It is not allowed for an administrator user to log in, please contact support"
+    "isNotAllowedanAdmin": "It is not allowed for an administrator user to log in, please contact support",
+    "locationNotAvailable": "Location not available, please wait or try again later"
 }

@@ -39,22 +39,23 @@ const AppMenu = ({ navigation, handleLogout }) => {
   }, []);
 
   const logOutDriver = async () => {
-      await AsyncStorage.removeItem('token');
-      dispatch(
-        logOutCurrentDriver(
-          currentDriver,
-          eldData,                           //Arreglar!!
-          acumulatedVehicleKilometers,      //Aqui es importante borrar bien el currentDriver y los datos del async
-          lastDriverStatus
-        )
-      );
-      handleLogout();
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'LoginScreen' }],
-      });
-  }
-
+    // Eliminar el token y los datos del conductor directamente
+    await AsyncStorage.removeItem('token');
+  
+    // Despachar la acción y esperar a que se complete
+    await new Promise(resolve => {   
+      dispatch(logOutCurrentDriver(currentDriver, eldData, acumulatedVehicleKilometers, lastDriverStatus))
+        .then(() => resolve());
+    });
+  
+    // Llamar a handleLogout y navegar a la pantalla de login
+    handleLogout();
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'LoginScreen' }],
+    });
+  };
+  
   function header() {
     return (
       <View
