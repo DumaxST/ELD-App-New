@@ -50,26 +50,25 @@ export const drivedDistance = (prevCoords, currentCoords) => {
   return R * c;
 };
 
-export const isStillDriving = async (currentLocation, accuracy) => {
-  return await eldAccuracy().then(async (eld) => {
-    return await lastEldData().then(async (lastData) => {
-      if (!lastData?.coords) {
-        return await AsyncStorage.setItem(
-          "lastEldData",
-          JSON.stringify(currentLocation)
-        ).then(() => {
-          return false;
-        });
-      }
-      const distance = drivedDistance(
-        lastData?.coords,
-        currentLocation?.coords
-      );
-      if (distance > eld.accuracy) {
-        return distance;
-      } else {
-        return 0;
-      }
-    });
-  });
+export const isStillDriving = async (currentLocation) => {
+  try {
+    const eld = await eldAccuracy();
+    const lastData = await lastEldData();
+
+    if (!lastData?.coords) {
+      await AsyncStorage.setItem("lastEldData", JSON.stringify(currentLocation));
+      return false;
+    }
+
+    const distance = drivedDistance(lastData?.coords, currentLocation?.coords);
+
+    console.log("distance", distance);
+    console.log("accuracy", eld.accuracy);
+
+    return distance > eld.accuracy ? distance : 0;
+  } catch (error) {
+    console.error("Error in isStillDriving:", error);
+    return 0;
+  }
 };
+

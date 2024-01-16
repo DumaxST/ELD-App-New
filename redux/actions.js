@@ -260,7 +260,8 @@ export const logOutCurrentDriver = (
   lastDriverStatus
 ) => {
   return async (dispatch) => {
-    return await await postDriverEvent(
+    // Se corrigió el doble "await"
+    await postDriverEvent(
       {
         recordStatus: 1,
         recordOrigin: 1,
@@ -273,17 +274,18 @@ export const logOutCurrentDriver = (
       eldData,
       acumulatedVehicleKilometers,
       lastDriverStatus
-    ).then(async () => {
-      return await AsyncStorage.removeItem("currentDriver").then(async () => {
-        return await AsyncStorage.removeItem("currentCMV").then(async () => {
-          return await AsyncStorage.removeItem("currentELD").then(() => {
-            return dispatch({
-              type: LOGOUT_CURRENT_DRIVER,
-              value: currentDriver,
-            });
-          });
-        });
+    ).then(async () => {   
+      await AsyncStorage.removeItem("currentDriver");
+      await AsyncStorage.removeItem("currentCMV");
+      await AsyncStorage.removeItem("currentELD");
+      await AsyncStorage.removeItem("eldAccuracy");
+
+      // Se utiliza directamente "dispatch" para enviar la acción
+      dispatch({
+        type: LOGOUT_CURRENT_DRIVER,
+        value: currentDriver,
       });
     });
   };
 };
+
