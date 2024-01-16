@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const axiosURL = process.env.EXPO_PUBLIC_API_URL;
+export const axiosURL = process.env.ELD_API;
 
 export const getAxios = async (ref, params) => {
   // axios.defaults.timeout = 30000;
