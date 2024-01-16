@@ -14,8 +14,7 @@ permissions:
 jobs:
     build:
         runs-on: ubuntu-latest
-        environment: 
-          name: development
+        environment: development
 
         steps:
         - uses: actions/checkout@v2
@@ -31,7 +30,7 @@ jobs:
               echo "PR is not ready for deployment and JIRA issue will not be transitioned."
             fi
             echo "::set-output name=ready::${ready}"
-            
+
         # - name: PR is not ready
         #   if: steps.check_ready.outputs.ready != 'approved'
         #   run: |
@@ -70,8 +69,6 @@ jobs:
           run: npm install @config-plugins/react-native-ble-plx
 
         - name: Publish Update to EAS and save output
-          env:
-            EXPO_PUBLIC_ELD_API: ${{ vars.EXPO_PUBLIC_ELD_API }}
           run: eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR ${{ github.event.pull_request.number }}" | tee output.txt
   
         - name: Extract Android update ID
