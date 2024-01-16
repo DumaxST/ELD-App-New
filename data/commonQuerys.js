@@ -53,7 +53,7 @@ export const eld = {
 };
 
 // DRIVER EVENTS ===============================================================
-export const getDriverEvents = async (eldID, certified, timeFrame) => {
+export const getDriverEvents = async (eldID, certified, timeFrame, undefined) => {
   return await getCurrentDriver()
     .then(async (currentDriver) => {
       return await getAxios("/api/carrier/driver/events", {
