@@ -19,15 +19,6 @@ jobs:
         steps:
         - uses: actions/checkout@v2
 
-        - name: Check if environment variable is set
-          run: |
-            if [[ -z "${{ vars.EXPO_PUBLIC_ELD_API }}" ]]; then
-              echo "EXPO_PUBLIC_ELD_API is not set"
-              exit 1
-            else
-              echo "EXPO_PUBLIC_ELD_API is set"
-            fi
-
         - name: Check if PR is ready
           id: check_ready
           run: |
@@ -77,6 +68,8 @@ jobs:
           run: npm install @config-plugins/react-native-ble-plx
 
         - name: Publish Update to EAS and save output
+          env:
+            EXPO_PUBLIC_API_URL: ${{ vars.EXPO_PUBLIC_API_URL }}
           run: eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR ${{ github.event.pull_request.number }}" | tee output.txt
   
         - name: Extract Android update ID
