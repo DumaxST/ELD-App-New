@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from "react-redux";
 import { logOutCurrentDriver } from "../../../redux/actions";
+import {removeToken} from '../../../data/commonQuerys'
 
 const languageModule = require('../../../global_functions/variables');
 const { width } = Dimensions.get("window");
@@ -40,19 +41,24 @@ const AppMenu = ({ navigation, handleLogout }) => {
 
   const logOutDriver = async () => {
     // Eliminar el token y los datos del conductor directamente
-    await AsyncStorage.removeItem('token');
+    const token = await AsyncStorage.getItem('token');
+    await removeToken(token).then( async (res) => {
+      if(res?.data?.message == "Token eliminado exitosamente."){
+      await AsyncStorage.removeItem('token');
   
-    // Despachar la acción y esperar a que se complete
-    await new Promise(resolve => {   
-      dispatch(logOutCurrentDriver(currentDriver, eldData, acumulatedVehicleKilometers, lastDriverStatus))
-        .then(() => resolve());
-    });
-  
-    // Llamar a handleLogout y navegar a la pantalla de login
-    handleLogout();
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'LoginScreen' }],
+      // Despachar la acción y esperar a que se complete
+      await new Promise(resolve => {   
+        dispatch(logOutCurrentDriver(currentDriver, eldData, acumulatedVehicleKilometers, lastDriverStatus))
+          .then(() => resolve());
+      });
+    
+      // Llamar a handleLogout y navegar a la pantalla de login
+      handleLogout();
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'LoginScreen' }],
+      });
+      }
     });
   };
   

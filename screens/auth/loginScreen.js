@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import RNPickerSelect from 'react-native-picker-select';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from "@react-navigation/native";
-import { authDriver, eld, getCarriersOptions, getTheUserIsAdmin} from "../../data/commonQuerys";
+import { authDriver, eld, getCarriersOptions, getTheUserIsAdmin, authToken} from "../../data/commonQuerys";
 import { getCurrentDriver } from "../../config/localStorage";
 import { useSelector, useDispatch } from "react-redux";
 import * as Location from "expo-location";
@@ -134,13 +134,18 @@ const LoginScreen = ({navigation, handleLogin}) => {
   
   //Obtenemos la ubicacion con efectos
   useEffect(() => {
-    startGlobalLocationTracking(async (Location) => {
-      setDrivedDistance(await isStillDriving(Location));
-      setCurrentCords({ ...Location?.coords, timestamp: Location.timestamp });
-      dispatch(setTrackingTimeStamp(Location.timestamp));
-      dispatch(setELD({ ...Location, id: "mHlqeeq5rfz3Cizlia23" })); //tenemos que ver de donde sacamos el ELD
-    });
-  }, [currentCords]);
+    const intervalId = setInterval(() => {
+      startGlobalLocationTracking(async (Location) => {
+        setDrivedDistance(await isStillDriving(Location));
+        setCurrentCords({ ...Location?.coords, timestamp: Location.timestamp });
+        dispatch(setTrackingTimeStamp(Location.timestamp));
+        dispatch(setELD({ ...Location, id: "mHlqeeq5rfz3Cizlia23" })); //tenemos que ver de donde sacamos el ELD
+      });
+    }, 10000); // Actualiza la ubicación cada 10 segundos
+  
+    // Limpia el intervalo cuando el componente se desmonta
+    return () => clearInterval(intervalId);
+  }, [eldData]);
 
   // Obtener la lista de carriers cuando el componente se monta
   useEffect(() => {
@@ -243,11 +248,12 @@ const LoginScreen = ({navigation, handleLogin}) => {
   
   useEffect(() => {
     updateDriverStatus();
+  }, []); // Se ejecuta solo una vez al montar el componente
 
-     const updateIntervalId = setInterval(updateDriverStatus, 60000);
-   
-     return () => clearInterval(updateIntervalId);
-  }, [eldData]);
+  useEffect(() => {
+    const updateIntervalId = setInterval(updateDriverStatus, 60000);
+    return () => clearInterval(updateIntervalId);
+  }, []); // Se ejecuta cada minuto
   
   // Obtenermos nuestro current language desde el AsyncStorage
   useEffect(() => {
@@ -352,41 +358,50 @@ const LoginScreen = ({navigation, handleLogin}) => {
                     return;
                     }else{
                         //Aqui autenticamos desde la funcion de firebase Auth y una vez logrado pasamos a la pantalla
-                        try{
+                    try{
                     const userCredential = await signInWithEmailAndPassword(auth, res.data[0].email, password);
                     const user = userCredential.user;
                     if(user){              
                       try{ 
-                      dispatch(
-                        setCurrentDriver(
-                          res.data[0],
-                          eldData,
-                          acumulatedVehicleKilometers,
-                          lastDriverStatus
-                        )
-                      );  
-                    return await eld.getAccuracy(res.data[0].carrierID,res.data[0].cmv.id).then(async (accuracy) => {
-                      setEldAccuracy(accuracy);
-                      return await AsyncStorage.setItem(
-                      "eldAccuracy",
-                      JSON.stringify({ accuracy: accuracy })
-                      ).then(async () => {
-                        handleLogin(); 
-                        AsyncStorage.setItem('token', user.uid); 
-                        navigation.push("BluetoothScreen")  
-                      })
-                    });                             
+                        //Aqui generamos un token en la base de datos para el usuario logueado
+                        authToken(usuario, carrierID, user.uid, language).then(async (response) => {
+                          if(response?.errors?.length > 0){
+                            errorMessages.push([response.errors[0].msg]);
+                            openErrorModal(); 
+                          }
+                          else{
+                            dispatch(
+                              setCurrentDriver(
+                                res.data[0],
+                                eldData,
+                                acumulatedVehicleKilometers,
+                                lastDriverStatus
+                              )
+                            );  
+                            return await eld.getAccuracy(carrierID, res.data[0].cmv.id).then(async (accuracy) => {
+                              setEldAccuracy(accuracy);
+                              return await AsyncStorage.setItem(
+                              "eldAccuracy",
+                              JSON.stringify({ accuracy: accuracy })
+                              ).then(async () => {
+                                handleLogin(); 
+                                AsyncStorage.setItem('token', user.uid); 
+                                navigation.push("BluetoothScreen")  
+                              })
+                            }); 
+                          }
+                        })                            
                     }catch(error){
                       console.log("Error al pasar al driver:" + error)
                     }
                     }else {
                     setDriver(undefined);
                     }    
-                        }catch(error){
+                      }catch(error){
                       console.log("Error en la autenticacion de firebase auth:" + error)
                       errorMessages.push([languageModule.lang(language, 'incorrectUserOrPassword')]);
                       openErrorModal(); 
-                        }
+                      }
                     }
                   })
                 }
