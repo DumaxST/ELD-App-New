@@ -21,11 +21,11 @@ jobs:
 
         - name: Check if environment variable is set
           run: |
-            if [[ -z "${EXPO_PUBLIC_ELD_API}" ]]; then
-              echo "EXPO_PUBLIC_ELD_API is not set"
+            if [[ -z "${EXPO_PUBLIC_API_URL}" ]]; then
+              echo "EXPO_PUBLIC_API_URL is not set"
               exit 1
             else
-              echo "EXPO_PUBLIC_ELD_API is set"
+              echo "EXPO_PUBLIC_API_URL is set"
             fi
 
         - name: Check if PR is ready
