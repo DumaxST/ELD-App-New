@@ -21,7 +21,7 @@ jobs:
 
         - name: Check if environment variable is set
           run: |
-            if [[ -z "${{ vars.EXPO_PUBLIC_ELD_API }}" ]]; then
+            if [[ -z "${EXPO_PUBLIC_ELD_API}" ]]; then
               echo "EXPO_PUBLIC_ELD_API is not set"
               exit 1
             else
