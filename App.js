@@ -4,6 +4,7 @@ import { createStackNavigator, TransitionPresets } from '@react-navigation/stack
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Provider } from 'react-redux';
 import  store  from './redux/store'
+import { TimerProvider } from './global_functions/timerFunctions';
 
 import LoginScreen from './screens/auth/loginScreen';
 import BluetoothScreen from './screens/bluetooth/bluetoothScreen';
@@ -49,6 +50,7 @@ const App = () => {
 
   return (
     <Provider store={store}>
+      <TimerProvider>
       <NavigationContainer>
         <Stack.Navigator
           screenOptions={{
@@ -87,6 +89,7 @@ const App = () => {
 
         </Stack.Navigator>
       </NavigationContainer>
+      </TimerProvider>
     </Provider>
   );
 };

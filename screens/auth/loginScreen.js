@@ -19,6 +19,8 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import CountryFlag from "react-native-country-flag";
 import { checkAndRequestBluetoothScanPermission } from '../bluetooth/constructor';
 import { startGlobalLocationTracking } from '../../components/ELDlocation';
+import { useTimer } from '../../global_functions/timerFunctions';
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 const languageModule = require('../../global_functions/variables');
 const { width } = Dimensions.get("window");
@@ -45,6 +47,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
   const [currentCords, setCurrentCords] = useState({});
   const [driverDistance, setDrivedDistance] = useState(0);
   const [backClickCount, setBackClickCount] = useState(0);
+  const { startTimer } = useTimer();
 
   //necesitamos un undefined driver al cual darle los eventos indefinidos, ya que cada ELD tiene su undefined driver
   //necesitamos que se pueda obtener un eld antes de que el usuario se loguee
@@ -111,7 +114,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
     },
     "displayName": "Undefined Driver"
 };
-  
+
   //Obtenemos los permisos de ubicacion con efectos
   useEffect(() => {
     const requestPermissions = async () => {
@@ -382,6 +385,8 @@ const LoginScreen = ({navigation, handleLogin}) => {
                               "eldAccuracy",
                               JSON.stringify({ accuracy: accuracy })
                               ).then(async () => {
+                                //Aqui iniciamos el temporizador ya que es el primer evento del cliente
+                                startTimer();
                                 handleLogin(); 
                                 AsyncStorage.setItem('token', user.uid); 
                                 navigation.push("BluetoothScreen")  
