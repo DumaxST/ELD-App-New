@@ -195,13 +195,11 @@ const LoginScreen = ({navigation, handleLogin}) => {
               "eldAccuracy",
               JSON.stringify({ accuracy: accuracy })
               ).then(async () => {
-                const userCredential = await signInWithEmailAndPassword(auth, currentDriver.email, password);
-                    const user = userCredential.user;
-                    if(user){
-                        handleLogin(); 
-                        AsyncStorage.setItem('token', user.uid); 
-                        navigation.push("PrincipalScreen")  
-                    }
+                const token = await AsyncStorage.getItem('token');
+                if(token){
+                  handleLogin(); 
+                  navigation.push("PrincipalScreen")  
+                }
               })
            });
            //Si no estamos logueados asignamos un accuracy por defecto y esperamos el logueo
