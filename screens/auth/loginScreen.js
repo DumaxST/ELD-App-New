@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import RNPickerSelect from 'react-native-picker-select';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from "@react-navigation/native";
-import { authDriver, eld, getCarriersOptions, getTheUserIsAdmin, authToken} from "../../data/commonQuerys";
+import { authDriver, eld, getCarriersOptions, getTheUserIsAdmin} from "../../data/commonQuerys";
 import { getCurrentDriver } from "../../config/localStorage";
 import { useSelector, useDispatch } from "react-redux";
 import * as Location from "expo-location";
@@ -134,18 +134,13 @@ const LoginScreen = ({navigation, handleLogin}) => {
   
   //Obtenemos la ubicacion con efectos
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      startGlobalLocationTracking(async (Location) => {
-        setDrivedDistance(await isStillDriving(Location));
-        setCurrentCords({ ...Location?.coords, timestamp: Location.timestamp });
-        dispatch(setTrackingTimeStamp(Location.timestamp));
-        dispatch(setELD({ ...Location, id: "mHlqeeq5rfz3Cizlia23" })); //tenemos que ver de donde sacamos el ELD
-      });
-    }, 10000); // Actualiza la ubicación cada 10 segundos
-  
-    // Limpia el intervalo cuando el componente se desmonta
-    return () => clearInterval(intervalId);
-  }, [eldData]);
+    startGlobalLocationTracking(async (Location) => {
+      setDrivedDistance(await isStillDriving(Location));
+      setCurrentCords({ ...Location?.coords, timestamp: Location.timestamp });
+      dispatch(setTrackingTimeStamp(Location.timestamp));
+      dispatch(setELD({ ...Location, id: "mHlqeeq5rfz3Cizlia23" })); //tenemos que ver de donde sacamos el ELD
+    });
+  }, [currentCords]);
 
   // Obtener la lista de carriers cuando el componente se monta
   useEffect(() => {
@@ -195,11 +190,13 @@ const LoginScreen = ({navigation, handleLogin}) => {
               "eldAccuracy",
               JSON.stringify({ accuracy: accuracy })
               ).then(async () => {
-                const token = await AsyncStorage.getItem('token');
-                if(token){
-                  handleLogin(); 
-                  navigation.push("PrincipalScreen")  
-                }
+                const userCredential = await signInWithEmailAndPassword(auth, currentDriver.email, password);
+                    const user = userCredential.user;
+                    if(user){
+                        handleLogin(); 
+                        AsyncStorage.setItem('token', user.uid); 
+                        navigation.push("PrincipalScreen")  
+                    }
               })
            });
            //Si no estamos logueados asignamos un accuracy por defecto y esperamos el logueo
@@ -246,12 +243,11 @@ const LoginScreen = ({navigation, handleLogin}) => {
   
   useEffect(() => {
     updateDriverStatus();
-  }, []); // Se ejecuta solo una vez al montar el componente
 
-  useEffect(() => {
-    const updateIntervalId = setInterval(updateDriverStatus, 60000);
-    return () => clearInterval(updateIntervalId);
-  }, []); // Se ejecuta cada minuto
+     const updateIntervalId = setInterval(updateDriverStatus, 60000);
+   
+     return () => clearInterval(updateIntervalId);
+  }, [eldData]);
   
   // Obtenermos nuestro current language desde el AsyncStorage
   useEffect(() => {
@@ -356,7 +352,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
                     return;
                     }else{
                         //Aqui autenticamos desde la funcion de firebase Auth y una vez logrado pasamos a la pantalla
-                    try{
+                        try{
                     const userCredential = await signInWithEmailAndPassword(auth, res.data[0].email, password);
                     const user = userCredential.user;
                     if(user){              
@@ -396,11 +392,11 @@ const LoginScreen = ({navigation, handleLogin}) => {
                     }else {
                     setDriver(undefined);
                     }    
-                      }catch(error){
+                        }catch(error){
                       console.log("Error en la autenticacion de firebase auth:" + error)
                       errorMessages.push([languageModule.lang(language, 'incorrectUserOrPassword')]);
                       openErrorModal(); 
-                      }
+                        }
                     }
                   })
                 }
