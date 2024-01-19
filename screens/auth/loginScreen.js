@@ -361,6 +361,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
                     const user = userCredential.user;
                     if(user){              
                       try{ 
+                        //Reparando error de merge
                         //Aqui generamos un token en la base de datos para el usuario logueado
                         authToken(usuario, carrierID, user.uid, language).then(async (response) => {
                           if(response?.errors?.length > 0){
