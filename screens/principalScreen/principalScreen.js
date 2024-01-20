@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setCurrentDriver, setDriverStatus } from "../../redux/actions";
 import { getCurrentDriver } from "../../config/localStorage";
 import { TextInput } from "react-native-paper";
+import { useTimer } from '../../global_functions/timerFunctions';
 
 const PrincipalScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -27,6 +28,7 @@ const PrincipalScreen = ({ navigation }) => {
   const [tempDriverStatus, setTempDriverStatus] = useState("");
   const [selectedObservaciones, setSelectedObservaciones] = useState([]);
   const {eldData,currentDriver,driverStatus,acumulatedVehicleKilometers,lastDriverStatus,trackingTimestamp} = useSelector((state) => state.eldReducer);
+  const { restartTimer } = useTimer();
 
   //Uso de efectos de inicio del screen
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
@@ -74,7 +76,7 @@ const PrincipalScreen = ({ navigation }) => {
   }, [showStopDialog]);
   
   //Funciones
-  const postEvent = async (recordOrigin, observaciones) => {
+  const postEvent = async (recordOrigin, observaciones) => {  
     await postDriverEvent(
       {
         recordStatus: 1,
@@ -104,6 +106,8 @@ const PrincipalScreen = ({ navigation }) => {
     }else{
       if (driverStatus != status) {
         setTempDriverStatus(status);
+        //Aqui reiniciamos el timer cuando existe una actividad de posteo de estado
+        restartTimer();
         switch (status) {
           case "ON":
           case "D":

@@ -9,6 +9,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from "react-redux";
 import { logOutCurrentDriver } from "../../../redux/actions";
 import {removeToken} from '../../../data/commonQuerys'
+import { useTimer } from '../../../global_functions/timerFunctions';
 
 const languageModule = require('../../../global_functions/variables');
 const { width } = Dimensions.get("window");
@@ -25,6 +26,7 @@ const AppMenu = ({ navigation, handleLogout }) => {
     lastDriverStatus,
     driverStatus
   } = useSelector((state) => state.eldReducer);
+  const { stopTimer } = useTimer();
 
   //Uso de efectos de inicio del screen
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
@@ -52,7 +54,8 @@ const AppMenu = ({ navigation, handleLogout }) => {
           .then(() => resolve());
       });
     
-      // Llamar a handleLogout y navegar a la pantalla de login
+      //Aqui detenos el timer ya que no requerimos seguir posteando eventos
+      stopTimer();
       handleLogout();
       navigation.reset({
         index: 0,

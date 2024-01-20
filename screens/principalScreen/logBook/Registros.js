@@ -5,7 +5,8 @@ import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { Overlay } from "react-native-elements";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { getDriverEvents } from "../../../data/commonQuerys";
+import { getDriverEvents, DriverEvent } from "../../../data/commonQuerys";
+import { getCurrentDriver } from "../../../config/localStorage";
 import { editDriverLogEvent } from "../../../redux/actions";
 import { useDispatch } from "react-redux";
 
@@ -22,7 +23,9 @@ const ListSection = () => {
   const [driverEvents, setDriverEvents] = useState([]);
   const [unidentifiedEvents, setUnidentifiedEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedButton, setSelectedButton] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [isButtonPressed, setIsButtonPressed] = useState(false);
   const [state, setState] = useState({
     numeroDelCamion: "",
     numeroDelTrailer: "",
@@ -36,10 +39,50 @@ const ListSection = () => {
       numeroDeDocumentoDeEnvio,
       odometroVisual,
   } = state;
-  
+
+
+  //editamos con la funcion de put driver 
+  const handleSave = async () => {  
+    setModalVisible(false);
+    setIsLoading(true);     
+    return await getCurrentDriver()
+    .then(async (currentDriver) => {   
+      DriverEvent.put(selectedEvent, currentDriver, true).then((res) => {       
+      setIsLoading(true);  
+      getData()
+      }).catch((err) => {  
+        console.log(err)
+      })
+    })
+  };
+
+  const handleButtonClick = (dutyStatus) => {
+    setSelectedButton(dutyStatus);
+    setSelectedEvent((prevEvent) => ({
+      ...prevEvent,
+      dutyStatus: dutyStatus,
+    }));
+  };
+
 
   const updateState = (data) => setState((state) => ({ ...state, ...data }));
 
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0'); 
+  const day = String(today.getDate()).padStart(2, '0');
+  
+  const formattedDate = `${year}-${month}-${day}`;
+  const getData = async () => {
+    try {
+      const events = await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: "", to: formattedDate });
+      setDriverEvents(events);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error al obtener eventos:', error);
+      setIsLoading(false);
+    }
+  };
   //Uso de efectos de inicio del screen
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
   useEffect(() => {
@@ -56,19 +99,6 @@ const ListSection = () => {
   useEffect(() => {
       //vamos a obtener la fecha actual, pero existe un dropdown en el demo referencia, checar con Isaias
       // en otro issue
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0'); 
-      const day = String(today.getDate()).padStart(2, '0');
-      
-      const formattedDate = `${year}-${month}-${day}`;
-      const getData = async () => {
-        await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: "", to: formattedDate}).then(async (events) => {
-            setDriverEvents(events);
-            setIsLoading(false);
-            return;
-        });
-      };
       getData();
   }, []);
 
@@ -88,7 +118,7 @@ const ListSection = () => {
         case "PC":
           return "PERSONAL";
         case "YM":
-          return "Movimiento de patio";
+          return "YARD";
         default:
           return "No identificado";
       }
@@ -235,871 +265,150 @@ const ListSection = () => {
       );
   }
 
-  function eventDetailsDialogFn() {
-      return (
-        <Overlay
-          isVisible={eventDetailsDialog}
-          onBackdropPress={() => setEventDetailsDialog(false)}
-          overlayStyle={{
-            width: width - 40.0,
-            borderRadius: Sizes.fixPadding - 2.0,
-            padding: 0.0,
-          }}
-        >
-          <View
-            style={{
-              marginVertical: Sizes.fixPadding * 2.5,
-              marginHorizontal: Sizes.fixPadding * 2.0,
-            }}
-          >
-            <Text style={{ textAlign: "center", ...Fonts.blackColor18Bold }}>
-              {"eventDetails"}
-            </Text>
-  
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {"eventSequenceIdNumber"}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {`${currentEventDetails?.sequenceIDNumber?.decimal} - ${currentEventDetails?.sequenceIDNumber?.hexadecimal}`}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {"recordStatus"}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {currentEventDetails?.recordStatus}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {"recordOrigin"}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {currentEventDetails?.recordOrigin}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {"type"}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {currentEventDetails?.type}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {"code"}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {currentEventDetails?.code}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {`${"date"} & ${"time"}`}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {currentEventDetails?.geoTimeStamp?.timeStamp}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {"accumulatedVehicleMiles"}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {currentEventDetails?.acumulatedVehicleMiles}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {"elapsedEngineHours"}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {currentEventDetails?.elapsedEngineHours}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {`${"latitude"} & ${"longitude"}`}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {`${currentEventDetails?.geoTimeStamp?.latitude} , ${currentEventDetails?.geoTimeStamp?.longitude}`}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection:  "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {"distanceSinceLastValidCoordinates"}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {currentEventDetails?.distanceSinceLastValidCoordinates}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {"malfunctionIndicatorStatus"}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {currentEventDetails?.malfunctionIndicatorStatusforELD}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {"dataDiagnosticEventIndicatorStatus"}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {
-                    currentEventDetails?.dataDiagnosticEventIndicatorStatusforDriver
-                  }
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {"commentOrAnnotation"}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {currentEventDetails?.commentOrAnnotation}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {"driversLocationDescription"}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {currentEventDetails?.locationDescription}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {"dataCheckValue"}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {currentEventDetails?.eventDataCheckValue}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {"cmvNum"}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {currentEventDetails?.cmv?.number}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.99}
-              // onPress={onPress}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {"cmvVIN"}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    marginRight: Sizes.fixPadding,
-                    flex: 1,
-                    ...Fonts.blackColor16SemiBold,
-                  }}
-                >
-                  {currentEventDetails?.cmv?.vin}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <Text
-              onPress={() => setEventDetailsDialog(false)}
-              style={{ textAlign: "center", ...Fonts.grayColor16SemiBold }}
-            >
-              {"cerrar"}
-            </Text>
-          </View>
-        </Overlay>
-      );
-  }
-
+  //Edicion con datos mas establecidos
   function editEvent() {
       return (
         <View>
           <Modal visible={modalVisible} animationType="slide">
           <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>{languageModule.lang(language,traducirStatus(selectedEvent?.dutyStatus))}</Text>
-          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "sequenceIDNumber")}</Text>
+          <Text style={{...styles.modalTitle, marginTop: -10}}>{languageModule.lang(language,'eventDetails')}</Text>
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, 'status')}</Text>
+          {/* Botones de arriba 4 */}
+          <View style={{ ...styles.buttonContainer, marginVertical: -20 }}>
+            <TouchableOpacity
+              style={{
+                ...styles.button,
+                width: '30%',
+                borderRadius: 10,
+                borderColor: 'black',
+                borderWidth: 1,
+                backgroundColor: selectedEvent?.dutyStatus === 'OFF-DUTY' ? '#4CAF50' : 'transparent',
+              }}
+              onPress={() => handleButtonClick("OFF-DUTY")}
+            >
+              <Text style={styles.buttonTextOptions}>{languageModule.lang(language, traducirStatus("OFF-DUTY"))}</Text>
+            </TouchableOpacity>   
+            <TouchableOpacity
+              style={{
+                ...styles.button,
+                width: '20%',
+                borderRadius: 10,
+                borderColor: 'black',
+                borderWidth: 1,
+                backgroundColor:  selectedEvent?.dutyStatus  === 'ON' ? '#4CAF50' : 'transparent',
+              }}
+              onPress={() => handleButtonClick("ON")}
+            >
+              <Text style={styles.buttonTextOptions}>{languageModule.lang(language, traducirStatus("ON"))}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                ...styles.button,
+                width: '23%',
+                borderRadius: 10,
+                borderColor: 'black',
+                borderWidth: 1,
+                backgroundColor:  selectedEvent?.dutyStatus  === 'D' ? '#4CAF50' : 'transparent',
+              }}
+              onPress={() => handleButtonClick("D")}
+            >
+              <Text style={styles.buttonTextOptions}>{languageModule.lang(language, traducirStatus("D"))}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                ...styles.button,
+                width: '20%',
+                borderRadius: 10,
+                borderColor: 'black',
+                borderWidth: 1,
+                backgroundColor:  selectedEvent?.dutyStatus  === 'SB' ? '#4CAF50' : 'transparent',
+              }}
+              onPress={() => handleButtonClick("SB")}
+            >
+              <Text style={styles.buttonTextOptions}>{languageModule.lang(language, traducirStatus("SB"))}</Text>
+            </TouchableOpacity>
+          </View>
+          {/* Botones de abajo 3 */}
+          <View style={{ ...styles.buttonContainer, marginVertical: 5 }}>
+          <TouchableOpacity
+              style={{
+                ...styles.button,
+                width: '20%',
+                borderRadius: 10,
+                borderColor: 'black',
+                borderWidth: 1,
+                backgroundColor:  selectedEvent?.dutyStatus === 'PS' ? '#4CAF50' : 'transparent',
+              }}
+              onPress={() => handleButtonClick("PS")}
+            >
+              <Text style={styles.buttonTextOptions}>{languageModule.lang(language, traducirStatus("PS"))}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+              style={{
+                ...styles.button,
+                width: '20%',
+                borderRadius: 10,
+                borderColor: 'black',
+                borderWidth: 1,
+                backgroundColor:  selectedEvent?.dutyStatus === 'PC' ? '#4CAF50' : 'transparent',
+              }}
+              onPress={() => handleButtonClick("PC")}
+            >
+              <Text style={styles.buttonTextOptions}>{languageModule.lang(language, traducirStatus("PC"))}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+              style={{
+                ...styles.button,
+                width: '20%',
+                borderRadius: 10,
+                borderColor: 'black',
+                borderWidth: 1,
+                backgroundColor:  selectedEvent?.dutyStatus === 'YM' ? '#4CAF50' : 'transparent',
+              }}
+              onPress={() => handleButtonClick("YM")}
+            >
+              <Text style={styles.buttonTextOptions}>{languageModule.lang(language, traducirStatus("YM"))}</Text>
+          </TouchableOpacity>
+          </View>
+          {/* Resto de los TextInput */}
+          {/*-----------NO editable aun------------*/}  
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "startTime")}</Text>
           <TextInput
+            editable={false}
             style={styles.input}
-            value={`${selectedEvent?.sequenceIDNumber?.decimal} - ${selectedEvent?.sequenceIDNumber?.hexadecimal}`}
-            // onChangeText={(text) => {
-            //   setSelectedEvent({ ...selectedEvent, id: text });
-            // }}
-            placeholder={`${selectedEvent?.sequenceIDNumber?.decimal} - ${selectedEvent?.sequenceIDNumber?.hexadecimal}`}
+            value={`${selectedEvent?.geoTimeStamp?.date.substring(
+              0,
+              2
+            )}/${selectedEvent?.geoTimeStamp?.date.substring(
+              2,
+              4
+            )}/${selectedEvent?.geoTimeStamp?.date.substring(
+              4,
+              6
+            )} - ${selectedEvent?.geoTimeStamp?.time.substring(
+              0,
+              2
+            )}:${selectedEvent?.geoTimeStamp?.time.substring(
+              2,
+              4
+            )}:${selectedEvent?.geoTimeStamp?.time.substring(4, 6)} `}
+            placeholder={`${selectedEvent?.geoTimeStamp?.date.substring(
+              0,
+              2
+            )}/${selectedEvent?.geoTimeStamp?.date.substring(
+              2,
+              4
+            )}/${selectedEvent?.geoTimeStamp?.date.substring(
+              4,
+              6
+            )} - ${selectedEvent?.geoTimeStamp?.time.substring(
+              0,
+              2
+            )}:${selectedEvent?.geoTimeStamp?.time.substring(
+              2,
+              4
+            )}:${selectedEvent?.geoTimeStamp?.time.substring(4, 6)} `}
           />
           {/*-----------------------*/}
           <Text style={{textAlign: "left"}}>{languageModule.lang(language, "truckVIN")}</Text>
@@ -1140,83 +449,24 @@ const ListSection = () => {
               }));
             }}
           />
-          {/*-----------------------*/}
+          {/*-----------No editable aun------------*/}
           <Text style={{textAlign: "left"}}>{languageModule.lang(language, 'shippingDocumentNumber')}</Text>
           <TextInput
+            editable={false}
             style={styles.input}
             value={numeroDeDocumentoDeEnvio}
             onChangeText={(text) => updateState({ numeroDeDocumentoDeEnvio: text })}
-          />
-          {/*-----------------------*/}
-          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "recordStatus")}</Text>
-          <TextInput
-            style={styles.input}
-            value={`${selectedEvent?.recordStatus}`}
-            placeholder={`${selectedEvent?.recordStatus}`}
-          />
-          {/*-----------------------*/}
-          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "recordOrigin")}</Text>
-          <TextInput
-            style={styles.input}
-            value={`${selectedEvent?.recordOrigin}`}
-            placeholder={`${selectedEvent?.recordOrigin}`}
-          />
-          {/*-----------------------*/}
-          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "type")}</Text>
-          <TextInput
-            style={styles.input}
-            value={`${selectedEvent?.type}`}
-            placeholder={`${selectedEvent?.type}`}
-          />
-          {/*-----------------------*/}
-          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "code")}</Text>
-          <TextInput
-            style={styles.input}
-            value={`${selectedEvent?.code}`}
-            placeholder={`${selectedEvent?.code}`}
-          />
-          {/*-----------------------*/}
-          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "startTime")}</Text>
-          <TextInput
-            style={styles.input}
-            value={`${selectedEvent?.geoTimeStamp?.date.substring(
-              0,
-              2
-            )}/${selectedEvent?.geoTimeStamp?.date.substring(
-              2,
-              4
-            )}/${selectedEvent?.geoTimeStamp?.date.substring(
-              4,
-              6
-            )} - ${selectedEvent?.geoTimeStamp?.time.substring(
-              0,
-              2
-            )}:${selectedEvent?.geoTimeStamp?.time.substring(
-              2,
-              4
-            )}:${selectedEvent?.geoTimeStamp?.time.substring(4, 6)} `}
-            placeholder={`${selectedEvent?.geoTimeStamp?.date.substring(
-              0,
-              2
-            )}/${selectedEvent?.geoTimeStamp?.date.substring(
-              2,
-              4
-            )}/${selectedEvent?.geoTimeStamp?.date.substring(
-              4,
-              6
-            )} - ${selectedEvent?.geoTimeStamp?.time.substring(
-              0,
-              2
-            )}:${selectedEvent?.geoTimeStamp?.time.substring(
-              2,
-              4
-            )}:${selectedEvent?.geoTimeStamp?.time.substring(4, 6)} `}
           />
           <Text style={{textAlign: "left"}}>{languageModule.lang(language, "accumulatedVehicleMiles")}</Text>
           <TextInput
             style={styles.input}
             value={`${selectedEvent?.acumulatedVehicleMiles}`}
             placeholder={`${selectedEvent?.acumulatedVehicleMiles}`}
+            onChangeText={(text) => {
+              setSelectedEvent((prevEvent) => ({
+                ...prevEvent, acumulatedVehicleMiles: text,
+              }));
+            }}
           />
           {/*-----------------------*/}
           <Text style={{textAlign: "left"}}>{languageModule.lang(language, "elapsedEngineHours")}</Text>
@@ -1224,34 +474,19 @@ const ListSection = () => {
             style={styles.input}
             value={`${selectedEvent?.elapsedEngineHours}`}
             placeholder={`${selectedEvent?.elapsedEngineHours}`}
+            onChangeText={(text) => {
+              setSelectedEvent((prevEvent) => ({
+                ...prevEvent, elapsedEngineHours: text,
+              }));
+            }}
           />
-          {/*-----------------------*/}   
-          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "latitude")}{" & "}{languageModule.lang(language, "longitude")}</Text>
+          {/*-----------No terminado no editable------------*/}   
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "location")}</Text>
           <TextInput
+            editable={false}
             style={styles.input}
             value={`${selectedEvent?.geoTimeStamp?.latitude} , ${selectedEvent?.geoTimeStamp?.longitude}`}
             placeholder={`${selectedEvent?.geoTimeStamp?.latitude} , ${selectedEvent?.geoTimeStamp?.longitude}`}
-          />
-          {/*-----------------------*/}   
-          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "distanceSinceLastValidCoordinates")}</Text>
-          <TextInput
-            style={styles.input}
-            value={`${selectedEvent?.distanceSinceLastValidCoordinates}`}
-            placeholder={`${selectedEvent?.distanceSinceLastValidCoordinates}`}
-          />
-          {/*-----------------------*/}     
-          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "malfunctionIndicatorStatus")}</Text>
-          <TextInput
-            style={styles.input}
-            value={`${selectedEvent?.malfunctionIndicatorStatusforELD}`}
-            placeholder={`${selectedEvent?.malfunctionIndicatorStatusforELD}`}
-          />
-          {/*-----------------------*/}
-          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "dataDiagnosticEventIndicatorStatus")}</Text>
-          <TextInput
-            style={styles.input}
-            value={`${selectedEvent?.dataDiagnosticEventIndicatorStatusforDriver}`}
-            placeholder={`${selectedEvent?.dataDiagnosticEventIndicatorStatusforDriver}`}
           />
           {/*-----------------------*/}
           <Text style={{textAlign: "left"}}>{languageModule.lang(language, "commentOrAnnotation")}</Text>
@@ -1259,22 +494,12 @@ const ListSection = () => {
             style={styles.input}
             value={`${selectedEvent?.commentOrAnnotation}`}
             placeholder={`${selectedEvent?.commentOrAnnotation}`}
+            onChangeText={(text) => {
+              setSelectedEvent((prevEvent) => ({
+                ...prevEvent, commentOrAnnotation: text,
+              }));
+            }}
           />
-          {/*-----------------------*/}
-          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "driversLocationDescription")}</Text>
-          <TextInput
-            style={styles.input}
-            value={`${selectedEvent?.locationDescription}`}
-            placeholder={`${selectedEvent?.locationDescription}`}
-          />
-          {/*-----------------------*/}
-          <Text style={{textAlign: "left"}}>{languageModule.lang(language, "dataCheckValue")}</Text>
-          <TextInput
-            style={styles.input}
-            value={`${selectedEvent?.eventDataCheckValue}`}
-            placeholder={`${selectedEvent?.eventDataCheckValue}`}
-          />
-          {/*-----------------------*/}
         </View>    
         </ScrollView>  
           {/* Botones */}
@@ -1282,7 +507,7 @@ const ListSection = () => {
             <TouchableOpacity style={styles.cancelButton} onPress={closeModal}>
               <Text style={styles.buttonText}>{languageModule.lang(language, 'cancel')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.saveButton} onPress={closeModal}>
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
               <Text style={styles.buttonText}>{languageModule.lang(language, 'save')}</Text>
             </TouchableOpacity>
           </View>
@@ -1302,7 +527,6 @@ const ListSection = () => {
       ) : (
         <Logs />
       )}
-      {eventDetailsDialogFn()}
       {editEvent()}
     </View>
   );
@@ -1356,6 +580,11 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'black',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  buttonTextOptions: {
+    color: 'black',
+    fontSize: 10,
     fontWeight: 'bold',
   },
   sectionContainer: {
