@@ -29,6 +29,7 @@ export const geoTimeStamp = (eldData) => {
   };
 };
 
+const EARTH_RADIUS_KM = 6371; // Radius of the earth in km
 
 export const drivedDistance = (prevCoords, currentCoords) => {
   if (!prevCoords || !currentCoords) {
@@ -47,7 +48,7 @@ export const drivedDistance = (prevCoords, currentCoords) => {
       Math.sin(dLon / 2) *
       Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+  return EARTH_RADIUS_KM  * c;
 };
 
 export const isStillDriving = async (currentLocation) => {
@@ -61,11 +62,10 @@ export const isStillDriving = async (currentLocation) => {
     }
 
     const distance = drivedDistance(lastData?.coords, currentLocation?.coords);
+    const roundedDistance = Math.round(distance * 1000) / 1000;
+    const roundedAccuracy = Math.round(eld.accuracy * 1000) / 1000;
 
-    console.log("distance", distance);
-    console.log("accuracy", eld.accuracy);
-
-    return distance > eld.accuracy ? distance : 0;
+    return roundedDistance > roundedAccuracy ? roundedDistance : 0;
   } catch (error) {
     console.error("Error in isStillDriving:", error);
     return 0;

@@ -148,11 +148,13 @@ const LoginScreen = ({navigation, handleLogin}) => {
         dispatch(setTrackingTimeStamp(Location.timestamp));
         dispatch(setELD({ ...Location, id: "mHlqeeq5rfz3Cizlia23" })); //tenemos que ver de donde sacamos el ELD
       });
-    }, 10000); // Actualiza la ubicación cada 10 segundos
-  
-    // Limpia el intervalo cuando el componente se desmonta
-    return () => clearInterval(intervalId);
-  }, [eldData]);
+    }, 1000); // Actualiza la ubicación cada 10 segundos
+    
+      // Limpia el intervalo cuando el componente se desmonta
+      return () => {
+        clearInterval(intervalId);
+      };
+  }, []);
 
   // Obtener la lista de carriers cuando el componente se monta
   useEffect(() => {
@@ -182,10 +184,23 @@ const LoginScreen = ({navigation, handleLogin}) => {
 
   //obtenemes el estado del conductor para mandar el sonido en caso de que sea D
   useEffect(() => {
-    if (driverStatus == "D" && currentDriver == null) {
-      playSound();
-    }
-  }, [driverStatus]);
+    const checkDriverStatus = () => {
+      if (driverStatus === "D" && currentDriver === null) {
+        playSound();
+        console.log(driverStatus);
+      }
+    };
+  
+    // Llama a checkDriverStatus inmediatamente
+    checkDriverStatus();
+  
+    const intervalId = setInterval(checkDriverStatus, 1000); // Verifica el estado del conductor cada segundo
+  
+    // Limpia el intervalo cuando el componente se desmonta
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [driverStatus, currentDriver]); // Dependencias actualizadas
   
   //Usamos el efecto para obtener datos del eld currancy
   useEffect(() => {
@@ -227,7 +242,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
   
   //Aqui asignamos el undefined driver y cambiamos el estado si continua o si para el camion
   const updateDriverStatus = () => {
-    if (eldData) {
+    if (Object.keys(eldData).length > 0) {
       dispatch(
         setDriverStatus(
           eldData,
@@ -322,7 +337,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
   };
 
   const authUser = async () => {
-    if(!currentCords){
+    if(!Object.keys(eldData).length > 0){
       errorMessages.push([languageModule.lang(language, 'locationNotAvailable')]);
       openErrorModal();
       return;
@@ -544,7 +559,6 @@ const LoginScreen = ({navigation, handleLogin}) => {
       </Modal>
     );
   }
-
   //Pantalla a retornar
   return (
     <View style={styles.container}>
@@ -574,31 +588,31 @@ const LoginScreen = ({navigation, handleLogin}) => {
          />
       </View>
       <View style={styles.form}>
-      <Input
-      placeholder= {languageModule.lang(language,'userHOS')}
-      onChangeText={(text) => setusuario(text)}
-      value={usuario}
-      autoCapitalize="none"
-      inputStyle={styles.input}
-      inputContainerStyle={styles.inputContainer}
-      disabled={driverStatus === 'D' && (!currentDriver || currentDriver === '')}
-      />
-      <Input
-      placeholder={languageModule.lang(language,'password')}
-      onChangeText={(text) => setpassword(text)}
-      value={password}
-      secureTextEntry
-      autoCapitalize="none"
-      inputStyle={styles.input}
-      inputContainerStyle={styles.inputContainer}
-      disabled={driverStatus === 'D' && (!currentDriver || currentDriver === '')}
-      />
-      </View>
+        <Input
+          placeholder= {languageModule.lang(language,'userHOS')}
+          onChangeText={(text) => setusuario(text)}
+          value={usuario}
+          autoCapitalize="none"
+          inputStyle={styles.input}
+          inputContainerStyle={styles.inputContainer}
+          disabled={driverStatus === 'D' && (!currentDriver || currentDriver === '') || (!Object.keys(eldData).length > 0)}
+        />
+        <Input
+          placeholder={languageModule.lang(language,'password')}
+          onChangeText={(text) => setpassword(text)}
+          value={password}
+          secureTextEntry
+          autoCapitalize="none"
+          inputStyle={styles.input}
+          inputContainerStyle={styles.inputContainer}
+          disabled={driverStatus === 'D' && (!currentDriver || currentDriver === '') || (!Object.keys(eldData).length > 0)}
+        />
+    </View>
       <Button
-      title={languageModule.lang(language,'login')}
-      onPress={authUser}
-      buttonStyle={styles.loginButton}
-      disabled={driverStatus === 'D' && (!currentDriver || currentDriver === '')}
+        title={languageModule.lang(language,'login')}
+        onPress={authUser}
+        buttonStyle={styles.loginButton}
+        disabled={driverStatus === 'D' && (!currentDriver || currentDriver === '')}
       />
       {showErrorModal && (
         <FloatingMessageError
@@ -606,13 +620,12 @@ const LoginScreen = ({navigation, handleLogin}) => {
           onClose={closeErrorModal} // Función para cerrar el modal
         />
       )}
-      {(driverStatus === 'D' && (!currentDriver || currentDriver === '')) ? (
-       <View style={styles2.overlay}>
-         <FloatingMessage
-           message={languageModule.lang(language,'PleasesigninbeforeanymovementintheCMV')}
-         />
-       </View>
-      ) : null}
+      {driverStatus === 'D' ? (
+        <View style={styles2.overlay}>
+          <FloatingMessage
+            message={languageModule.lang(language,'PleasesigninbeforeanymovementintheCMV')}
+          />
+        </View>): null}
       {footer()}
     </View>
   );

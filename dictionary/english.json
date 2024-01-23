@@ -136,6 +136,6 @@
     "logout": "Logout",
     "AccountManagement": "Account Management",
     "userDriver": "Driver",
-    "userCodriver": "Codriver",
+    "userCoDriver": "Codriver",
     "noLogoutAvailable": "No logout available, try closing all sesions"
 }

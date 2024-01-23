@@ -10,10 +10,12 @@ const languageModule = require('../../global_functions/variables');
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getEventTypeCode, postDriverEvent } from "../../data/commonQuerys";
 import { useDispatch, useSelector } from "react-redux";
-import { setCurrentDriver, setDriverStatus } from "../../redux/actions";
+import {setDriverStatus,setELD,setTrackingTimeStamp} from "../../redux/actions";
 import { getCurrentDriver, getCurrentUsers } from "../../config/localStorage";
+import { isStillDriving } from "../../components/eldFunctions";
 import { TextInput } from "react-native-paper";
 import { useTimer } from '../../global_functions/timerFunctions';
+import { startGlobalLocationTracking } from '../../components/ELDlocation';
 
 const PrincipalScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -26,6 +28,7 @@ const PrincipalScreen = ({ navigation }) => {
   const [showObservacionesDialog, setShowObservacionesDialog] = useState(false);
   const [showStopDialog, setShowStopDialog] = useState(false);
   const [tempDriverStatus, setTempDriverStatus] = useState("");
+  const [driverDistance, setDrivedDistance] = useState(0);
   const [selectedObservaciones, setSelectedObservaciones] = useState([]);
   const {eldData,currentDriver,driverStatus,acumulatedVehicleKilometers,lastDriverStatus,trackingTimestamp} = useSelector((state) => state.eldReducer);
   const [users, setUsers] = useState('');
@@ -60,6 +63,21 @@ const PrincipalScreen = ({ navigation }) => {
        }
     };
     getPreferredLanguage();
+  }, []);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      startGlobalLocationTracking(async (Location) => {
+        setDrivedDistance(await isStillDriving(Location));
+        dispatch(setTrackingTimeStamp(Location.timestamp));
+        dispatch(setELD({ ...Location, id: "mHlqeeq5rfz3Cizlia23" })); //tenemos que ver de donde sacamos el ELD
+      });
+    }, 60000); // Actualiza la ubicación cada 10 segundos
+    
+      // Limpia el intervalo cuando el componente se desmonta
+      return () => {
+        clearInterval(intervalId);
+      };
   }, []);
 
   //Esta funcion triplica los posteos de eventos checar!!
@@ -268,9 +286,11 @@ const PrincipalScreen = ({ navigation }) => {
         </View>
         <View style={styles.userInfo}>
           <Text style={styles.userName}>
-            {`${userON?.data?.displayName}`}
+          {userON?.data?.displayName ? `${userON.data.displayName}` : languageModule.lang(language, 'loading')}
           </Text>
-          <Text style={styles.userRole}>{languageModule.lang(language, userON?.role)}</Text>
+          <Text style={styles.userRole}>
+          {userON?.role ? languageModule.lang(language, userON.role) : languageModule.lang(language, 'loading')}
+          </Text>
           <View style={styles.innerSeparator} />
           <Text style={styles.driverStatus}>
           {`${languageModule.lang(language, 'driverStatus')}: ${userON?.role === "userCoDriver" ? userON?.status : driverStatus}`}
