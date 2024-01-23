@@ -574,28 +574,31 @@ const LoginScreen = ({navigation, handleLogin}) => {
          />
       </View>
       <View style={styles.form}>
-        <Input
-          placeholder= {languageModule.lang(language,'userHOS')}
-          onChangeText={(text) => setusuario(text)}
-          value={usuario}
-          autoCapitalize="none"
-          inputStyle={styles.input}
-          inputContainerStyle={styles.inputContainer}
-        />
-        <Input
-          placeholder={languageModule.lang(language,'password')}
-          onChangeText={(text) => setpassword(text)}
-          value={password}
-          secureTextEntry
-          autoCapitalize="none"
-          inputStyle={styles.input}
-          inputContainerStyle={styles.inputContainer}
-        />
-    </View>
+      <Input
+      placeholder= {languageModule.lang(language,'userHOS')}
+      onChangeText={(text) => setusuario(text)}
+      value={usuario}
+      autoCapitalize="none"
+      inputStyle={styles.input}
+      inputContainerStyle={styles.inputContainer}
+      disabled={driverStatus === 'D' && (!currentDriver || currentDriver === '')}
+      />
+      <Input
+      placeholder={languageModule.lang(language,'password')}
+      onChangeText={(text) => setpassword(text)}
+      value={password}
+      secureTextEntry
+      autoCapitalize="none"
+      inputStyle={styles.input}
+      inputContainerStyle={styles.inputContainer}
+      disabled={driverStatus === 'D' && (!currentDriver || currentDriver === '')}
+      />
+      </View>
       <Button
-        title={languageModule.lang(language,'login')}
-        onPress={authUser}
-        buttonStyle={styles.loginButton}
+      title={languageModule.lang(language,'login')}
+      onPress={authUser}
+      buttonStyle={styles.loginButton}
+      disabled={driverStatus === 'D' && (!currentDriver || currentDriver === '')}
       />
       {showErrorModal && (
         <FloatingMessageError
@@ -603,12 +606,13 @@ const LoginScreen = ({navigation, handleLogin}) => {
           onClose={closeErrorModal} // Función para cerrar el modal
         />
       )}
-      {driverStatus === 'D' ? (
-        <View style={styles2.overlay}>
-          <FloatingMessage
-            message={languageModule.lang(language,'PleasesigninbeforeanymovementintheCMV')}
-          />
-        </View>): null}
+      {(driverStatus === 'D' && (!currentDriver || currentDriver === '')) ? (
+       <View style={styles2.overlay}>
+         <FloatingMessage
+           message={languageModule.lang(language,'PleasesigninbeforeanymovementintheCMV')}
+         />
+       </View>
+      ) : null}
       {footer()}
     </View>
   );
