@@ -757,7 +757,7 @@ const BluetoothScreen = ({navigation}) => {
   };
 
   const pushToDiagnostico = () => {
-    navigation.push("Diagnostico");
+    navigation.navigate("Diagnostico");
     setShowAdvertenciaDialog(false);
   };
 

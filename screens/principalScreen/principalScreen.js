@@ -11,7 +11,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getEventTypeCode, postDriverEvent } from "../../data/commonQuerys";
 import { useDispatch, useSelector } from "react-redux";
 import { setCurrentDriver, setDriverStatus } from "../../redux/actions";
-import { getCurrentDriver } from "../../config/localStorage";
+import { getCurrentDriver, getCurrentUsers } from "../../config/localStorage";
 import { TextInput } from "react-native-paper";
 import { useTimer } from '../../global_functions/timerFunctions';
 
@@ -28,7 +28,26 @@ const PrincipalScreen = ({ navigation }) => {
   const [tempDriverStatus, setTempDriverStatus] = useState("");
   const [selectedObservaciones, setSelectedObservaciones] = useState([]);
   const {eldData,currentDriver,driverStatus,acumulatedVehicleKilometers,lastDriverStatus,trackingTimestamp} = useSelector((state) => state.eldReducer);
+  const [users, setUsers] = useState('');
+  const [userON, setUserON] = useState('');
   const { restartTimer } = useTimer();
+
+  //obtenemos el usuario principal (Solo para acciones, el mando sigue siendo de el currentDriver)
+  useEffect(() => {
+    const getUsers = async () => {
+      try {
+        let users = await getCurrentUsers();
+        const userActive = users.find(user => user.isActive === true);
+        setUserON(userActive);
+        setUsers(users);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    setTimeout(() => { 
+      getUsers();
+    }, 1000);
+  }, [userON]);
 
   //Uso de efectos de inicio del screen
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
@@ -76,6 +95,47 @@ const PrincipalScreen = ({ navigation }) => {
   }, [showStopDialog]);
   
   //Funciones
+  const postDriverEventF = async () => {
+    if(userON?.role == "userCoDriver"){
+      await postDriverEvent(
+        {
+          recordStatus: 1,
+          recordOrigin: 2,
+          type: getEventTypeCode(tempDriverStatus).type,
+          code: getEventTypeCode(tempDriverStatus).code,
+        },
+        currentAnnotation,
+        tempDriverStatus,
+        userON?.data,
+        eldData,
+        acumulatedVehicleKilometers,
+        lastDriverStatus
+      ).then(async (eventData) => {
+        let user = users.find((user) => user.isActive === true);
+        user.status = tempDriverStatus;
+        await AsyncStorage.setItem("users", JSON.stringify(users));
+        setShowStatusDialog(false);
+        setCurrentAnnotarion("");
+      });
+
+    }else{
+      let user = users.find((user) => user.isActive === true);
+      user.status = tempDriverStatus;
+      await AsyncStorage.setItem("users", JSON.stringify(users));
+      dispatch(
+        setDriverStatus(
+          eldData,
+          currentDriver,
+          tempDriverStatus,
+          acumulatedVehicleKilometers,
+          driverStatus,
+          2
+        )
+      );
+      setShowStatusDialog(false);
+    }
+  }
+
   const postEvent = async (recordOrigin, observaciones) => {  
     await postDriverEvent(
       {
@@ -101,7 +161,7 @@ const PrincipalScreen = ({ navigation }) => {
   };
 
   const changeDriverStatus = (status, dialog) => {
-    if(currentDriver.exemptDriverConfiguration.value == "E"){
+    if(userON?.data?.exemptDriverConfiguration?.value == "E"){
       setexemptModal(true)
     }else{
       if (driverStatus != status) {
@@ -139,11 +199,6 @@ const PrincipalScreen = ({ navigation }) => {
         }
       }
     }
-
-  };
-
-  const handleMenuPress = () => {
-    navigation.push('AppMenu');
   };
 
   function traducirStatus(status){
@@ -171,7 +226,6 @@ const PrincipalScreen = ({ navigation }) => {
     setexemptModal(false);
   };
 
-
   //Funciones de renderizado
   function header() {
     return (
@@ -195,7 +249,7 @@ const PrincipalScreen = ({ navigation }) => {
         color={'#cc0b0a'}
       />
           </View>
-      <TouchableOpacity style={styles.menuButton} onPress={handleMenuPress}>
+      <TouchableOpacity style={styles.menuButton} onPress={() => navigation.toggleDrawer()}>
         {/* Icono del menú */}
         <Entypo name="menu" size={24} color="#4CAF50" />
       </TouchableOpacity>
@@ -205,21 +259,34 @@ const PrincipalScreen = ({ navigation }) => {
 
   function userInfo() {
     return (
-      <View style={styles.userInfo}>
-      <Text style={styles.userName}>{languageModule.lang(language, 'driverName') + ": "+ currentDriver?.displayName}</Text>
-      <View style={styles.innerSeparator} />
-      <Text style={{color:"#4CAF50"}}>{languageModule.lang(language, 'driverStatus') + ": "}{driverStatus}</Text>
-      <Text >{`${languageModule.lang(language, 'latitude')}: ${eldData?.coords?.latitude? eldData?.coords?.latitude.toFixed(3): `${languageModule.lang(language, 'loading')}`}`}</Text>
-      <Text >{`${languageModule.lang(language, 'longitude')}: ${eldData?.coords?.longitude? eldData?.coords?.longitude.toFixed(3): `${languageModule.lang(language, 'loading')}`}`}</Text>
-      <Text>
-        {`${languageModule.lang(language, 'Updatedon')}: ${new Date(
-          trackingTimestamp
-        ).toDateString()} ${new Date(
-          trackingTimestamp
-        ).toLocaleTimeString()}`}
-      </Text>
+      <View style={styles.userInfoContainer}>
+        <View style={styles.userAvatarContainer}>
+          <Image
+            source={require('../../assets/images/trucks/truck.png')}
+            style={styles.userAvatar}
+          />
+        </View>
+        <View style={styles.userInfo}>
+          <Text style={styles.userName}>
+            {`${userON?.data?.displayName}`}
+          </Text>
+          <Text style={styles.userRole}>{languageModule.lang(language, userON?.role)}</Text>
+          <View style={styles.innerSeparator} />
+          <Text style={styles.driverStatus}>
+          {`${languageModule.lang(language, 'driverStatus')}: ${userON?.role === "userCoDriver" ? userON?.status : driverStatus}`}
+          </Text>
+          <Text style={styles.coordinates}>
+            {`${languageModule.lang(language, 'latitude')}: ${eldData?.coords?.latitude ? eldData?.coords?.latitude.toFixed(3) : languageModule.lang(language, 'loading')}`}
+          </Text>
+          <Text style={styles.coordinates}>
+            {`${languageModule.lang(language, 'longitude')}: ${eldData?.coords?.longitude ? eldData?.coords?.longitude.toFixed(3) : languageModule.lang(language, 'loading')}`}
+          </Text>
+          <Text style={styles.updatedOn}>
+            {`${languageModule.lang(language, 'Updatedon')}: ${new Date(trackingTimestamp).toDateString()} ${new Date(trackingTimestamp).toLocaleTimeString()}`}
+          </Text>
+        </View>
       </View>
-    )
+    );
   }
 
   function controlesNavegacion() {
@@ -229,12 +296,13 @@ const PrincipalScreen = ({ navigation }) => {
               style={[
                 styles.centerButton,
                 { position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -60 }, { translateY: -60 }] },
-                driverStatus === 'OFF-DUTY' && styles.selectedButton,
-                currentDriver?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
+                ((userON?.role === "userCoDriver" && userON?.status === "OFF-DUTY") || (userON?.role !== "userCoDriver" && driverStatus === "OFF-DUTY")) && styles.selectedButton,
+                (userON?.data?.exemptDriverConfiguration?.value == "E" || (userON?.role === "userCoDriver" && driverStatus === "D")) && styles.disabledButton,
               ]}
               onPress={() => changeDriverStatus('OFF-DUTY')}
+              disabled={userON?.data?.exemptDriverConfiguration?.value == "E" || (userON?.role === "userCoDriver" && driverStatus === "D")}
             >
-              <Text style={[styles.buttonText, driverStatus === 'OFF-DUTY' && styles.selectedText]}>
+              <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "OFF-DUTY") || (userON?.role !== "userCoDriver" && driverStatus === "OFF-DUTY")) && styles.selectedText]}>
                 {languageModule.lang(language, 'offDuty')}
               </Text>
             </TouchableOpacity>           
@@ -243,25 +311,27 @@ const PrincipalScreen = ({ navigation }) => {
             <View style={styles.stateButtonsRow}>
               <TouchableOpacity
                 style={[
-                  styles.stateButton,
-                  driverStatus === 'ON' && styles.selectedButton,
-                  currentDriver?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
+                styles.stateButton,
+                ((userON?.role === "userCoDriver" && userON?.status === "ON") || (userON?.role !== "userCoDriver" && driverStatus === "ON")) && styles.selectedButton,
+                (userON?.data?.exemptDriverConfiguration?.value == "E" || (userON?.role === "userCoDriver" && driverStatus === "D")) && styles.disabledButton,
                 ]}
                 onPress={() => changeDriverStatus('ON')}
+                disabled={userON?.data?.exemptDriverConfiguration?.value == "E" || (userON?.role === "userCoDriver" && driverStatus === "D")}
               >
-                <Text style={[styles.buttonText, driverStatus === 'ON' && styles.selectedText]}>
+                <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "ON") || (userON?.role !== "userCoDriver" && driverStatus === "ON")) && styles.selectedText]}>
                   {languageModule.lang(language, 'onDuty')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  driverStatus === 'D' && styles.selectedButton,
-                  currentDriver?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
-                ]}
+                  ((userON?.role === "userCoDriver" && userON?.status === "D") || (userON?.role !== "userCoDriver" && driverStatus === "D")) && styles.selectedButton,
+                  (userON?.data?.exemptDriverConfiguration?.value == "E" || (userON?.role === "userCoDriver" && driverStatus === "D")) && styles.disabledButton,
+                  ]}
                 onPress={() => changeDriverStatus('D')}
+                disabled={userON?.data?.exemptDriverConfiguration?.value == "E" || (userON?.role === "userCoDriver" && driverStatus === "D")}
               >
-                <Text style={[styles.buttonText, driverStatus === 'D' && styles.selectedText]}>
+                <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "D") || (userON?.role !== "userCoDriver" && driverStatus === "D")) && styles.selectedText]}>
                   {languageModule.lang(language, 'driving')}
                 </Text>
               </TouchableOpacity>
@@ -272,26 +342,28 @@ const PrincipalScreen = ({ navigation }) => {
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  driverStatus === 'SB' && styles.selectedButton,
+                  ((userON?.role === "userCoDriver" && userON?.status === "SB") || (userON?.role !== "userCoDriver" && driverStatus === "SB")) && styles.selectedButton,
                   { right: -25 },
-                  currentDriver?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
+                  (userON?.data?.exemptDriverConfiguration?.value == "E") && styles.disabledButton,
                 ]}
                 onPress={() => changeDriverStatus('SB')}
+                disabled={userON?.data?.exemptDriverConfiguration?.value == "E"}
               >
-                <Text style={[styles.buttonText, driverStatus === 'SB' && styles.selectedText]}>
+                <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "SB") || (userON?.role !== "userCoDriver" && driverStatus === "SB")) && styles.selectedText]}>
                   {languageModule.lang(language, 'Sleeper')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  driverStatus === 'PS' && styles.selectedButton,
+                  ((userON?.role === "userCoDriver" && userON?.status === "PS") || (userON?.role !== "userCoDriver" && driverStatus === "PS")) && styles.selectedButton,
                   { marginLeft: 80 },
-                  currentDriver?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
+                  (userON?.data?.exemptDriverConfiguration?.value == "E") && styles.disabledButton,
                 ]}
                 onPress={() => changeDriverStatus('PS')}
+                disabled={userON?.data?.exemptDriverConfiguration?.value == "E"}
               >
-                <Text style={[styles.buttonText, driverStatus === 'PS' && styles.selectedText]}>
+                 <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "PS") || (userON?.role !== "userCoDriver" && driverStatus === "PS")) && styles.selectedText]}>
                   {languageModule.lang(language, 'passenger')}
                 </Text>
               </TouchableOpacity>
@@ -301,26 +373,28 @@ const PrincipalScreen = ({ navigation }) => {
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  driverStatus === 'YM' && styles.selectedButton,
-                  !currentDriver?.yard && styles.disabledButton,
-                  currentDriver?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
+                  ((userON?.role === "userCoDriver" && userON?.status === "YM") || (userON?.role !== "userCoDriver" && driverStatus === "YM")) && styles.selectedButton,
+                  (!userON.data?.yard || (userON?.role === "userCoDriver" && driverStatus === "D")) && styles.disabledButton,
+                   userON?.data?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
                 ]}
                 onPress={() => currentDriver?.yard == true ? changeDriverStatus("YM") : null}
+                disabled={userON?.data?.exemptDriverConfiguration?.value == "E" || (userON?.role === "userCoDriver" && driverStatus === "D")}
               >
-                <Text style={[styles.buttonText, driverStatus === 'YM' && styles.selectedText]}>
+                <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "YM") || (userON?.role !== "userCoDriver" && driverStatus === "YM")) && styles.selectedText]}>
                   YARD
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  driverStatus === 'PC' && styles.selectedButton,
-                  !currentDriver?.personalUse && styles.disabledButton,
-                  currentDriver?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
+                  ((userON?.role === "userCoDriver" && userON?.status === "PC") || (userON?.role !== "userCoDriver" && driverStatus === "PC")) && styles.selectedButton,
+                  (!userON.data?.personalUse|| (userON?.role === "userCoDriver" && driverStatus === "D")) && styles.disabledButton,
+                   userON?.data?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
                 ]}
                 onPress={() => currentDriver?.personalUse == true ? changeDriverStatus("PC"): null}
+                disabled={userON?.data?.exemptDriverConfiguration?.value == "E" || (userON?.role === "userCoDriver" && driverStatus === "D")}
               >
-                <Text style={[styles.buttonText, driverStatus === 'PC' && styles.selectedText]}>
+                <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "PC") || (userON?.role !== "userCoDriver" && driverStatus === "PC")) && styles.selectedText]}>
                   PERSONAL
                 </Text>
               </TouchableOpacity>
@@ -391,19 +465,7 @@ const PrincipalScreen = ({ navigation }) => {
           </Text>
           <TouchableOpacity
             activeOpacity={0.99}
-            onPress={async () => {
-              dispatch(
-                setDriverStatus(
-                  eldData,
-                  currentDriver,
-                  tempDriverStatus,
-                  acumulatedVehicleKilometers,
-                  driverStatus,
-                  2
-                )
-              );
-              setShowStatusDialog(false);
-            }}
+            onPress={postDriverEventF}
             style={styles.buttonStyle}
           >
             <Text style={{ ...Fonts.whiteColor16Bold }}>{languageModule.lang(language, 'confirm')}</Text>
@@ -929,8 +991,8 @@ const PrincipalScreen = ({ navigation }) => {
         {header()}
         <View style={styles.separator} />
         {userInfo()}
-        {currentDriver?.exemptDriverConfiguration?.value == "E"
-            ? expemtDriver(currentDriver?.exemptDriverConfiguration?.comment)
+        {userON?.data?.exemptDriverConfiguration?.value == "E"
+            ? expemtDriver(userON?.data?.exemptDriverConfiguration?.comment)
             : null}
         <View style={styles.separator} />
         {controlesNavegacion()}
@@ -953,6 +1015,47 @@ const PrincipalScreen = ({ navigation }) => {
   };
 
   const styles = StyleSheet.create({
+    userInfoContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    userAvatarContainer: {
+      marginRight: 10,
+    },
+    userAvatar: {
+      width: 50,
+      height: 50,
+      borderRadius: 8, 
+    },
+    userInfo: {
+      flex: 1,
+    },
+    userName: {
+      fontSize: 15,
+      fontWeight: 'bold',
+      color: '#000',
+    },
+    userRole: {
+      fontSize: 12,
+      color: '#777',  
+    },
+    driverStatus: {
+      fontSize: 12,
+      color: '#4CAF50',
+    },
+    coordinates: {
+      fontSize: 12,
+      color: '#333',
+    },
+    updatedOn: {
+      fontSize: 12,
+      color: '#777',
+    },
+    innerSeparator: {
+      height: 1,
+      backgroundColor: '#ddd',
+      marginVertical: 5,
+    },
     disabledButton: {
       opacity: 0.5,
     },
@@ -1142,7 +1245,7 @@ const PrincipalScreen = ({ navigation }) => {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginTop: -37, // Mover el encabezado hacia arriba
+      marginTop: -30, // Mover el encabezado hacia arriba
       marginBottom: 8, // Agregar un poco de espacio debajo del encabezado
     },
     title: {

@@ -47,6 +47,10 @@ const LoginScreen = ({navigation, handleLogin}) => {
   const [currentCords, setCurrentCords] = useState({});
   const [driverDistance, setDrivedDistance] = useState(0);
   const [backClickCount, setBackClickCount] = useState(0);
+  const [users, setUsers] = useState([
+    { id: '1', name: 'Conductor 1', role: 'userDriver', isActive: false, Image: "assets/images/user/userDriver.jpg" },
+    { id: '2', name: 'Conductor 2', role: 'userCoDriver', isActive: false, Image: "assets/images/user/coDriver.jpg"},
+  ]);
   const { startTimer } = useTimer();
 
   //necesitamos un undefined driver al cual darle los eventos indefinidos, ya que cada ELD tiene su undefined driver
@@ -386,6 +390,14 @@ const LoginScreen = ({navigation, handleLogin}) => {
                               "eldAccuracy",
                               JSON.stringify({ accuracy: accuracy })
                               ).then(async () => {
+                                const firstUser = users.find(user => user.id === '1');
+                                if (firstUser) {
+                                  firstUser.isActive = true;
+                                  firstUser.data = res.data[0];
+                                  firstUser.token = user.uid;
+                                  firstUser.status = "ON"
+                                  await AsyncStorage.setItem('users', JSON.stringify(users));
+                                }
                                 //Aqui iniciamos el temporizador ya que es el primer evento del cliente
                                 startTimer();
                                 handleLogin(); 

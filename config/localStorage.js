@@ -1,4 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+export const getCurrentUsers = async () => {
+  return await AsyncStorage.getItem("users").then((users) => {
+    return JSON.parse(users);
+  });
+};
+
 export const getCurrentDriver = async () => {
   return await AsyncStorage.getItem("currentDriver").then((currentDriver) => {
     return JSON.parse(currentDriver);

@@ -130,5 +130,12 @@
     "locationNotAvailable": "Location not available, please wait or try again later",
     "60minutesofinactivity": "60 minutes of inactivity",
     "eventDetails": "Event Details",
-    "status:": "Status:"
+    "status:": "Status:",
+    "home": "Home",
+    "switchAccount": "Switch Account",
+    "logout": "Logout",
+    "AccountManagement": "Account Management",
+    "userDriver": "Driver",
+    "userCodriver": "Codriver",
+    "noLogoutAvailable": "No logout available, try closing all sesions"
 }
