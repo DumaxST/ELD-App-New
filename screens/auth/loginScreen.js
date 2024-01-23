@@ -4,7 +4,7 @@ import { Alert,StyleSheet, View,ScrollView, Modal, Image, Dimensions, BackHandle
 import { Input, Button, Text } from 'react-native-elements';
 import { Colors, Fonts, Sizes } from "../../constants/styles";
 import { useNavigation } from '@react-navigation/native';
-import RNPickerSelect from 'react-native-picker-select';
+import SelectDropdown from 'react-native-select-dropdown'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from "@react-navigation/native";
 import { authDriver, eld, getCarriersOptions, getTheUserIsAdmin, authToken} from "../../data/commonQuerys";
@@ -492,23 +492,28 @@ const LoginScreen = ({navigation, handleLogin}) => {
         >
           <Text>{"Version 1.0"}</Text> 
           </View>
-      <View style={{ marginTop: Sizes.fixPadding, alignItems: 'center', width: 200 }}>
-        <RNPickerSelect
-          value={selectedLanguage}
-          onValueChange={(value) => handleLanguageChange(value)}
-          items={languageOptions}
-          placeholder={{ label: '', value: '', flag: '' }}
-          style={{
-            inputIOS: {
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: 50,
-              width: 200,
-            },
-            inputAndroid: { color: 'black' } 
-          }}
-        />
-      </View>
+          <View style={{ marginTop: Sizes.fixPadding, alignItems: 'center', width: 200 }}>
+      <SelectDropdown
+         buttonTextStyle={{fontSize: 14}}
+         buttonStyle={{width: '93%',
+         height: 35,
+         backgroundColor: '#FFF',
+         borderRadius: 8,
+         borderWidth: 1,
+         borderColor: '#ddd'}}
+         defaultButtonText={languageModule.lang(language,'language')}
+         data={languageOptions}
+         onSelect={(selectedItem, index) => {
+           handleLanguageChange(selectedItem.value); 
+         }}
+         buttonTextAfterSelection={(selectedItem, index) => {
+           return selectedItem.label;
+         }}
+         rowTextForSelection={(item, index) => {
+           return item.label;
+         }}
+         />
+      </View>      
         </View>
         
     )
@@ -544,26 +549,29 @@ const LoginScreen = ({navigation, handleLogin}) => {
   return (
     <View style={styles.container}>
       {logoIcon()}
-      <View style={styles.form}>
-        <RNPickerSelect
-          value={selectedCarrier}
-          onValueChange={(value) => setSelectedCarrier(value)}
-          items={carriers}
-          placeholder={{ label: languageModule.lang(language, 'SelectaCarrier'), value: null }}
-          style={{
-            inputIOS: {
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: 50,
-              width: 200,
-            },
-            inputAndroid: { 
-              color: 'black' 
-            } 
-          }}
-          fixAndroidTouchableBug={true}      //descomentar despues de cada ISSUE
-					useNativeAndroidPickerStyle={false}
-        />
+      <View style={{ height: 55}}>
+         <SelectDropdown
+         buttonTextStyle={{fontSize: 14}}
+         buttonStyle={{width: '93%',
+         height: 35,
+         backgroundColor: '#FFF',
+         borderRadius: 8,
+         borderWidth: 1,
+         borderColor: '#ddd'}}
+         defaultButtonText={languageModule.lang(language,'SelectaCarrier')}
+         data={carriers}
+         onSelect={(selectedItem, index) => {
+           console.log(selectedItem, index);
+           // Puedes realizar acciones adicionales al seleccionar un elemento si es necesario
+           setSelectedCarrier(selectedItem.value); // Asegúrate de tener esta función para actualizar el estado
+         }}
+         buttonTextAfterSelection={(selectedItem, index) => {
+           return selectedItem.label;
+         }}
+         rowTextForSelection={(item, index) => {
+           return item.label;
+         }}
+         />
       </View>
       <View style={styles.form}>
         <Input
