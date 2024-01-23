@@ -185,7 +185,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
   //obtenemes el estado del conductor para mandar el sonido en caso de que sea D
   useEffect(() => {
     const checkDriverStatus = () => {
-      if (driverStatus === "D" && currentDriver === null) {
+      if (driverStatus === "D") {
         playSound();
         console.log(driverStatus);
       }

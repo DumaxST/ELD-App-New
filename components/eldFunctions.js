@@ -65,6 +65,8 @@ export const isStillDriving = async (currentLocation) => {
     const roundedDistance = Math.round(distance * 1000) / 1000;
     const roundedAccuracy = Math.round(eld.accuracy * 1000) / 1000;
 
+    console.log("distance", roundedDistance);
+    console.log("accuracy", roundedAccuracy);
     return roundedDistance > roundedAccuracy ? roundedDistance : 0;
   } catch (error) {
     console.error("Error in isStillDriving:", error);
