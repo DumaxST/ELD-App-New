@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Alert } from "react-native";
 
+// export const axiosURL = process.env.EXPO_PUBLIC_ELD_API;
 export const axiosURL = "https://us-central1-dumax-eld.cloudfunctions.net/userApp";
 
 export const showAlert = (title, message, onOkPress) => {
