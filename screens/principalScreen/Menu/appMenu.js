@@ -43,10 +43,7 @@ const AppMenu = ({ navigation, handleLogout }) => {
 
   const logOutDriver = async () => {
     // Eliminar el token y los datos del conductor directamente
-    const token = await AsyncStorage.getItem('token');
-    await removeToken(token).then( async (res) => {
-      if(res?.data?.message == "Token eliminado exitosamente."){
-      await AsyncStorage.removeItem('token');
+    await AsyncStorage.removeItem('token');
   
       // Despachar la acción y esperar a que se complete
       await new Promise(resolve => {   
