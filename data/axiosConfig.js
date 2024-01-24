@@ -1,5 +1,4 @@
 import axios from "axios";
-import { Alert } from "react-native";
 
 // export const axiosURL = process.env.EXPO_PUBLIC_ELD_API;
 export const axiosURL = "https://us-central1-dumax-eld.cloudfunctions.net/userApp";
@@ -37,49 +36,6 @@ export const getAxios = async (ref, params) => {
       return res.data;
     })
     .catch((error) => {
-      switch (error.response.status) {
-        case 404:
-              //si es 404 es un error de conexion o problema con la API
-              //le asignaremos un codigo 75
-              let codeError = 75;
-              showAlert(
-                `Error ${error.response.status}`,
-                "Por favor presione enviar para notificar a soporte o intente más tarde",
-                () => {
-                  //Aqui realizaremos una llamada a la api para notificar a admin o a soporte
-                  console.log("Enviado...")
-                }
-              );
-              break;
-        case 500:
-              //si es 500 hay un problema con la red del usuario
-              //le asignaremos un codigo 80
-              codeError = 80;
-              showAlert(
-                `Error ${error.response.status}`,
-                "El dispositivo no se encuentra conectado a internet, por favor verifique su conexión e intente más tarde",
-                () => {
-                  //Aqui solo advertiremos pero no haremos nada ya que la app funcionaria tambien offline
-                  console.log("OK")
-                }
-              );
-              break;
-        case 422:
-              //si es 422, hay un error en la validacion de los datos
-              //le asignaremos un codigo 66
-              codeError = 66;
-              showAlert(
-                `Error ${error.response.status}`,
-                "Por favor presione enviar para notificar a soporte o intente más tarde",
-                () => {
-                  //Aqui realizaremos una llamada a la api para notificar a admin o a soporte
-                  console.log("Enviado...")
-                }
-              );
-              break;
-        default:
-
-      }
       const errorCode = error.code;
       const errorMessage = error.message;
       console.warn(JSON.stringify(error));
@@ -97,39 +53,6 @@ export const postAxios = async (ref, params) => {
       },
     })
     .catch((error) => {
-      switch (error.response.status) {
-        case 400:
-              //si es 404 es un error de conexion o problema con la API
-              //le asignaremos un codigo 75
-              let codeError = 75;
-              showAlert(
-                `Error ${error.response.status}`,
-                "Por favor presione enviar para notificar a soporte o intente más tarde",
-                () => {
-                  //Aqui realizaremos una llamada a la api para notificar a admin o a soporte
-                  console.log("Enviado...")
-                }
-              );
-              break;
-        case 500:
-              //si es 500 hay un problema con la red del usuario
-              //le asignaremos un codigo 80
-              codeError = 80;
-              showAlert(
-                `Error ${error.response.status}`,
-                "El dispositivo no se encuentra conectado a internet, por favor verifique su conexión e intente más tarde",
-                () => {
-                  //Aqui solo advertiremos pero no haremos nada ya que la app funcionaria tambien offline
-                  console.log("OK")
-                }
-              );
-              break;
-        case 422:
-          //En post manejo errores con el 422 asi que lo dejaremos pasar y no advertiremos al usuario
-          console.log("Manejo de errores en post")
-          break
-        default:
-      }
       const errorCode = error?.code;
       const errorMessage = error?.message;
       console.log("PostError",errorCode, errorMessage);
@@ -146,40 +69,6 @@ export const putAxios = async (ref, params) => {
       },
     })
     .catch((error) => {
-      switch (error.response.status) {
-        case 404:
-              //si es 404 es un error de conexion o problema con la API
-              //le asignaremos un codigo 75
-              let codeError = 75;
-              showAlert(
-                `Error ${error.response.status}`,
-                "Por favor presione enviar para notificar a soporte o intente más tarde",
-                () => {
-                  //Aqui realizaremos una llamada a la api para notificar a admin o a soporte
-                  console.log("Enviado...")
-                }
-              );
-              break;
-        case 500:
-              //si es 500 hay un problema con la red del usuario
-              //le asignaremos un codigo 80
-              codeError = 80;
-              showAlert(
-                `Error ${error.response.status}`,
-                "El dispositivo no se encuentra conectado a internet, por favor verifique su conexión e intente más tarde",
-                () => {
-                  //Aqui solo advertiremos pero no haremos nada ya que la app funcionaria tambien offline
-                  console.log("OK")
-                }
-              );
-              break;
-        case 422:
-              //En post manejo errores con el 422 asi que lo dejaremos pasar y no advertiremos al usuario
-              console.log("Manejo de errores en post")
-              break
-        default:
-
-      }
       const errorCode = error.code;
       const errorMessage = error.message;
       console.error(errorCode, errorMessage);
@@ -202,49 +91,6 @@ export const deleteAxios = async (ref, params) => {
       }
     )
     .catch((error) => {
-      switch (error.response.status) {
-        case 404:
-              //si es 404 es un error de conexion o problema con la API
-              //le asignaremos un codigo 75
-              let codeError = 75;
-              showAlert(
-                `Error ${error.response.status}`,
-                "Por favor presione enviar para notificar a soporte o intente más tarde",
-                () => {
-                  //Aqui realizaremos una llamada a la api para notificar a admin o a soporte
-                  console.log("Enviado...")
-                }
-              );
-              break;
-        case 500:
-              //si es 500 hay un problema con la red del usuario
-              //le asignaremos un codigo 80
-              codeError = 80;
-              showAlert(
-                `Error ${error.response.status}`,
-                "El dispositivo no se encuentra conectado a internet, por favor verifique su conexión e intente más tarde",
-                () => {
-                  //Aqui solo advertiremos pero no haremos nada ya que la app funcionaria tambien offline
-                  console.log("OK")
-                }
-              );
-              break;
-        case 422:
-              //si es 422, hay un error en la validacion de los datos
-              //le asignaremos un codigo 66
-              codeError = 66;
-              showAlert(
-                `Error ${error.response.status}`,
-                "Por favor presione enviar para notificar a soporte o intente más tarde",
-                () => {
-                  //Aqui realizaremos una llamada a la api para notificar a admin o a soporte
-                  console.log("Enviado...")
-                }
-              );
-              break;
-        default:
-
-      }
       const errorCode = error.code;
       const errorMessage = error.message;
       console.error(errorCode, errorMessage);
