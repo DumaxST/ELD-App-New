@@ -402,7 +402,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
                               })
                             }); 
                           }
-                        })                            
+                        })        
                     }catch(error){
                       console.log("Error al pasar al driver:" + error)
                     }
