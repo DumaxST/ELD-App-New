@@ -18,6 +18,29 @@ export const authDriver = async (userName, carrierID, language, password) => {
   });
 }
 
+export const authToken = async (userName, carrierID, token, language) => {
+  return await postAxios("/api/auth/authToken", {
+    userName: userName,
+    carrierID: carrierID,
+    token: token,
+    language: language,
+  }).then((res) =>{
+    return res
+  }).catch((err) => {
+    console.error("authToken", err);
+  });
+}
+
+export const removeToken = async (token) => {
+  return await postAxios("/api/auth/deleteToken", {
+    token: token
+  }).then((res) =>{
+    return res
+  }).catch((err) => {
+    console.error("removeToken", err);
+  });
+}
+
 export const getCarriersOptions = async () => {
   return await getAxios("/api/app/carriers").then((res) =>{
     return res
@@ -176,8 +199,7 @@ export const postDriverEvent = async (
 };
 
 export const DriverEvent = {
-  //Mandamos el identificador de solo actualizacion
-  put: async (editedEvent, currentChofer, justUpdate) => {
+  put: async (editedEvent, currentChofer) => {
     await putAxios(`/api/driverEvent`, {
       carrierID: currentChofer?.carrier?.id
         ? currentChofer?.carrier?.id
@@ -185,9 +207,8 @@ export const DriverEvent = {
       driverID: currentChofer?.id
         ? currentChofer.id
         : "Jg6XvXYVCvPCrdIZMOQeZ8WeH3d2",
-        eldID: "mHlqeeq5rfz3Cizlia23",  //cambiar por ELD checar con Isaias
+      eldID: "bWuPuaLFPVQxdWH9eGdX",
       event: editedEvent,
-      justUpdate: justUpdate ? justUpdate : false,
     });
   },
   history: {

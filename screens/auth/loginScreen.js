@@ -7,10 +7,9 @@ import { useNavigation } from '@react-navigation/native';
 import SelectDropdown from 'react-native-select-dropdown'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from "@react-navigation/native";
-import { authDriver, eld, getCarriersOptions, getTheUserIsAdmin} from "../../data/commonQuerys";
+import { authDriver, eld, getCarriersOptions, getTheUserIsAdmin, authToken} from "../../data/commonQuerys";
 import { getCurrentDriver } from "../../config/localStorage";
 import { useSelector, useDispatch } from "react-redux";
-import * as Location from "expo-location";
 import { Audio } from "expo-av";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { isStillDriving } from "../../components/eldFunctions";

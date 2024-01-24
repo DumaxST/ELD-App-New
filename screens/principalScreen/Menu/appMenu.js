@@ -45,7 +45,6 @@ const AppMenu = ({ navigation, handleLogout }) => {
     // Eliminar el token y los datos del conductor directamente
     await AsyncStorage.removeItem('token');
   
-
       // Despachar la acción y esperar a que se complete
       await new Promise(resolve => {   
         dispatch(logOutCurrentDriver(currentDriver, eldData, acumulatedVehicleKilometers, lastDriverStatus))
@@ -59,9 +58,7 @@ const AppMenu = ({ navigation, handleLogout }) => {
         index: 0,
         routes: [{ name: 'LoginScreen' }],
       });
-      }
-    });
-  };
+  }
   
   function header() {
     return (
