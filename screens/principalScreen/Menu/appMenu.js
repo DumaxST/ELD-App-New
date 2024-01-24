@@ -58,9 +58,7 @@ const AppMenu = ({ navigation, handleLogout }) => {
         index: 0,
         routes: [{ name: 'LoginScreen' }],
       });
-      }
-    });
-  };
+  }
   
   function header() {
     return (
