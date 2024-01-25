@@ -57,10 +57,9 @@ export const setDriverStatus = (
   currentAnnotation
 ) => {
   return async (dispatch) => {
-    if (await isStillDriving(eldData)) {
-      await AsyncStorage.setItem("lastEldData", JSON.stringify(eldData)).then(
-        async () => {
-          if (driverStatus == "OFF-DUTY" || driverStatus == "ON") {
+    let isDriving = await isStillDriving(eldData);
+    if (isDriving > 0) {
+          if (driverStatus == "OFF-DUTY" || driverStatus == "ON" || driverStatus !== "D") {
             return await postDriverEvent(
               {
                 recordStatus: 1,
@@ -84,30 +83,28 @@ export const setDriverStatus = (
           } else {
             return;
           }
-        }
-      );
-    } else {
-      return await postDriverEvent(
-        {
-          recordStatus: 1,
-          recordOrigin: recordOrigin,
-          type: getEventTypeCode(driverStatus).type,
-          code: getEventTypeCode(driverStatus).code,
-        },
-        currentAnnotation,
-        driverStatus,
-        currentDriver,
-        eldData,
-        acumulatedVehicleKilometers,
-        lastDriverStatus
-      ).then(() => {
-        return dispatch({
-          type: SET_DRIVER_STATUS,
-          value: driverStatus,
-          lastDriverStatus: lastDriverStatus,
-        });
+    }else if (currentDriver.id != "Jg6XvXYVCvPCrdIZMOQeZ8WeH3d2"){
+    return await postDriverEvent(
+      {
+        recordStatus: 1,
+        recordOrigin: recordOrigin,
+        type: getEventTypeCode(driverStatus).type,
+        code: getEventTypeCode(driverStatus).code,
+      },
+      currentAnnotation,
+      driverStatus,
+      currentDriver,
+      eldData,
+      acumulatedVehicleKilometers,
+      lastDriverStatus
+    ).then(() => {
+      return dispatch({
+        type: SET_DRIVER_STATUS,
+        value: driverStatus,
+        lastDriverStatus: lastDriverStatus,
       });
-    }
+    });
+    } 
   };
 };
 

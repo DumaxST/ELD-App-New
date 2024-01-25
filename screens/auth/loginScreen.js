@@ -3,7 +3,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { Alert,StyleSheet, View,ScrollView, Modal, Image, Dimensions, BackHandler, TouchableOpacity } from 'react-native';
 import { Input, Button, Text } from 'react-native-elements';
 import { Colors, Fonts, Sizes } from "../../constants/styles";
-import { useNavigation } from '@react-navigation/native';
+import { getEventTypeCode, postDriverEvent } from "../../data/commonQuerys";
 import SelectDropdown from 'react-native-select-dropdown'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from "@react-navigation/native";
@@ -193,7 +193,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
     // Llama a checkDriverStatus inmediatamente
     checkDriverStatus();
   
-    const intervalId = setInterval(checkDriverStatus, 1000); // Verifica el estado del conductor cada segundo
+    const intervalId = setInterval(checkDriverStatus, 10000); // Verifica el estado del conductor cada segundo
   
     // Limpia el intervalo cuando el componente se desmonta
     return () => {
@@ -227,10 +227,10 @@ const LoginScreen = ({navigation, handleLogin}) => {
            });
            //Si no estamos logueados asignamos un accuracy por defecto y esperamos el logueo
         }else{
-          setEldAccuracy(0.015)
+          setEldAccuracy(0.007)
           return await AsyncStorage.setItem(
             "eldAccuracy",
-            JSON.stringify({ accuracy: 0.015 })
+            JSON.stringify({ accuracy: 0.007 })
             )
         }
       });
@@ -269,12 +269,37 @@ const LoginScreen = ({navigation, handleLogin}) => {
   
   useEffect(() => {
     updateDriverStatus();
+  }, [eldData, driverStatus, acumulatedVehicleKilometers, lastDriverStatus]);
+  
+  //Aqui vamos a postear el off-duty del undefined cada 60 min
+  const postUndefinedDriverEvent = async () => {
+    if (Object.keys(eldData).length > 0 && driverStatus === "OFF-DUTY") {
+      await postDriverEvent(
+        {
+          recordStatus: 1,
+          recordOrigin: 2,
+          type: getEventTypeCode(driverStatus).type,
+          code: getEventTypeCode(driverStatus).code,
+        },
+        "user is not logged in",
+        driverStatus,
+        undefinedDriver,
+        eldData,
+        acumulatedVehicleKilometers,
+        lastDriverStatus
+      ).then(async (eventData) => {
+        console.log("Evento del undefined driver posteado");
+      })
+    }
+  }
 
-     const updateIntervalId = setInterval(updateDriverStatus, 60000);
+  useEffect(() => {
+    postUndefinedDriverEvent()
+     const updateIntervalId = setInterval(postUndefinedDriverEvent, 60000);
    
      return () => clearInterval(updateIntervalId);
-  }, [eldData]);
-  
+  }, []);
+
   // Obtenermos nuestro current language desde el AsyncStorage
   useEffect(() => {
     const getPreferredLanguage = async () => {
@@ -290,7 +315,6 @@ const LoginScreen = ({navigation, handleLogin}) => {
     ];
     setLanguageOptions(options);
   }, []);
-
   
   //Funciones a usar
   const backAction = () => {
