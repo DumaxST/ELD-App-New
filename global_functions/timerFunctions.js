@@ -56,13 +56,13 @@ export const TimerProvider = ({ children }) => {
 
   const startTimer = () => {
     if (intervalIdRef.current === null) {
-      //Iniciamos el temporizador
+      // Iniciamos el temporizador
       startTimeRef.current = Math.floor(Date.now() / 1000);
       intervalIdRef.current = setTimeout(() => {
         checkTimerExpiration();
       }, 60000); // 60000 milisegundos = 1 minuto
     } else {
-      console.warn("El temporizador ya se ejectua");
+      console.warn("El temporizador ya se está ejecutando");
     }
   };
 
@@ -78,40 +78,42 @@ export const TimerProvider = ({ children }) => {
   };
 
   const checkTimerExpiration = async () => {
-    //Aqui checamos el tiempo transcurrido y comparamos con el tiempo de inicio y de ahi posteamos el evento
+    // Aquí checamos el tiempo transcurrido y comparamos con el tiempo de inicio y de ahí posteamos el evento
     const actualTime = Math.floor(Date.now() / 1000);
     const minutesDiff = convertElapsedTime(actualTime, startTimeRef.current);
-    console.log("Actual:", convertirTimestampAFechaYHora(actualTime), "Inicio:", convertirTimestampAFechaYHora(startTimeRef.current), "Diferencia:", minutesDiff);
-    if (minutesDiff === 59) {
-      return await getCurrentDriver()
-      .then(async (currentDriver) => {
-        await postDriverEvent(
+    if (minutesDiff === 60) {
+      await getCurrentDriver()
+        .then(async (currentDriver) => {
+          await postDriverEvent(
             {
-            recordStatus: 1,
-            recordOrigin: 1,
-            type: getEventTypeCode(driverStatus).type,
-            code: getEventTypeCode(driverStatus).code,
+              recordStatus: 1,
+              recordOrigin: 1,
+              type: getEventTypeCode(driverStatus).type,
+              code: getEventTypeCode(driverStatus).code,
             },
             languageModule.lang(language, "60minutesofinactivity"),
             driverStatus,
             currentDriver,
-            eldDatas,
+            eldData,
             acumulatedVehicleKilometers,
             lastDriverStatus
-          ).then(async () => { 
-                 
-          restartTimer();
+          )
+          .then(async () => { 
+            restartTimer();
           })
           .catch((err) => {
             console.error("Error al postear evento de inactividad:", err);
           });
-        }
-      )     
+        });
+    } else {
+      // Si no han pasado 60 minutos, establece un nuevo temporizador
+      intervalIdRef.current = setTimeout(() => {
+        checkTimerExpiration();
+      }, 60000); // 60000 milisegundos = 1 minuto
     }
   };
 
   const stopTimer = () => {
-    console.log('Deteniendo el temporizador...', intervalIdRef.current);
     if (intervalIdRef.current !== null) {
       clearTimeout(intervalIdRef.current);
       intervalIdRef.current = null;
