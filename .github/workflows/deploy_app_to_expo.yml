@@ -19,8 +19,8 @@ jobs:
         - uses: actions/checkout@v2
 
         
-        - name: Echo ELD_API
-          run: echo ${{ vars.ELD_API }}   
+        - name: Echo REACT_NATIVE_ELD_API
+          run: echo ${{ vars.REACT_NATIVE_ELD_API }}   
 
         - name: Check if PR is ready
           id: check_ready
@@ -73,7 +73,7 @@ jobs:
 
         - name: Publish Update to EAS and save output
           env:
-            ELD_API: ${{ vars.ELD_API }}
+            REACT_NATIVE_ELD_API: ${{ vars.REACT_NATIVE_ELD_API }}
           run:  
             eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR ${{ github.event.pull_request.number }}" | tee output.txt
   

@@ -20,6 +20,11 @@ import CountryFlag from "react-native-country-flag";
 import { checkAndRequestBluetoothScanPermission } from '../bluetooth/constructor';
 import { startGlobalLocationTracking } from '../../components/ELDlocation';
 
+
+
+import Constants from 'expo-constants';
+const { REACT_NATIVE_ELD_API } = Constants.manifest.env;
+
 const languageModule = require('../../global_functions/variables');
 const { width } = Dimensions.get("window");
 
@@ -469,7 +474,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
             width: 200,
           }}
         >
-          <Text>{"Version 1.1" + `${process.env.ELD_API}`}</Text> 
+          <Text>{"Version 1.1" + `${REACT_NATIVE_ELD_API}`}</Text> 
           </View>
       <View style={{ marginTop: Sizes.fixPadding, alignItems: 'center', width: 200 }}>
         <RNPickerSelect
