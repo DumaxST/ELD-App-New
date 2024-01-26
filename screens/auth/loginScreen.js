@@ -469,7 +469,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
             width: 200,
           }}
         >
-          <Text>{"Version 1.2"}</Text> 
+          <Text>{"Version 1.1"}</Text> 
           </View>
       <View style={{ marginTop: Sizes.fixPadding, alignItems: 'center', width: 200 }}>
         <RNPickerSelect
