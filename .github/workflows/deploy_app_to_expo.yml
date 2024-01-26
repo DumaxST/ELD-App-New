@@ -77,11 +77,14 @@ jobs:
           id: extract_id
           run: |
             ANDROID_UPDATE_ID=$(grep "Android update ID" output.txt | awk '{print $4}')
+            IOS_UPDATE_ID=$(grep "iOS update ID" output.txt | awk '{print $4}')
             echo "::set-output name=android_update_id::${ANDROID_UPDATE_ID}"
+            echo "::set-output name=ios_update_id::${IOS_UPDATE_ID}"
         - name: Add comment to JIRA issue
           run: |
             # Construct the Expo preview channel URL
-            EXPO_URL="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=exp://u.expo.dev/update/${{ steps.extract_id.outputs.android_update_id }}"
+            ANDROID_EXPO_URL="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=exp://u.expo.dev/update/${{ steps.extract_id.outputs.android_update_id }}"
+            IOS_EXPO_URL="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=exp://u.expo.dev/update/${{ steps.extract_id.outputs.ios_update_id }}"
             curl -X POST -H "Content-Type: application/json" \
               -d '{
                 "body": {
@@ -92,7 +95,7 @@ jobs:
                       "type": "paragraph",
                       "content": [
                         {
-                          "text": "Preview Branch Channel: '"$EXPO_URL"'",
+                          "text": "Preview Branch Channel Android: '"$ANDROID_EXPO_URL"' , Preview Branch Channel IOS: '"$IOS_EXPO_URL"'"      ,
                           "type": "text"
                         }
                       ]
