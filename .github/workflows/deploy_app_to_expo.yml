@@ -76,7 +76,6 @@ jobs:
             ELD_API: ${{ vars.ELD_API }}
           run:  
             eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR ${{ github.event.pull_request.number }}" | tee output.txt
-
   
         - name: Extract Android update ID
           id: extract_id

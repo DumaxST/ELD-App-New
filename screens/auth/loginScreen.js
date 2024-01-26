@@ -357,25 +357,35 @@ const LoginScreen = ({navigation, handleLogin}) => {
                     const user = userCredential.user;
                     if(user){              
                       try{ 
-                      dispatch(
-                        setCurrentDriver(
-                          res.data[0],
-                          eldData,
-                          acumulatedVehicleKilometers,
-                          lastDriverStatus
-                        )
-                      );  
-                    return await eld.getAccuracy(res.data[0].carrierID,res.data[0].cmv.id).then(async (accuracy) => {
-                      setEldAccuracy(accuracy);
-                      return await AsyncStorage.setItem(
-                      "eldAccuracy",
-                      JSON.stringify({ accuracy: accuracy })
-                      ).then(async () => {
-                        handleLogin(); 
-                        AsyncStorage.setItem('token', user.uid); 
-                        navigation.push("BluetoothScreen")  
-                      })
-                    });                             
+                        //Reparando error de merge con un comnetario
+                        //Aqui generamos un token en la base de datos para el usuario logueado
+                        authToken(usuario, carrierID, user.uid, language).then(async (response) => {
+                          if(response?.errors?.length > 0){
+                            errorMessages.push([response.errors[0].msg]);
+                            openErrorModal(); 
+                          }
+                          else{
+                            dispatch(
+                              setCurrentDriver(
+                                res.data[0],
+                                eldData,
+                                acumulatedVehicleKilometers,
+                                lastDriverStatus
+                              )
+                            );  
+                            return await eld.getAccuracy(carrierID, res.data[0].cmv.id).then(async (accuracy) => {
+                              setEldAccuracy(accuracy);
+                              return await AsyncStorage.setItem(
+                              "eldAccuracy",
+                              JSON.stringify({ accuracy: accuracy })
+                              ).then(async () => {
+                                handleLogin(); 
+                                AsyncStorage.setItem('token', user.uid); 
+                                navigation.push("BluetoothScreen")  
+                              })
+                            }); 
+                          }
+                        })                            
                     }catch(error){
                       console.log("Error al pasar al driver:" + error)
                     }
