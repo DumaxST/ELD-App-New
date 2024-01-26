@@ -1,8 +1,7 @@
 import axios from "axios";
 import { Alert } from "react-native";
 
-import Constants from 'expo-constants';
-const { REACT_NATIVE_ELD_API } = Constants.manifest.env;
+import { REACT_NATIVE_ELD_API } from "@env";
 export const axiosURL = REACT_NATIVE_ELD_API;
 
 export const showAlert = (title, message, onOkPress) => {
