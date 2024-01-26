@@ -10,7 +10,6 @@ permissions:
   checks: write
   pull-requests: write
             
-
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -68,10 +67,15 @@ jobs:
         - name: Install dependencies
           run: npm install @config-plugins/react-native-ble-plx
 
+        - name: Echo ELD_API
+          run: echo ${{ vars.ELD_API }}   
+
         - name: Publish Update to EAS and save output
           env:
             ELD_API: ${{ vars.ELD_API }}
-          run: eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR ${{ github.event.pull_request.number }}" | tee output.txt
+          run:  
+            eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR ${{ github.event.pull_request.number }}" | tee output.txt
+
   
         - name: Extract Android update ID
           id: extract_id
