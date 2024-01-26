@@ -459,7 +459,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
             width: 200,
           }}
         >
-          <Text>{"Version 1.0"}</Text> 
+          <Text>{"Version 1.1" + `${process.env.ELD_API}`}</Text> 
           </View>
       <View style={{ marginTop: Sizes.fixPadding, alignItems: 'center', width: 200 }}>
         <RNPickerSelect

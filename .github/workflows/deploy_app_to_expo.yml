@@ -18,6 +18,10 @@ jobs:
         steps:
         - uses: actions/checkout@v2
 
+        
+        - name: Echo ELD_API
+          run: echo ${{ vars.ELD_API }}   
+
         - name: Check if PR is ready
           id: check_ready
           run: |
@@ -66,9 +70,6 @@ jobs:
         
         - name: Install dependencies
           run: npm install @config-plugins/react-native-ble-plx
-
-        - name: Echo ELD_API
-          run: echo ${{ vars.ELD_API }}   
 
         - name: Publish Update to EAS and save output
           env:
