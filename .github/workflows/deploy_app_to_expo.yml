@@ -67,11 +67,21 @@ jobs:
         - name: Install dependencies
           run: npm install @config-plugins/react-native-ble-plx
 
-        - name: Publish Update to EAS and save output
+        
+        - name: Publish Update to EAS and save output (DEVELOPMENT ENVIRONMENT)
+          if: github.event.pull_request.base.ref != 'staging'
           env:
             REACT_NATIVE_ELD_API: ${{ vars.REACT_NATIVE_ELD_API }}
           run:  
             eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR ${{ github.event.pull_request.number }}" | tee output.txt
+  
+
+        - name: Publish Update to EAS and save output  (STAGING ENVIRONMENT)
+          if: github.event.pull_request.base.ref == 'staging'
+          env:
+            REACT_NATIVE_ELD_API: ${{ vars.REACT_NATIVE_ELD_API }}
+          run:  
+            eas update --branch "STAGING ENVIRONMENT" --message "Update triggered by PR ${{ github.event.pull_request.number }}" | tee output.txt
   
         - name: Extract Android update ID
           id: extract_id
