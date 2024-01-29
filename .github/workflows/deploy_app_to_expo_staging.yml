@@ -1,0 +1,123 @@
+name: Deploy APP to EXPO PREVIEW CHANNEL
+on: 
+  pull_request:
+    branches:
+      - staging
+    types: [opened, synchronize, reopened]
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+            
+jobs:
+    build:
+        if: github.event.pull_request.base.ref == 'staging'
+        runs-on: ubuntu-latest
+        environment: development
+
+        steps:
+        - uses: actions/checkout@v2
+
+        - name: Check if PR is ready
+          id: check_ready
+          run: |
+            ready="not approved"
+            if [[ "${{ github.event.review.state }}" == "approved" ]]; then
+              ready="approved"
+              echo "PR is ready for deployment and JIRA should be transitioned."
+            else
+              echo "PR is not ready for deployment and JIRA issue will not be transitioned."
+            fi
+            echo "::set-output name=ready::${ready}"
+
+        - name: PR is not ready
+          if: steps.check_ready.outputs.ready != 'approved'
+          run: |
+            echo "PR is not ready for deployment; It is in "${{steps.check_ready.outputs.ready}} state". Exiting workflow."
+            echo "::error::PR is not ready for deployment."
+            exit 1
+
+        - name: Use Node.js
+          uses: actions/setup-node@v2
+          with:
+                node-version: '14'
+
+        - name: Extract PR Number
+          id: pr
+          run: echo "::set-output name=number::${{ github.event.pull_request.number }}"
+      
+        - name: Extract JIRA Issue ID
+          id: jira_issue_id
+          run: |
+            FULL_STRING="${{ github.event.pull_request.head.ref }}"
+            JIRAISSUEID=$(echo $FULL_STRING | cut -d'-' -f1,2)
+            echo "JIRAISSUEID=$JIRAISSUEID" >> $GITHUB_ENV
+        - name: Install Expo CLI
+          run: npm install -g expo-cli
+          
+        - name: Expo Login
+          env:
+            EXPO_CLI_USERNAME: ${{ secrets.EXPO_CLI_USERNAME }}
+            EXPO_CLI_PASSWORD: ${{ secrets.EXPO_CLI_PASSWORD }}
+          run: echo $EXPO_CLI_PASSWORD | expo login --non-interactive --username $EXPO_CLI_USERNAME
+          
+        - name: Install EAS CLI
+          run: npm install -g eas-cli
+        
+        - name: Install dependencies
+          run: npm install @config-plugins/react-native-ble-plx
+
+        - name: Publish Update to EAS and save output
+          env:
+            REACT_NATIVE_ELD_API: ${{ vars.REACT_NATIVE_ELD_API }}
+          run:  
+            eas update --branch "STAGING ENVIROMENT" --message "Update triggered by PR ${{ github.event.pull_request.number }}" | tee output.txt
+  
+        - name: Extract Android update ID
+          id: extract_id
+          run: |
+            ANDROID_UPDATE_ID=$(grep "Android update ID" output.txt | awk '{print $4}')
+            IOS_UPDATE_ID=$(grep "iOS update ID" output.txt | awk '{print $4}')
+            echo "::set-output name=android_update_id::${ANDROID_UPDATE_ID}"
+            echo "::set-output name=ios_update_id::${IOS_UPDATE_ID}"
+        - name: Add comment to JIRA issue
+          run: |
+            # Construct the Expo preview channel URL
+            ANDROID_EXPO_URL="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=exp://u.expo.dev/update/${{ steps.extract_id.outputs.android_update_id }}"
+            IOS_EXPO_URL="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=exp://u.expo.dev/update/${{ steps.extract_id.outputs.ios_update_id }}"
+            curl -X POST -H "Content-Type: application/json" \
+              -d '{
+                "body": {
+                  "type": "doc",
+                  "version": 1,
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "text": "Preview Branch Channel Android: '"$ANDROID_EXPO_URL"' , Preview Branch Channel IOS: '"$IOS_EXPO_URL"'"      ,
+                          "type": "text"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }' \
+              -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+              https://codingcloud-online.atlassian.net/rest/api/3/issue/$JIRAISSUEID/comment 
+        - name: Transsiton JIRA issue to Testing when PR is approved
+          if: steps.check_ready.outputs.ready == 'approved'
+          run: |
+            echo "Pull request is ready to be merged => Transitioning JIRA issue ${{ env.JIRAISSUEID }} to Testing."
+            # Transition the JIRA issue.
+            TRANSITION_ID=$(curl -X GET -H "Content-Type: application/json" \
+                -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+                https://codingcloud-online.atlassian.net/rest/api/3/issue/${{ env.JIRAISSUEID }}/transitions | jq -r '.transitions[] | select(.name=="Functional Testing") | .id')
+            echo "Transition ID: $TRANSITION_ID"
+            curl -X POST -H "Content-Type: application/json" \
+                -d '{"transition":{"id":"'$TRANSITION_ID'"}}' \
+                -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+                https://codingcloud-online.atlassian.net/rest/api/3/issue/${{ env.JIRAISSUEID }}/transitions
