@@ -10,7 +10,6 @@ permissions:
   checks: write
   pull-requests: write
             
-
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -30,12 +29,13 @@ jobs:
               echo "PR is not ready for deployment and JIRA issue will not be transitioned."
             fi
             echo "::set-output name=ready::${ready}"
-        # - name: PR is not ready
-        #   if: steps.check_ready.outputs.ready != 'approved'
-        #   run: |
-        #     echo "PR is not ready for deployment; It is in "${{steps.check_ready.outputs.ready}} state". Exiting workflow."
-        #     echo "::error::PR is not ready for deployment."
-        #     exit 1
+
+        - name: PR is not ready
+          if: steps.check_ready.outputs.ready != 'approved'
+          run: |
+            echo "PR is not ready for deployment; It is in "${{steps.check_ready.outputs.ready}} state". Exiting workflow."
+            echo "::error::PR is not ready for deployment."
+            exit 1
 
         - name: Use Node.js
           uses: actions/setup-node@v2
@@ -69,18 +69,22 @@ jobs:
 
         - name: Publish Update to EAS and save output
           env:
-            ELD_API: ${{ vars.ELD_API }}
-          run: eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR ${{ github.event.pull_request.number }}" | tee output.txt
+            REACT_NATIVE_ELD_API: ${{ vars.REACT_NATIVE_ELD_API }}
+          run:  
+            eas update --branch ${{ github.event.pull_request.head.ref }} --message "Update triggered by PR ${{ github.event.pull_request.number }}" | tee output.txt
   
         - name: Extract Android update ID
           id: extract_id
           run: |
             ANDROID_UPDATE_ID=$(grep "Android update ID" output.txt | awk '{print $4}')
+            IOS_UPDATE_ID=$(grep "iOS update ID" output.txt | awk '{print $4}')
             echo "::set-output name=android_update_id::${ANDROID_UPDATE_ID}"
+            echo "::set-output name=ios_update_id::${IOS_UPDATE_ID}"
         - name: Add comment to JIRA issue
           run: |
             # Construct the Expo preview channel URL
-            EXPO_URL="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=exp://u.expo.dev/update/${{ steps.extract_id.outputs.android_update_id }}"
+            ANDROID_EXPO_URL="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=exp://u.expo.dev/update/${{ steps.extract_id.outputs.android_update_id }}"
+            IOS_EXPO_URL="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=exp://u.expo.dev/update/${{ steps.extract_id.outputs.ios_update_id }}"
             curl -X POST -H "Content-Type: application/json" \
               -d '{
                 "body": {
@@ -91,7 +95,7 @@ jobs:
                       "type": "paragraph",
                       "content": [
                         {
-                          "text": "Preview Branch Channel: '"$EXPO_URL"'",
+                          "text": "Preview Branch Channel Android: '"$ANDROID_EXPO_URL"' , Preview Branch Channel IOS: '"$IOS_EXPO_URL"'"      ,
                           "type": "text"
                         }
                       ]
