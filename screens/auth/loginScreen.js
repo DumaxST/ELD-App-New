@@ -605,7 +605,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
             width: 200,
           }}
         >
-          <Text>{"Version 1.0"}</Text> 
+          <Text>{"Version 1.0.1"}</Text> 
           </View>
           <View style={{ marginTop: Sizes.fixPadding, alignItems: 'center', width: 200 }}>
       <SelectDropdown
