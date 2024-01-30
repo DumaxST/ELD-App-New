@@ -232,7 +232,12 @@ const ListSection = () => {
                            driverEvents[i - 1].geoTimeStamp.timeStamp._seconds
                           )}
               </Text>
-              <Text>{languageModule.lang(language, "location")}{": "}{event?.geoTimeStamp?.latitude}{" "}{event?.geoTimeStamp?.longitude}</Text>
+              <Text>
+              {languageModule.lang(language, 'closestLocation')}{": "}
+              {event?.address?.reachOf
+                ? event.address.reachOf.distance + " " + languageModule.lang(language, 'kmAwayFrom') + " " + event.address.reachOf.city + ", " + event.address.reachOf.state
+                : languageModule.lang(language, 'notAvailable')}
+              </Text>
               <Text>{languageModule.lang(language, "observations")}{": "}{"Pre - TI"}</Text>
               <Text>{languageModule.lang(language, "carrier")}{": "}{event.carrier.name}</Text>
               <Text>
@@ -482,11 +487,68 @@ const ListSection = () => {
           />
           {/*-----------No terminado no editable------------*/}   
           <Text style={{textAlign: "left"}}>{languageModule.lang(language, "location")}</Text>
-          <TextInput
-            editable={false}
+          <TextInput  
+            editable={true}
             style={styles.input}
-            value={`${selectedEvent?.geoTimeStamp?.latitude} , ${selectedEvent?.geoTimeStamp?.longitude}`}
-            placeholder={`${selectedEvent?.geoTimeStamp?.latitude} , ${selectedEvent?.geoTimeStamp?.longitude}`}
+            value={`${selectedEvent?.address?.address}`}
+            placeholder={`${selectedEvent?.address?.address}`}
+          />
+          <Text style={{textAlign: "left"}}>{languageModule.lang(language, 'closestLocation')}</Text>
+          <TextInput
+            editable={true}
+            style={styles.input}
+            value={selectedEvent?.address?.reachOf?.distance || ''}
+            placeholder={selectedEvent?.address?.reachOf?.distance || ''}
+            onChangeText={(distance) => {
+              setSelectedEvent((prevEvent) => ({
+                ...prevEvent,
+                address: {
+                  ...prevEvent.address,
+                  reachOf: {
+                    ...prevEvent.address.reachOf,
+                    distance,
+                  },
+                },
+              }));
+            }}
+          />
+          
+          <TextInput
+            editable={true}
+            style={styles.input}
+            value={selectedEvent?.address?.reachOf?.city || ''}
+            placeholder={selectedEvent?.address?.reachOf?.city || ''}
+            onChangeText={(city) => {
+              setSelectedEvent((prevEvent) => ({
+                ...prevEvent,
+                address: {
+                  ...prevEvent.address,
+                  reachOf: {
+                    ...prevEvent.address.reachOf,
+                    city,
+                  },
+                },
+              }));
+            }}
+          />
+          
+          <TextInput
+            editable={true}
+            style={styles.input}
+            value={selectedEvent?.address?.reachOf?.state || ''}
+            placeholder={selectedEvent?.address?.reachOf?.state || ''}
+            onChangeText={(state) => {
+              setSelectedEvent((prevEvent) => ({
+                ...prevEvent,
+                address: {
+                  ...prevEvent.address,
+                  reachOf: {
+                    ...prevEvent.address.reachOf,
+                    state,
+                  },
+                },
+              }));
+            }}
           />
           {/*-----------------------*/}
           <Text style={{textAlign: "left"}}>{languageModule.lang(language, "commentOrAnnotation")}</Text>

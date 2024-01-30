@@ -137,5 +137,8 @@
     "AccountManagement": "Account Management",
     "userDriver": "Driver",
     "userCoDriver": "Codriver",
-    "noLogoutAvailable": "No logout available, try closing all sesions"
+    "noLogoutAvailable": "No logout available, try closing all sesions",
+    "kmAwayFrom": "km away from",
+    "notAvailable": "Not Available",
+    "closestLocation": "Closest Location"
 }

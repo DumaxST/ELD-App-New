@@ -16,6 +16,7 @@ import { isStillDriving } from "../../components/eldFunctions";
 import { TextInput } from "react-native-paper";
 import { useTimer } from '../../global_functions/timerFunctions';
 import { startGlobalLocationTracking } from '../../components/ELDlocation';
+import {setKey,setDefaults,setLanguage,setRegion,fromAddress,fromLatLng,fromPlaceId,setLocationType,geocode,RequestType,} from "react-geocode";
 
 const PrincipalScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -30,6 +31,7 @@ const PrincipalScreen = ({ navigation }) => {
   const [tempDriverStatus, setTempDriverStatus] = useState("");
   const [driverDistance, setDrivedDistance] = useState(0);
   const [selectedObservaciones, setSelectedObservaciones] = useState([]);
+  const [location, setlocation] = useState({});
   const {eldData,currentDriver,driverStatus,acumulatedVehicleKilometers,lastDriverStatus,trackingTimestamp} = useSelector((state) => state.eldReducer);
   const [users, setUsers] = useState('');
   const [userON, setUserON] = useState('');
@@ -65,12 +67,13 @@ const PrincipalScreen = ({ navigation }) => {
     getPreferredLanguage();
   }, []);
 
+  // aqui obtenemos la ubicacion con efectos
   useEffect(() => {
     const intervalId = setInterval(() => {
       startGlobalLocationTracking(async (Location) => {
         setDrivedDistance(await isStillDriving(Location));
         dispatch(setTrackingTimeStamp(Location.timestamp));
-        dispatch(setELD({ ...Location, id: "mHlqeeq5rfz3Cizlia23" })); //tenemos que ver de donde sacamos el ELD
+        dispatch(setELD({ ...Location, id: "mHlqeeq5rfz3Cizlia23"})); //tenemos que ver de donde sacamos el ELD
       });
     }, 60000); // Actualiza la ubicación cada 10 segundos
     
@@ -79,6 +82,76 @@ const PrincipalScreen = ({ navigation }) => {
         clearInterval(intervalId);
       };
   }, []);
+
+  //Aqui obtenemos la direccion proveniente de la ubicacion
+  const getLocation = async (latitude, longitude) => { 
+
+    setDefaults({
+      key: "AIzaSyD7ybUYP7u9Bd-PBFJ1UHDtblyK1Y-ieEk", 
+      language: language.toLocaleLowerCase().replace("eng", "en").replace("esp", "es"),
+      region: language.toLocaleLowerCase().replace("eng", "en").replace("esp", "es"),
+    });
+
+    try {
+    const { results } = await fromLatLng(latitude, longitude);
+
+    if (results && results.length > 0) {
+      const address = results[0].formatted_address;
+      const { city, state, country } = results[0].address_components.reduce(
+        (acc, component) => {
+          if (component.types.includes("locality"))
+            acc.city = component.long_name;
+          else if (component.types.includes("administrative_area_level_1"))
+            acc.state = component.long_name;
+          else if (component.types.includes("country"))
+            acc.country = component.long_name;
+          return acc;
+        },
+        {}
+      );
+
+      const geonamesBaseUrl = "http://api.geonames.org/findNearbyJSON";
+      const geonamesUsername = "danielwguzman";
+      const geonamesUrl = `${geonamesBaseUrl}?lat=${latitude}&lng=${longitude}&username=${geonamesUsername}`;
+
+      const geonamesResponse = await fetch(geonamesUrl);
+      const geonamesData = await geonamesResponse.json();
+
+      if (geonamesData && geonamesData.geonames && geonamesData.geonames.length > 0) {
+        const nearestCity = geonamesData.geonames[0];
+        const locationString = `${nearestCity.distance} ${languageModule.lang(language, 'kmAwayFrom')} ${nearestCity.name}, ${nearestCity.adminCodes1.ISO3166_2}`;
+        const distance = nearestCity.distance;
+        const distanceString = distance.toString();
+        const slicedDistance = distanceString.slice(0, distanceString.indexOf('.') + 3);
+        setlocation({
+          "address": address,
+          "city": city,
+          "state": state,
+          "country": country,
+          "reachOf": {
+            "city": nearestCity.name,
+            "state": nearestCity.adminCodes1.ISO3166_2,
+            "country": nearestCity.countryName,
+            "distance": slicedDistance,
+          }
+        }); 
+      } else {
+        console.error("No se encontraron resultados de Geonames.");
+      }
+      
+    } else {
+      console.error("No se encontraron resultados de react-geocode.");
+    }
+    } catch (error) {
+      console.error('Error en la geocodificación inversa:', error.message);
+    }
+  };
+
+  useEffect(() => {
+    if(eldData?.coords?.latitude && eldData?.coords?.longitude){
+      getLocation(eldData?.coords?.latitude, eldData?.coords?.longitude);  
+    }  
+  }, [eldData]);
 
   //Esta funcion triplica los posteos de eventos checar!!
   // useEffect(() => {
@@ -127,7 +200,8 @@ const PrincipalScreen = ({ navigation }) => {
         userON?.data,
         eldData,
         acumulatedVehicleKilometers,
-        lastDriverStatus
+        lastDriverStatus,
+        location
       ).then(async (eventData) => {
         let user = users.find((user) => user.isActive === true);
         user.status = tempDriverStatus;
@@ -147,7 +221,9 @@ const PrincipalScreen = ({ navigation }) => {
           tempDriverStatus,
           acumulatedVehicleKilometers,
           driverStatus,
-          2
+          2,
+          "",
+          location
         )
       );
       setShowStatusDialog(false);
@@ -295,12 +371,15 @@ const PrincipalScreen = ({ navigation }) => {
           <Text style={styles.driverStatus}>
           {`${languageModule.lang(language, 'driverStatus')}: ${userON?.role === "userCoDriver" ? userON?.status : driverStatus}`}
           </Text>
-          <Text style={styles.coordinates}>
+          <Text style={{...styles.coordinates, color: "#3498DB"}}>
+          {`${languageModule.lang(language, "location")}: ${location && location.address ? location.address : languageModule.lang(language, 'loading')}`}
+          </Text>
+          {/* <Text style={styles.coordinates}>
             {`${languageModule.lang(language, 'latitude')}: ${eldData?.coords?.latitude ? eldData?.coords?.latitude.toFixed(3) : languageModule.lang(language, 'loading')}`}
           </Text>
           <Text style={styles.coordinates}>
             {`${languageModule.lang(language, 'longitude')}: ${eldData?.coords?.longitude ? eldData?.coords?.longitude.toFixed(3) : languageModule.lang(language, 'loading')}`}
-          </Text>
+          </Text> */}
           <Text style={styles.updatedOn}>
             {`${languageModule.lang(language, 'Updatedon')}: ${new Date(trackingTimestamp).toDateString()} ${new Date(trackingTimestamp).toLocaleTimeString()}`}
           </Text>

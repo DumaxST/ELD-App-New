@@ -54,7 +54,8 @@ export const setDriverStatus = (
   acumulatedVehicleKilometers,
   lastDriverStatus,
   recordOrigin,
-  currentAnnotation
+  currentAnnotation,
+  address
 ) => {
   return async (dispatch) => {
     let isDriving = await isStillDriving(eldData);
@@ -72,7 +73,8 @@ export const setDriverStatus = (
               currentDriver,
               eldData,
               acumulatedVehicleKilometers,
-              lastDriverStatus
+              lastDriverStatus,
+              address
             ).then(() => {
               return dispatch({
                 type: SET_DRIVER_STATUS,
@@ -96,7 +98,8 @@ export const setDriverStatus = (
       currentDriver,
       eldData,
       acumulatedVehicleKilometers,
-      lastDriverStatus
+      lastDriverStatus,
+      address
     ).then(() => {
       return dispatch({
         type: SET_DRIVER_STATUS,
@@ -215,7 +218,8 @@ export const setCurrentDriver = (
   driverData,
   eldData,
   acumulatedVehicleKilometers,
-  lastDriverStatus
+  lastDriverStatus,
+  address
 ) => {
   return async (dispatch) => {
     return await AsyncStorage.setItem(
@@ -238,7 +242,8 @@ export const setCurrentDriver = (
         driverData,
         eldData,
         acumulatedVehicleKilometers,
-        lastDriverStatus
+        lastDriverStatus,
+        address
       ).then(() => {
         return dispatch({
           type: SET_CURRENT_DRIVER,
@@ -254,7 +259,8 @@ export const logOutCurrentDriver = (
   currentDriver,
   eldData,
   acumulatedVehicleKilometers,
-  lastDriverStatus
+  lastDriverStatus,
+  address
 ) => {
   return async (dispatch) => {
     // Se corrigió el doble "await"
@@ -270,7 +276,8 @@ export const logOutCurrentDriver = (
       currentDriver,
       eldData,
       acumulatedVehicleKilometers,
-      lastDriverStatus
+      lastDriverStatus,
+      address
     ).then(async () => {   
       await AsyncStorage.removeItem("currentDriver");
       await AsyncStorage.removeItem("currentCMV");

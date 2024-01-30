@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { View, Text,Modal, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import {removeToken} from '../../../data/commonQuerys'
+import {eld, removeToken} from '../../../data/commonQuerys'
 import { useDispatch, useSelector } from "react-redux";
 import { useTimer } from '../../../global_functions/timerFunctions';
 import { getCurrentDriver, getCurrentUsers } from "../../../config/localStorage";
 import { logOutCurrentDriver } from "../../../redux/actions";
+import {setKey,setDefaults,setLanguage,setRegion,fromAddress,fromLatLng,fromPlaceId,setLocationType,geocode,RequestType,} from "react-geocode";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,6 +23,7 @@ const DrawerMenu = ({ navigation, handleLogout }) => {
         lastDriverStatus,
         driverStatus
   } = useSelector((state) => state.eldReducer);
+  const [location, setlocation] = useState({});
   const [language, setLanguage] = useState('');
   const [errorMessages, setErrorMessages] = useState([]);
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -63,6 +65,75 @@ const DrawerMenu = ({ navigation, handleLogout }) => {
     }, 1000);
   }, [userON]);
 
+  const getLocation = async (latitude, longitude) => { 
+
+    setDefaults({
+      key: "AIzaSyD7ybUYP7u9Bd-PBFJ1UHDtblyK1Y-ieEk", 
+      language: language.toLocaleLowerCase().replace("eng", "en").replace("esp", "es"),
+      region: language.toLocaleLowerCase().replace("eng", "en").replace("esp", "es"),
+    });
+
+    try {
+    const { results } = await fromLatLng(latitude, longitude);
+
+    if (results && results.length > 0) {
+      const address = results[0].formatted_address;
+      const { city, state, country } = results[0].address_components.reduce(
+        (acc, component) => {
+          if (component.types.includes("locality"))
+            acc.city = component.long_name;
+          else if (component.types.includes("administrative_area_level_1"))
+            acc.state = component.long_name;
+          else if (component.types.includes("country"))
+            acc.country = component.long_name;
+          return acc;
+        },
+        {}
+      );
+
+      const geonamesBaseUrl = "http://api.geonames.org/findNearbyJSON";
+      const geonamesUsername = "danielwguzman";
+      const geonamesUrl = `${geonamesBaseUrl}?lat=${latitude}&lng=${longitude}&username=${geonamesUsername}`;
+
+      const geonamesResponse = await fetch(geonamesUrl);
+      const geonamesData = await geonamesResponse.json();
+
+      if (geonamesData && geonamesData.geonames && geonamesData.geonames.length > 0) {
+        const nearestCity = geonamesData.geonames[0];
+        const locationString = `${nearestCity.distance} ${languageModule.lang(language, 'kmAwayFrom')} ${nearestCity.name}, ${nearestCity.adminCodes1.ISO3166_2}`;
+        const distance = nearestCity.distance;
+        const distanceString = distance.toString();
+        const slicedDistance = distanceString.slice(0, distanceString.indexOf('.') + 3);
+        setlocation({
+          "address": address,
+          "city": city,
+          "state": state,
+          "country": country,
+          "reachOf": {
+            "city": nearestCity.name,
+            "state": nearestCity.adminCodes1.ISO3166_2,
+            "country": nearestCity.countryName,
+            "distance": slicedDistance,
+          }
+        });
+      } else {
+        console.error("No se encontraron resultados de Geonames.");
+      }
+      
+    } else {
+      console.error("No se encontraron resultados de react-geocode.");
+    }
+    } catch (error) {
+      console.error('Error en la geocodificación inversa:', error.message);
+    }
+  };
+  
+  useEffect(() => {
+    if(eldData?.coords?.latitude && eldData?.coords?.longitude){
+      getLocation(eldData?.coords?.latitude, eldData?.coords?.longitude);  
+    }
+  }, [eldData]);
+
   const logOutDriver = async () => {
     const secondToken = await AsyncStorage.getItem('secondToken');
     if(!secondToken){
@@ -74,7 +145,7 @@ const DrawerMenu = ({ navigation, handleLogout }) => {
         await AsyncStorage.removeItem('users');
         // Despachar la acción y esperar a que se complete
         await new Promise(resolve => {   
-          dispatch(logOutCurrentDriver(currentDriver, eldData, acumulatedVehicleKilometers, lastDriverStatus))
+          dispatch(logOutCurrentDriver(currentDriver, eldData, acumulatedVehicleKilometers, lastDriverStatus, location))
             .then(() => resolve());
         });
       
