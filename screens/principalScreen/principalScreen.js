@@ -188,6 +188,20 @@ const PrincipalScreen = ({ navigation }) => {
   //Funciones
   const postDriverEventF = async () => {
     if(userON?.role == "userCoDriver"){
+      let lastEvent = {
+        recordStatus: 1,
+        recordOrigin: 2,
+        type: getEventTypeCode(tempDriverStatus).type,
+        code: getEventTypeCode(tempDriverStatus).code,
+        currentAnnotation: currentAnnotation,
+        tempDriverStatus: tempDriverStatus,
+        currentDriver: userON?.data,
+        eldData: eldData,
+        acumulatedVehicleKilometers: acumulatedVehicleKilometers,
+        lastDriverStatus: lastDriverStatus,
+        location: location
+      }
+      await AsyncStorage.setItem("lastEvent", JSON.stringify(lastEvent) )
       await postDriverEvent(
         {
           recordStatus: 1,
@@ -213,7 +227,21 @@ const PrincipalScreen = ({ navigation }) => {
     }else{
       let user = users.find((user) => user.isActive === true);
       user.status = tempDriverStatus;
-      await AsyncStorage.setItem("users", JSON.stringify(users));
+      await AsyncStorage.setItem("users", JSON.stringify(users));   
+      let lastEvent = {
+        recordStatus: 1,
+        recordOrigin: 2,
+        type: getEventTypeCode(tempDriverStatus).type,
+        code: getEventTypeCode(tempDriverStatus).code,
+        currentAnnotation: currentAnnotation,
+        tempDriverStatus: tempDriverStatus,
+        currentDriver: user?.data,
+        eldData: eldData,
+        acumulatedVehicleKilometers: acumulatedVehicleKilometers,
+        lastDriverStatus: lastDriverStatus,
+        location: location
+      }
+      await AsyncStorage.setItem("lastEvent", JSON.stringify(lastEvent) ) 
       dispatch(
         setDriverStatus(
           eldData,
@@ -231,6 +259,20 @@ const PrincipalScreen = ({ navigation }) => {
   }
 
   const postEvent = async (recordOrigin, observaciones) => {  
+    let lastEvent = {
+      recordStatus: 1,
+      recordOrigin: 2,
+      type: getEventTypeCode(tempDriverStatus).type,
+      code: getEventTypeCode(tempDriverStatus).code,
+      currentAnnotation: currentAnnotation,
+      tempDriverStatus: tempDriverStatus,
+      currentDriver: currentDriver,
+      eldData: eldData,
+      acumulatedVehicleKilometers: acumulatedVehicleKilometers,
+      lastDriverStatus: lastDriverStatus,
+      location: location
+    }
+    await AsyncStorage.setItem("lastEvent", JSON.stringify(lastEvent) ) 
     await postDriverEvent(
       {
         recordStatus: 1,
@@ -243,7 +285,8 @@ const PrincipalScreen = ({ navigation }) => {
       currentDriver,
       eldData,
       acumulatedVehicleKilometers,
-      lastDriverStatus
+      lastDriverStatus,
+      location
     ).then((eventData) => {
       setShowStatusDialog(false);
       setAnnotationDialog(false);

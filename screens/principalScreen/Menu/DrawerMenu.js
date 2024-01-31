@@ -143,6 +143,7 @@ const DrawerMenu = ({ navigation, handleLogout }) => {
         if(res?.data?.message == "Token eliminado exitosamente."){
         await AsyncStorage.removeItem('token');
         await AsyncStorage.removeItem('users');
+        await AsyncStorage.removeItem('lastEvent');
         // Despachar la acción y esperar a que se complete
         await new Promise(resolve => {   
           dispatch(logOutCurrentDriver(currentDriver, eldData, acumulatedVehicleKilometers, lastDriverStatus, location))

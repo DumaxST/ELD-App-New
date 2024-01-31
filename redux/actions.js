@@ -230,6 +230,20 @@ export const setCurrentDriver = (
       //   type: SET_CURRENT_DRIVER,
       //   value: driverData,
       // });
+      let lastEvent = {
+        recordStatus: 1,
+        recordOrigin: 2,
+        type: getEventTypeCode('ON').type,
+        code: getEventTypeCode('ON').code,
+        currentAnnotation: '',
+        tempDriverStatus: 'ON',
+        currentDriver: driverData,
+        eldData: eldData,
+        acumulatedVehicleKilometers: acumulatedVehicleKilometers,
+        lastDriverStatus: lastDriverStatus,
+        location: address
+      }
+      await AsyncStorage.setItem("lastEvent", JSON.stringify(lastEvent) )
       return await postDriverEvent(
         {
           recordStatus: 1,
