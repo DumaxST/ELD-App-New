@@ -47,6 +47,7 @@ const ListSection = () => {
       return await getCurrentDriver()
       .then(async (currentDriver) => {    
         selectedEvent.recordOrigin = 4; 
+        selectedEvent.recordStatus = 1;
         selectedEvent.cmv = currentDriver.cmv;
         selectedEvent.carrier = currentDriver.carrier;
         selectedEvent.driver = currentDriver;
