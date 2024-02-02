@@ -193,9 +193,29 @@ const ListSection = () => {
               backgroundColor: '#E6F4EA', // Color verde del diseño
               borderRadius: 10,
               marginBottom: 20,
+              pointerEvents: event.recordStatus === 2 && event.recordOrigin === 2 ? 'none' : 'auto' //Aqui vamos a deshabilitar mis registros asumidos
             }}
           >
             {/* Detalles del evento */}
+            {event.recordStatus === 2 && event.recordOrigin === 2 && (
+             <Text style={{
+               position: 'absolute', 
+               top: 90, 
+               left: 0, 
+               right: -40, 
+               bottom: 0, 
+               justifyContent: 'center', 
+               alignItems: 'center', 
+               color: '#000000', 
+               fontSize: 25,
+               textAlign: 'center',
+               transform: [{ rotate: '-25deg' }]
+             }}>
+                {languageModule.lang(language, "assumedRecord")}
+             </Text>
+            )}
+            <View style={{ 
+              opacity: event.recordStatus === 2 && event.recordOrigin === 2 ? 0.5 : 1 }}>
             <Text>{languageModule.lang(language, "status")}{": "}{languageModule.lang(language,traducirStatus(event.dutyStatus))}</Text>
             <Text>{languageModule.lang(language, "sequenceIDNumber")}{": "}{`${event.sequenceIDNumber.decimal} - ${event.sequenceIDNumber.hexadecimal}`}</Text>
             <Text>{languageModule.lang(language, "recordOrigin")}{": "}{`${event?.recordOrigin}`}</Text>
@@ -260,6 +280,7 @@ const ListSection = () => {
               >
                 <MaterialIcons name="delete" size={24} />
               </TouchableOpacity> */}
+            </View>
             </View>
           </View>
         ))}
