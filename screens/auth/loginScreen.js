@@ -370,7 +370,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
 
   useEffect(() => {
     postUndefinedDriverEvent()
-     const updateIntervalId = setInterval(postUndefinedDriverEvent, 60000);
+     const updateIntervalId = setInterval(postUndefinedDriverEvent, 30000);
    
      return () => clearInterval(updateIntervalId);
   }, []);

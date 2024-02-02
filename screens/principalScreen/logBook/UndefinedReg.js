@@ -46,13 +46,7 @@ const ListSection = () => {
       setIsLoading(true);     
       return await getCurrentDriver()
       .then(async (currentDriver) => {    
-        selectedEvent.recordOrigin = 4; 
-        selectedEvent.recordStatus = 1;
-        selectedEvent.cmv = currentDriver.cmv;
-        selectedEvent.carrier = currentDriver.carrier;
-        selectedEvent.driver = currentDriver;
-        selectedEvent.geoTimeStamp = geoTimeStamp(eldData);
-        DriverEvent.put(selectedEvent, currentDriver, true).then((res) => {       
+        DriverEvent.put(selectedEvent, currentDriver, false).then((res) => {       
         setIsLoading(true);  
         getData()
         }).catch((err) => {  
