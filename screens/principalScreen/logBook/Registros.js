@@ -202,6 +202,8 @@ const ListSection = () => {
               {/* Detalles del evento */}
               <Text>{languageModule.lang(language, "status")}{": "}{languageModule.lang(language,traducirStatus(event.dutyStatus))}</Text>
               <Text>{languageModule.lang(language, "sequenceIDNumber")}{": "}{`${event.sequenceIDNumber.decimal} - ${event.sequenceIDNumber.hexadecimal}`}</Text>
+              <Text>{languageModule.lang(language, "recordOrigin")}{": "}{`${event?.recordOrigin}`}</Text>
+              <Text>{languageModule.lang(language, "recordStatus")}{": "}{event?.recordStatus}</Text>
               <Text>{languageModule.lang(language, "startTime")}{": "}
                     {`${event?.geoTimeStamp?.date.substring(
                           0,
@@ -238,8 +240,8 @@ const ListSection = () => {
                 ? event.address.reachOf.distance + " " + languageModule.lang(language, 'kmAwayFrom') + " " + event.address.reachOf.city + ", " + event.address.reachOf.state
                 : languageModule.lang(language, 'notAvailable')}
               </Text>
-              <Text>{languageModule.lang(language, "observations")}{": "}{"Pre - TI"}</Text>
-              <Text>{languageModule.lang(language, "carrier")}{": "}{event.carrier.name}</Text>
+              {/* <Text>{languageModule.lang(language, "observations")}{": "}{"Pre - TI"}</Text>
+              <Text>{languageModule.lang(language, "carrier")}{": "}{event.carrier.name}</Text> */}
               <Text>
               {languageModule.lang(language, "certified")}{": "}
               {event?.certified?.value
