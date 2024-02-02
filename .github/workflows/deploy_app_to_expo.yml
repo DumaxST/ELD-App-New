@@ -30,13 +30,12 @@ jobs:
             fi
             echo "::set-output name=ready::${ready}"
 
-        # Temporal    
-        # - name: PR is not ready
-        #   if: steps.check_ready.outputs.ready != 'approved'
-        #   run: |
-        #     echo "PR is not ready for deployment; It is in "${{steps.check_ready.outputs.ready}} state". Exiting workflow."
-        #     echo "::error::PR is not ready for deployment."
-        #     exit 1
+        - name: PR is not ready
+          if: steps.check_ready.outputs.ready != 'approved'
+          run: |
+            echo "PR is not ready for deployment; It is in "${{steps.check_ready.outputs.ready}} state". Exiting workflow."
+            echo "::error::PR is not ready for deployment."
+            exit 1
 
         - name: Use Node.js
           uses: actions/setup-node@v2
