@@ -1,10 +1,13 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { NavigationContainer } from '@react-navigation/native';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Provider } from 'react-redux';
-import  store  from './redux/store'
+import { useWindowDimensions } from 'react-native';
+import store from './redux/store';
+import { TimerProvider } from './global_functions/timerFunctions';
 
+import DrawerMenu from './screens/principalScreen/Menu/DrawerMenu';
 import LoginScreen from './screens/auth/loginScreen';
 import BluetoothScreen from './screens/bluetooth/bluetoothScreen';
 import PrincipalScreen from './screens/principalScreen/principalScreen';
@@ -24,74 +27,90 @@ import Envios from './screens/principalScreen/envios/envios';
 import NuevoEnvio from './screens/principalScreen/envios/nuevoEnvio';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
-const App = () => {
+const DrawerNavigator = ({ handleLogout }) => {
+  const dimensions = useWindowDimensions();
 
+  return (
+    <Drawer.Navigator
+      initialRouteName="PrincipalScreen"
+      drawerContent={(props) => <DrawerMenu {...props} handleLogout={handleLogout} />}
+      screenOptions={{
+        drawerType: 'front',   
+        drawerPosition:"right",
+        drawerStyle: { width: '70%' }
+      }} 
+    >
+      <Drawer.Screen
+        name="PrincipalScreen"
+        component={PrincipalScreen}
+        options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}
+      />
+    </Drawer.Navigator>
+  );
+};
+
+const MainStackNavigator = ({ handleLogout }) => (
+  <Stack.Navigator>
+    <Stack.Screen name="BluetoothScreen" component={BluetoothScreen} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }} />
+    <Stack.Screen name="Diagnostico" component={Diagnostico} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
+    <Stack.Screen name="PerfilVehiculo" component={PerfilVehiculo} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
+    <Stack.Screen name="PrincipalScreen" options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}>
+      {props => <DrawerNavigator {...props} handleLogout={handleLogout} />}
+    </Stack.Screen>
+    <Stack.Screen name="LogBook" component={LogBook} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
+    <Stack.Screen name="Violaciones" component={Violaciones} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
+    <Stack.Screen name="PerfilConductor" component={PerfilConductor} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
+    <Stack.Screen name="AcercaDelELD" component={AcercaDelELD} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
+    <Stack.Screen name="Anotaciones" component={Anotaciones} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
+    <Stack.Screen name="CertificacionELD" component={CertificacionELD} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
+    <Stack.Screen name="CertificarLogs" component={CertificarLogs} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
+    <Stack.Screen name="IngresoSegundoChofer" component={IngresoSegundoChofer} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
+    <Stack.Screen name="Notificaciones" component={Notificaciones} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
+    <Stack.Screen name="Envios" component={Envios} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/> 
+  </Stack.Navigator>
+);
+
+const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // useEffect(() => {
-  //   const token = AsyncStorage.getItem('token');
-  //   if (token) {
-  //     setIsAuthenticated(true); 
-  //   }
-  // }, []);
+  useEffect(() => {
+    // Lógica de autenticación aquí
+  }, []);
 
   const handleLogout = () => {
-    AsyncStorage.removeItem('token'); 
-    setIsAuthenticated(false); 
+    AsyncStorage.removeItem('token');
+    setIsAuthenticated(false);
   };
 
   const handleLogin = () => {
-    setIsAuthenticated(true); // Establecemos el estado de autenticación como verdadero
+    setIsAuthenticated(true);
   };
-
 
   return (
     <Provider store={store}>
-      <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={{
-            headerShown: false,
-            ...TransitionPresets.SlideFromRightIOS,
-          }}
-        >
+      <TimerProvider>
+        <NavigationContainer>
           {isAuthenticated ? (
-            <Stack.Screen name="PrincipalScreen" component={PrincipalScreen} />
+            <MainStackNavigator handleLogout={handleLogout} />
           ) : (
-            <Stack.Screen name="LoginScreen">
-              {props => <LoginScreen {...props} handleLogin={handleLogin} />}
-            </Stack.Screen>
+            <Stack.Navigator
+              screenOptions={{
+                headerShown: false,
+                ...TransitionPresets.SlideFromRightIOS,
+              }}
+            >
+              <Stack.Screen name="LoginScreen">
+                {props => <LoginScreen {...props} handleLogin={handleLogin} />}
+              </Stack.Screen>
+            </Stack.Navigator>
           )}
-          <Stack.Screen name="AppMenu">
-            {props => <AppMenu {...props} handleLogout={handleLogout} />}
-          </Stack.Screen>
-
-          {/* <Stack.Screen name="LoginScreen" component={LoginScreen} /> */}
-          <Stack.Screen name="BluetoothScreen" component={BluetoothScreen} />
-          {/* <Stack.Screen name="PrincipalScreen" component={PrincipalScreen} /> */}
-          {/* <Stack.Screen name="AppMenu" component={AppMenu} /> */}
-          <Stack.Screen name="LogBook" component={LogBook} />
-          <Stack.Screen name="Diagnostico" component={Diagnostico} />
-          <Stack.Screen name="PerfilVehiculo" component={PerfilVehiculo} />
-          <Stack.Screen name="Violaciones" component={Violaciones} />
-          <Stack.Screen name="PerfilConductor" component={PerfilConductor} />
-          <Stack.Screen name="AcercaDelELD" component={AcercaDelELD} />
-          <Stack.Screen name="Anotaciones" component={Anotaciones} />
-          <Stack.Screen name="CertificacionELD" component={CertificacionELD} />
-          <Stack.Screen name="CertificarLogs" component={CertificarLogs} />
-          <Stack.Screen name="IngresoSegundoChofer" component={IngresoSegundoChofer} />
-          <Stack.Screen name="Notificaciones" component={Notificaciones} />
-          <Stack.Screen name="Envios" component={Envios} />
-          <Stack.Screen name="NuevoEnvio" component={NuevoEnvio} />
-
-        </Stack.Navigator>
-      </NavigationContainer>
+        </NavigationContainer>
+      </TimerProvider>
     </Provider>
   );
 };
 
-
 export default App;
-
-

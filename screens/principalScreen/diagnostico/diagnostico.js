@@ -107,7 +107,7 @@ const Diagnostico = ({navigation}) => {
           <TouchableOpacity style={styles.testButton} onPress={runTests}>
             <Text style={styles.buttonText}>{languageModule.lang(language, 'test')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.continueButton} onPress={() => {navigation.push("PerfilVehiculo")}}>
+          <TouchableOpacity style={styles.continueButton} onPress={() => {navigation.navigate("PerfilVehiculo")}}>
             <Text style={styles.buttonText}>{languageModule.lang(language, 'continue')}</Text>
           </TouchableOpacity>
         </View>

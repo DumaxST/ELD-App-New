@@ -127,5 +127,19 @@
     "thereAreNoRecords": "There are no records available",
     "allRecordsAreCertified": "All records have been certified in the last 24 hours.",
     "isNotAllowedanAdmin": "It is not allowed for an administrator user to log in, please contact support",
-    "locationNotAvailable": "Location not available, please wait or try again later"
+    "locationNotAvailable": "Location not available, please wait or try again later",
+    "60minutesofinactivity": "60 minutes of inactivity",
+    "eventDetails": "Event Details",
+    "status:": "Status:",
+    "home": "Home",
+    "switchAccount": "Switch Account",
+    "logout": "Logout",
+    "AccountManagement": "Account Management",
+    "userDriver": "Driver",
+    "userCoDriver": "Codriver",
+    "noLogoutAvailable": "No logout available, try closing all sesions",
+    "kmAwayFrom": "km away from",
+    "notAvailable": "Not Available",
+    "closestLocation": "Closest Location",
+    "assumeRecord": "assume the record"
 }
