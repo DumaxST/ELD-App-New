@@ -76,7 +76,10 @@ const PerfilVehiculo = ({ navigation }) => {
   return await AsyncStorage.setItem("currentCMV", JSON.stringify(state)).then(
     async () => {
       dispatch(startVehicleMeters());
-      navigation.push("PrincipalScreen");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'PrincipalScreen' }],
+      });
     }
   );
   };
@@ -185,12 +188,12 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 16,
-    color: Colors.primaryColor,
+    color: '#000',
     marginBottom: Sizes.fixPadding,
   },
   input: {
     borderWidth: 1,
-    borderColor: Colors.primaryColor,
+    borderColor: '#000',
     borderRadius: Sizes.fixPadding,
     paddingHorizontal: Sizes.fixPadding,
     paddingVertical: Sizes.fixPadding * 1.5,
