@@ -135,8 +135,13 @@ const PrincipalScreen = ({ navigation }) => {
             "distance": slicedDistance,
           }
         }); 
-      } else {
-        console.error("No se encontraron resultados de Geonames.");
+      } else{
+        setlocation({
+          "address": address,
+          "city": city,
+          "state": state,
+          "country": country,
+        });
       }
       
     } else {

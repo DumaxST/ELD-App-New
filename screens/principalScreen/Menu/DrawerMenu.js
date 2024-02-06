@@ -117,7 +117,12 @@ const DrawerMenu = ({ navigation, handleLogout }) => {
           }
         });
       } else {
-        console.error("No se encontraron resultados de Geonames.");
+        setlocation({
+          "address": address,
+          "city": city,
+          "state": state,
+          "country": country,
+        });
       }
       
     } else {

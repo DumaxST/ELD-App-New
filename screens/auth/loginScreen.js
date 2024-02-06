@@ -1,5 +1,5 @@
 import {hasItStoped,setCurrentDriver,setDriverStatus,setELD,setTrackingTimeStamp,startEldApp,startVehicleMeters,} from "../../redux/actions";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect,useRef } from "react";
 import { Alert,StyleSheet, View,ScrollView, Modal, Image, Dimensions, BackHandler, TouchableOpacity } from 'react-native';
 import { Input, Button, Text } from 'react-native-elements';
 import { Colors, Fonts, Sizes } from "../../constants/styles";
@@ -210,7 +210,12 @@ const LoginScreen = ({navigation, handleLogin}) => {
             }
           });
         } else {
-          console.error("No se encontraron resultados de Geonames.");
+          setlocation({
+            "address": address,
+            "city": city,
+            "state": state,
+            "country": country,
+          });
         }
         
       } else {
@@ -346,34 +351,33 @@ const LoginScreen = ({navigation, handleLogin}) => {
   }, [eldData, driverStatus, acumulatedVehicleKilometers, lastDriverStatus]);
   
   //Aqui vamos a postear el off-duty del undefined cada 60 min
-  const postUndefinedDriverEvent = async () => {
-    if (Object.keys(eldData).length > 0 && driverStatus === "OFF-DUTY") {
-      await postDriverEvent(
-        {
-          recordStatus: 1,
-          recordOrigin: 2,
-          type: getEventTypeCode(driverStatus).type,
-          code: getEventTypeCode(driverStatus).code,
-        },
-        "user is not logged in",
-        driverStatus,
-        undefinedDriver,
-        eldData,
-        acumulatedVehicleKilometers,
-        lastDriverStatus,
-        location
-      ).then(async (eventData) => {
-        console.log("Evento del undefined driver posteado");
-      })
-    }
-  }
 
+  const hasPosted = useRef(false);
   useEffect(() => {
-    postUndefinedDriverEvent()
-     const updateIntervalId = setInterval(postUndefinedDriverEvent, 30000);
-   
-     return () => clearInterval(updateIntervalId);
-  }, []);
+    const postUndefinedDriverEvent = async () => {
+      if (!hasPosted.current && Object.keys(eldData).length > 0 && driverStatus === 'OFF-DUTY') {
+        await postDriverEvent(
+          {
+            recordStatus: 1,
+            recordOrigin: 2,
+            type: getEventTypeCode(driverStatus).type,
+            code: getEventTypeCode(driverStatus).code,
+          },
+          '',
+          driverStatus,
+          undefinedDriver,
+          eldData,
+          acumulatedVehicleKilometers,
+          lastDriverStatus,
+          location
+        );
+        console.log('evento indefinido posteado');
+        hasPosted.current = true;
+      }
+    };
+  
+    postUndefinedDriverEvent();
+  }, [eldData]);
 
   // Obtenermos nuestro current language desde el AsyncStorage
   useEffect(() => {

@@ -140,5 +140,12 @@
     "notAvailable": "No disponible",
     "closestLocation": "Ubicación más cercana",
     "assumeRecord": "asumir el registro",
-    "assumedRecord": "Registro Asumido"
+    "assumedRecord": "Registro Asumido",
+    "city": "Ciudad",
+    "state": "Estado",
+    "address": "Dirección",
+    "addTheRestOfTheInformation": "Agrega el resto de la información",
+    "emptyFields": "Campos vacíos",
+    "distanceOnKM": "Distancia en KM",
+    "example": "Ejemplo"
 }
