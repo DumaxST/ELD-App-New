@@ -1,4 +1,4 @@
-import {TextInput,StyleSheet,Modal,Text,View, ActivityIndicator,SafeAreaView,ScrollView,FlatList,Dimensions,StatusBar,Image,TouchableOpacity,} from "react-native";
+import {Alert,TextInput,StyleSheet,Modal,Text,View, ActivityIndicator,SafeAreaView,ScrollView,FlatList,Dimensions,StatusBar,Image,TouchableOpacity,} from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { Fonts, Colors, Sizes } from "../../../constants/styles";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
@@ -25,7 +25,7 @@ const ListSection = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedButton, setSelectedButton] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [isButtonPressed, setIsButtonPressed] = useState(false);
+  const [commentModalVisible, setCommentModalVisible] = useState(false);
   const [state, setState] = useState({
     numeroDelCamion: "",
     numeroDelTrailer: "",
@@ -43,6 +43,17 @@ const ListSection = () => {
 
   //editamos con la funcion de put driver 
   const handleSave = async () => {  
+    if (!selectedEvent?.commentOrAnnotation) {
+      Alert.alert(
+        "Error",
+        languageModule.lang(language, 'addCommentToContinue'),
+        [
+          { text: "OK" }
+        ]
+      );
+      return;
+    }
+    setCommentModalVisible(false);
     setModalVisible(false);
     setIsLoading(true);     
     return await getCurrentDriver()
@@ -558,9 +569,36 @@ const ListSection = () => {
             }}
           />
           {/*-----------------------*/}
+        </View>    
+        </ScrollView>  
+          {/* Botones */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.cancelButton} onPress={closeModal}>
+              <Text style={styles.buttonText}>{languageModule.lang(language, 'cancel')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.saveButton} onPress={() =>{setCommentModalVisible(true)}}>
+              <Text style={styles.buttonText}>{languageModule.lang(language, 'save')}</Text>
+            </TouchableOpacity>
+          </View>
+      </Modal>
+        </View>
+      );
+  }
+
+  function addComment() {
+    return (
+      <View>
+      <Modal visible={commentModalVisible} animationType="slide">
+        <View style={styles.modalContainer}>
+          <Text style={{...styles.modalTitle, marginTop: -10}}>{languageModule.lang(language,'addCommentToContinue')}</Text>
           <Text style={{textAlign: "left"}}>{languageModule.lang(language, "commentOrAnnotation")}</Text>
           <TextInput
-            style={styles.input}
+            style={{
+              ...styles.input,
+              borderColor: selectedEvent?.commentOrAnnotation ? 'green' : '#cc0b0a',
+              height: 300,
+              textAlignVertical: 'top',
+            }}
             value={`${selectedEvent?.commentOrAnnotation}`}
             placeholder={`${selectedEvent?.commentOrAnnotation}`}
             onChangeText={(text) => {
@@ -569,20 +607,18 @@ const ListSection = () => {
               }));
             }}
           />
-        </View>    
-        </ScrollView>  
-          {/* Botones */}
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.cancelButton} onPress={closeModal}>
+            <TouchableOpacity style={styles.cancelButton} onPress={() =>{setCommentModalVisible(false)}}>
               <Text style={styles.buttonText}>{languageModule.lang(language, 'cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
               <Text style={styles.buttonText}>{languageModule.lang(language, 'save')}</Text>
             </TouchableOpacity>
           </View>
-      </Modal>
         </View>
-      );
+      </Modal>
+    </View>
+    )
   }
 
   return (
@@ -597,6 +633,7 @@ const ListSection = () => {
         <Logs />
       )}
       {editEvent()}
+      {addComment()}
     </View>
   );
 };
