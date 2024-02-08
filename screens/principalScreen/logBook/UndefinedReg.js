@@ -7,6 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getDriverEvents, DriverEvent } from "../../../data/commonQuerys";
 import { getCurrentDriver } from "../../../config/localStorage";
+import { getDriverEvents, DriverEvent } from "../../../data/commonQuerys";
+import { getCurrentDriver } from "../../../config/localStorage";
 import { editDriverLogEvent } from "../../../redux/actions";
 import { geoTimeStamp } from "../../../components/eldFunctions";
 import { useSelector, useDispatch } from "react-redux";
