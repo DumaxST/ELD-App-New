@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, StyleSheet, Modal, Pressable } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, StyleSheet, Modal, Pressable, Image } from 'react-native';
 const languageModule = require('../../../global_functions/variables');
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {certifyDriverEvents,getDriverEvents,postDriverEvent,} from "../../../data/commonQuerys";
@@ -7,6 +7,7 @@ import { getCurrentDriver } from "../../../config/localStorage";
 import { setDriverStatus } from "../../../redux/actions";
 import { useDispatch, useSelector } from "react-redux";
 import { FontAwesome } from '@expo/vector-icons';
+import { getCurrentUsers } from "../../../config/localStorage";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const CertificarRegistros = ({navigation}) => {
@@ -20,6 +21,8 @@ const CertificarRegistros = ({navigation}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRange, setSelectedRange] = useState(null);
   const [newModalVisible, setNewModalVisible] = useState(false);
+  const [users, setUsers] = useState('');
+  const [userON, setUserON] = useState('');
   const updateState = (data) => setState((state) => ({ ...state, ...data }));
   const today = new Date();
   const twentyFourHoursAgo = new Date(today.getTime() - 24 * 60 * 60 * 1000);
@@ -27,6 +30,21 @@ const CertificarRegistros = ({navigation}) => {
     (state) => state.eldReducer
   );
 
+  //obtenemos nuestros datos de certificacion con efecto de montaje
+  //obtenemos el usuario en cuestion
+  useEffect(() => {
+    const getUsers = async () => {
+      try {
+        let users = await getCurrentUsers();
+        const userActive = users.find(user => user.isActive === true);
+        setUserON(userActive);
+        setUsers(users);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+      getUsers();
+  }, []);
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
   useEffect(() => {
       const getPreferredLanguage = async () => {
@@ -40,23 +58,27 @@ const CertificarRegistros = ({navigation}) => {
       getPreferredLanguage();
   }, []);
 
-  useEffect(() => {
-    const getData = async () => {
-      await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: formatDate(twentyFourHoursAgo), to: formatDate(today)}).then(async (events) => {
-        if(events.length > 0){
-          setDriverEvents(events);
-          const nuevosIds = events.map(evento => evento.id);
-          const uniqueIds = [...new Set(nuevosIds)]; 
-          setIdEvents(uniqueIds);
-          return;
-        }else{
-          setDriverEvents(0);
-          return;
-        }
-      });
-    };
-    getData();
+  const getData = async () => {
+    await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: formatDate(twentyFourHoursAgo), to: formatDate(today)}, userON?.data?.id, userON?.data?.carrier?.id).then(async (events) => {
+      if(events.length > 0){
+        setDriverEvents(events);
+        const nuevosIds = events.map(evento => evento.id);
+        const uniqueIds = [...new Set(nuevosIds)]; 
+        setIdEvents(uniqueIds);
+        return;
+      }else{
+        setDriverEvents(0);
+        return;
+      }
+    });
+  };
+  
+  const hasRun = useRef(false);
 
+  useEffect(() => {
+    if (userON?.data?.id && userON?.data?.carrier?.id && !hasRun.current) {
+    getData();
+    hasRun.current = true;
     setTimeout(() => {
       const registros24HoursPeriod = [
         {
@@ -70,7 +92,8 @@ const CertificarRegistros = ({navigation}) => {
       setRegistros(registros24HoursPeriod);
       setLoading(false);
     }, 2000); 
-  }, []);
+  }
+  }, [userON]);
 
   //funciones de logica de la pantalla
 
@@ -143,6 +166,28 @@ const CertificarRegistros = ({navigation}) => {
     );
   }
 
+  function userInfo() {
+    return (
+      <View style={styles.userInfoContainer}>
+        <View style={styles.userAvatarContainer}>
+          <Image
+            source={require('../../../assets/images/certy.png')}
+            style={{...styles.userAvatar, marginLeft: 10, width: 60, height: 60, borderRadius: 30,}}
+          />
+        </View>
+        <View style={styles.userInfo}>
+          <Text style={styles.userName}>
+          {userON?.data?.displayName ? `${userON.data.displayName}` : languageModule.lang(language, 'loading')}
+          </Text>
+          <Text style={styles.userRole}>
+          {userON?.role ? languageModule.lang(language, userON.role) : languageModule.lang(language, 'loading')}
+          </Text>
+          <View style={styles.innerSeparator} />
+        </View>
+      </View>
+    );
+  }
+
   function footer() {
        return(
         <View style={styles.buttonsContainer}>
@@ -184,7 +229,7 @@ const CertificarRegistros = ({navigation}) => {
                     // dispatch(setDriverStatus("ON"));
                     // postEvent(1, "ON");
                     handleCloseModal();
-                    navigation.push("AppMenu");
+                    getData();
                   });
                 }}
               >
@@ -225,6 +270,7 @@ const CertificarRegistros = ({navigation}) => {
   return (
     <View style={styles.container}>
       {header()}
+      {userInfo()}
       {loading ? (
         <ActivityIndicator style={styles.loadingIndicator} size="large" color="#4CAF50" />
       ) : registros.length === 0 ? (
@@ -270,6 +316,35 @@ const CertificarRegistros = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
+  innerSeparator: {
+    height: 1,
+    backgroundColor: '#ddd',
+    marginVertical: 5,
+  },
+  userInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userAvatarContainer: {
+    marginRight: 10,
+  },
+  userAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 8, 
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  userRole: {
+    fontSize: 12,
+    color: '#777',  
+  },
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
