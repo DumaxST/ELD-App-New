@@ -125,7 +125,7 @@
     "youCantCertify": "You cannot certify if there are no events during today. Please try again later.",
     "termsOfCertification": "“I hereby certify that my data entries and my record of duty status for this 24‐hour period are true and correct.”",
     "thereAreNoRecords": "There are no records available",
-    "allRecordsAreCertified": "All records have been certified in the last 24 hours.",
+    "allRecordsAreCertified": "All records have been certified in the range of dates",
     "isNotAllowedanAdmin": "It is not allowed for an administrator user to log in, please contact support",
     "locationNotAvailable": "Location not available, please wait or try again later",
     "60minutesofinactivity": "60 minutes of inactivity",
@@ -150,5 +150,6 @@
     "emptyFields": "Empty Fields",
     "distanceOnKM": "Distance on KM",
     "example": "Example",
-    "addCommentToContinue": "Add a comment to continue with the editing"
+    "addCommentToContinue": "Add a comment to continue with the editing",
+    "selectArangeToContinue": "Select a range to continue with the certification"
 }

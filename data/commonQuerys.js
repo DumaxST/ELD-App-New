@@ -87,15 +87,13 @@ export const getDriverEvents = async (eldID, certified, timeFrame, driverID, car
       });
 };
 
-export const certifyDriverEvents = async (eventsArray, eldID) => {
-  return await getCurrentDriver().then(async (currentDriver) => {
+export const certifyDriverEvents = async (eventsArray, eldID, driverID, carrierID) => {
     return await putAxios("/api/carrier/driver/events/certify", {
-      carrierID: currentDriver.carrier.id,
-      driverID: currentDriver.id,
+      carrierID: carrierID,
+      driverID: driverID,
       eldID: eldID,
       eventsIDs: eventsArray,
     });
-  });
 };
 
 export const getEventTypeCode = (tempDriverStatus) => {
