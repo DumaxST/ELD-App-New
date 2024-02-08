@@ -336,7 +336,6 @@ const ListSection = () => {
                         4
                       )}:${selectedEvent?.geoTimeStamp?.time.substring(4, 6)} `}
             </Text>
-
             {/* Botones */}
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.cancelButton} onPress={closeModal}>
