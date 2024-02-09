@@ -151,5 +151,6 @@
     "addCommentToContinue": "Agrega un comentario para continuar con la edición",
     "selectArangeToContinue": "Selecciona un rango para continuar con la Certificación",
     "pendingEventsToCertify": "Hay eventos pendientes para certificar, certificalos ahora",
-    "skip": "Omitir"
+    "skip": "Omitir",
+    "advContinuePersonal":"Te encuentras en uso personal, ¿deseas continuar usandolo?"
 }

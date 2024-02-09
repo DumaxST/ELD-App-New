@@ -8,7 +8,7 @@ import { Input, Overlay } from "react-native-elements";
 import { Colors, Fonts, Sizes } from "../../constants/styles";
 const languageModule = require('../../global_functions/variables');
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getEventTypeCode, postDriverEvent, pendingCertifyDriverEvents } from "../../data/commonQuerys";
+import { getEventTypeCode, postDriverEvent, pendingCertifyDriverEvents, getDriverEvents } from "../../data/commonQuerys";
 import { useDispatch, useSelector } from "react-redux";
 import {setDriverStatus,setELD,setTrackingTimeStamp} from "../../redux/actions";
 import { getCurrentDriver, getCurrentUsers } from "../../config/localStorage";
@@ -37,6 +37,12 @@ const PrincipalScreen = ({ navigation }) => {
   const [userON, setUserON] = useState('');
   const { restartTimer } = useTimer();
   const [modalVisible, setModalVisible] = useState(false);
+  const [advPersonalContinue, setAdvPersonalContinue] = useState(false);
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0'); 
+  const day = String(today.getDate()).padStart(2, '0');
+  const formattedDate = `${year}-${month}-${day}`;
 
   //CertifyLogs
   //Obtenemos los eventos pendientes de certificar y advertimos al usuario
@@ -53,6 +59,22 @@ const PrincipalScreen = ({ navigation }) => {
     if (userON?.data?.id && userON?.data?.carrier?.id && !hasRun.current) {
     getUncertifiedEvents()
     hasRun.current = true;
+    }
+  }, [userON]);
+
+  //Obtenemos el evento mas reciente, si es PERSONAL le preguntamos al usuario si desea continuar con ese estado
+  const personalhasRun = useRef(false);
+  useEffect(() => {
+    const getLastEvent = async () => {
+      let lastevent = await AsyncStorage.getItem("lastPCorYM");
+      if(lastevent == "PC"){
+        setAdvPersonalContinue(true);
+      }
+    }
+
+    if (userON?.data?.id && userON?.data?.carrier?.id && !personalhasRun.current) {
+      getLastEvent()
+      personalhasRun.current = true;
     }
   }, [userON]);
 
@@ -697,6 +719,7 @@ const PrincipalScreen = ({ navigation }) => {
                   currentAnnotation
                 )
               );
+              AsyncStorage.setItem("lastPCorYM", tempDriverStatus);
               setAnnotationDialog(false);
             }}
             style={styles.buttonStyle}
@@ -1016,6 +1039,49 @@ const PrincipalScreen = ({ navigation }) => {
     )
   }
 
+  function advContinuePersonal(){
+    return (
+      <View>
+         <Modal
+        animationType="slide"
+        transparent={true}
+        visible={advPersonalContinue}
+        onRequestClose={() => {
+          setAdvPersonalContinue(false);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>{languageModule.lang(language, 'advContinuePersonal')}</Text>
+            <View style={styles.modalButtons}>
+            <Pressable
+                style={[styles.modalButton, styles.buttonNotReady]}
+                onPress={() => {
+                  AsyncStorage.removeItem("lastPCorYM");
+                  setAdvPersonalContinue(false)
+                }}
+              >
+                <Text style={styles.modalButtonText}>{languageModule.lang(language, 'cancel')}</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalButton, styles.buttonAgree]}
+                onPress={() => {              
+                  setAdvPersonalContinue(false);
+                  setTempDriverStatus("PC");
+                  AsyncStorage.removeItem("lastPCorYM");
+                  setAnnotationDialog(true)
+                }}
+              >
+                <Text style={styles.modalButtonText}>{languageModule.lang(language, 'confirm')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      </View>
+    )
+  }
+
   //Graficas de estadisticas
   function onTurnoInfo() {
       return (
@@ -1215,6 +1281,7 @@ const PrincipalScreen = ({ navigation }) => {
       {observacionesDialog()}
       {stopDialog()}
       {advCertifyDialog()}
+      {advContinuePersonal()}
       </ScrollView>
   );
   };
