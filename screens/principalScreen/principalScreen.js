@@ -127,6 +127,17 @@ const PrincipalScreen = ({ navigation }) => {
         clearInterval(intervalId);
       };
   }, []);
+  
+  useEffect(() => {
+    if (driverDistance > 0) {
+      let lastevent = AsyncStorage.getItem("lastPCorYM");
+      if(lastevent){
+      AsyncStorage.removeItem("lastPCorYM");
+      }
+      setTempDriverStatus("ON");
+      postDriverEventF();
+    }
+  }, []);
 
   //Aqui obtenemos la direccion proveniente de la ubicacion
   const getLocation = async (latitude, longitude) => { 
@@ -237,6 +248,7 @@ const PrincipalScreen = ({ navigation }) => {
   
   //Funciones
   const postDriverEventF = async () => {
+    AsyncStorage.removeItem("lastPCorYM");
     if(userON?.role == "userCoDriver"){
       let lastEvent = {
         recordStatus: 1,
@@ -1074,7 +1086,6 @@ const PrincipalScreen = ({ navigation }) => {
                 onPress={() => {              
                   setAdvPersonalContinue(false);
                   setTempDriverStatus("PC");
-                  AsyncStorage.removeItem("lastPCorYM");
                   setAnnotationDialog(true)
                 }}
               >
