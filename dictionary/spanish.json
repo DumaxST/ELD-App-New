@@ -139,5 +139,6 @@
     "kmAwayFrom": "km de",
     "notAvailable": "No disponible",
     "closestLocation": "Ubicación más cercana",
-    "assumeRecord": "asumir el registro"
+    "assumeRecord": "asumir el registro",
+    "assumedRecord": "Registro Asumido"
 }
