@@ -151,5 +151,7 @@
     "distanceOnKM": "Distance on KM",
     "example": "Example",
     "addCommentToContinue": "Add a comment to continue with the editing",
-    "selectArangeToContinue": "Select a range to continue with the certification"
+    "selectArangeToContinue": "Select a range to continue with the certification",
+    "pendingEventsToCertify": "Pending events to certify, certify now",
+    "skip": "Skip"
 }

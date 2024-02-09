@@ -149,5 +149,7 @@
     "distanceOnKM": "Distancia en KM",
     "example": "Ejemplo",
     "addCommentToContinue": "Agrega un comentario para continuar con la edición",
-    "selectArangeToContinue": "Selecciona un rango para continuar con la Certificación"
+    "selectArangeToContinue": "Selecciona un rango para continuar con la Certificación",
+    "pendingEventsToCertify": "Hay eventos pendientes para certificar, certificalos ahora",
+    "skip": "Omitir"
 }

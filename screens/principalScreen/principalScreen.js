@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollView,View, Text, TouchableOpacity, StyleSheet, Image,Dimensions, Modal} from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { ScrollView, Button,Pressable, View, Text, TouchableOpacity, StyleSheet, Image,Dimensions, Modal} from 'react-native';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { Entypo } from '@expo/vector-icons';
 import * as Progress from "react-native-progress";
@@ -8,7 +8,7 @@ import { Input, Overlay } from "react-native-elements";
 import { Colors, Fonts, Sizes } from "../../constants/styles";
 const languageModule = require('../../global_functions/variables');
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getEventTypeCode, postDriverEvent } from "../../data/commonQuerys";
+import { getEventTypeCode, postDriverEvent, pendingCertifyDriverEvents } from "../../data/commonQuerys";
 import { useDispatch, useSelector } from "react-redux";
 import {setDriverStatus,setELD,setTrackingTimeStamp} from "../../redux/actions";
 import { getCurrentDriver, getCurrentUsers } from "../../config/localStorage";
@@ -36,6 +36,25 @@ const PrincipalScreen = ({ navigation }) => {
   const [users, setUsers] = useState('');
   const [userON, setUserON] = useState('');
   const { restartTimer } = useTimer();
+  const [modalVisible, setModalVisible] = useState(false);
+
+  //CertifyLogs
+  //Obtenemos los eventos pendientes de certificar y advertimos al usuario
+  const hasRun = useRef(false);
+  const getUncertifiedEvents = async () => {
+    await pendingCertifyDriverEvents('mHlqeeq5rfz3Cizlia23', userON?.data?.id, userON?.data?.carrier?.id).then((response) => {
+      if(response){
+        setModalVisible(true);
+      }
+    })
+  }
+
+  useEffect(() => { 
+    if (userON?.data?.id && userON?.data?.carrier?.id && !hasRun.current) {
+    getUncertifiedEvents()
+    hasRun.current = true;
+    }
+  }, [userON]);
 
   //obtenemos el usuario principal (Solo para acciones, el mando sigue siendo de el currentDriver)
   useEffect(() => {
@@ -959,6 +978,44 @@ const PrincipalScreen = ({ navigation }) => {
     );
   }
 
+  function advCertifyDialog() {  
+    return (
+      <View>
+         <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>{languageModule.lang(language, 'pendingEventsToCertify')}</Text>
+            <View style={styles.modalButtons}>
+            <Pressable
+                style={[styles.modalButton, styles.buttonNotReady]}
+                onPress={() => {setModalVisible(false)}}
+              >
+                <Text style={styles.modalButtonText}>{languageModule.lang(language, 'skip')}</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalButton, styles.buttonAgree]}
+                onPress={() => {
+                  setModalVisible(false)
+                  navigation.navigate('CertificarLogs');
+                }}
+              >
+                <Text style={styles.modalButtonText}>{languageModule.lang(language, 'certify')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      </View>
+    )
+  }
+
   //Graficas de estadisticas
   function onTurnoInfo() {
       return (
@@ -1157,11 +1214,64 @@ const PrincipalScreen = ({ navigation }) => {
       {anotationDialog()}
       {observacionesDialog()}
       {stopDialog()}
+      {advCertifyDialog()}
       </ScrollView>
   );
   };
 
   const styles = StyleSheet.create({
+    centeredView: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 22,
+    },
+    modalView: {
+      margin: 20,
+      backgroundColor: 'white',
+      borderRadius: 20,
+      padding: 35,
+      alignItems: 'center',
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+    },
+    modalText: {
+      marginBottom: 15,
+      textAlign: 'center',
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      width: '100%',
+      marginTop: 20,
+    },
+    modalButton: {
+      flex: 1,
+      borderRadius: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      elevation: 2,
+      marginHorizontal: 5,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    buttonAgree: {
+      backgroundColor: '#4CAF50',
+    },
+    buttonNotReady: {
+      backgroundColor: '#CC0B0A',
+    },
+    modalButtonText: {
+      color: 'white',
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
     userInfoContainer: {
       flexDirection: 'row',
       alignItems: 'center',
