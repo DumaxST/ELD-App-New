@@ -724,12 +724,13 @@ const LoginScreen = ({navigation, handleLogin}) => {
           onClose={closeErrorModal} // Función para cerrar el modal
         />
       )}
-      {driverStatus === 'D' ? (
-        <View style={styles2.overlay}>
-          <FloatingMessage
-            message={languageModule.lang(language,'PleasesigninbeforeanymovementintheCMV')}
-          />
-        </View>): null}
+      {(driverStatus === 'D' && (!currentDriver || currentDriver === '')) ? (
+       <View style={styles2.overlay}>
+         <FloatingMessage
+           message={languageModule.lang(language,'PleasesigninbeforeanymovementintheCMV')}
+         />
+       </View>
+      ) : null}
       {footer()}
     </View>
   );
