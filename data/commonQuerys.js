@@ -201,8 +201,7 @@ export const postDriverEvent = async (
 };
 
 export const DriverEvent = {
-  //Mandamos el identificador de solo actualizacion
-  put: async (editedEvent, currentChofer, justUpdate) => {
+  put: async (editedEvent, currentChofer) => {
     await putAxios(`/api/driverEvent`, {
       carrierID: currentChofer?.carrier?.id
         ? currentChofer?.carrier?.id
@@ -210,9 +209,8 @@ export const DriverEvent = {
       driverID: currentChofer?.id
         ? currentChofer.id
         : "Jg6XvXYVCvPCrdIZMOQeZ8WeH3d2",
-        eldID: "mHlqeeq5rfz3Cizlia23",  //cambiar por ELD checar con Isaias
+      eldID: "bWuPuaLFPVQxdWH9eGdX",
       event: editedEvent,
-      justUpdate: justUpdate ? justUpdate : false,
     });
   },
   history: {
