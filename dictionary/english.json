@@ -140,5 +140,7 @@
     "noLogoutAvailable": "No logout available, try closing all sesions",
     "kmAwayFrom": "km away from",
     "notAvailable": "Not Available",
-    "closestLocation": "Closest Location"
+    "closestLocation": "Closest Location",
+    "assumeRecord": "assume the record",
+    "assumedRecord": "Assumed Record"
 }

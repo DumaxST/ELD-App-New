@@ -138,5 +138,7 @@
     "noLogoutAvailable": "No hay cierre de sesión disponible, intente cerrar todas las sesiones",
     "kmAwayFrom": "km de",
     "notAvailable": "No disponible",
-    "closestLocation": "Ubicación más cercana"
+    "closestLocation": "Ubicación más cercana",
+    "assumeRecord": "asumir el registro",
+    "assumedRecord": "Registro Asumido"
 }

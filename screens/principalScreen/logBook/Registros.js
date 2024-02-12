@@ -194,7 +194,7 @@ const ListSection = () => {
               style={{
                 marginHorizontal: 20,
                 padding: 15,
-                backgroundColor: '#E6F4EA', // Color verde del diseño
+                backgroundColor: event.recordOrigin === 4 && event.recordStatus === 1 ? '#bfcde6' : '#E6F4EA', // Color azul si recordOrigin es 4 y recordStatus es 1, de lo contrario color verde
                 borderRadius: 10,
                 marginBottom: 20,
               }}
@@ -202,6 +202,8 @@ const ListSection = () => {
               {/* Detalles del evento */}
               <Text>{languageModule.lang(language, "status")}{": "}{languageModule.lang(language,traducirStatus(event.dutyStatus))}</Text>
               <Text>{languageModule.lang(language, "sequenceIDNumber")}{": "}{`${event.sequenceIDNumber.decimal} - ${event.sequenceIDNumber.hexadecimal}`}</Text>
+              <Text>{languageModule.lang(language, "recordOrigin")}{": "}{`${event?.recordOrigin}`}</Text>
+              <Text>{languageModule.lang(language, "recordStatus")}{": "}{event?.recordStatus}</Text>
               <Text>{languageModule.lang(language, "startTime")}{": "}
                     {`${event?.geoTimeStamp?.date.substring(
                           0,
@@ -238,14 +240,19 @@ const ListSection = () => {
                 ? event.address.reachOf.distance + " " + languageModule.lang(language, 'kmAwayFrom') + " " + event.address.reachOf.city + ", " + event.address.reachOf.state
                 : languageModule.lang(language, 'notAvailable')}
               </Text>
-              <Text>{languageModule.lang(language, "observations")}{": "}{"Pre - TI"}</Text>
-              <Text>{languageModule.lang(language, "carrier")}{": "}{event.carrier.name}</Text>
+              {/* <Text>{languageModule.lang(language, "observations")}{": "}{"Pre - TI"}</Text>
+              <Text>{languageModule.lang(language, "carrier")}{": "}{event.carrier.name}</Text> */}
               <Text>
               {languageModule.lang(language, "certified")}{": "}
               {event?.certified?.value
                 ? convertirTimestampAFechaYHora(event.certified.timeStamp._seconds)
                 : "No"}
               </Text>
+              {event.recordOrigin === 4 && event.recordStatus === 1 && (
+            <Text style={{ color: 'white' }}>
+              {languageModule.lang(language, 'assumedRecord')}
+            </Text>
+            )}
               {/* Opciones de edición/visualización/eliminación */}
               <View style={{ position: 'absolute', top: 10, right: 10 }}>
                 <TouchableOpacity
