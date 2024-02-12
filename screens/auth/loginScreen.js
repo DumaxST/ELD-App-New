@@ -370,7 +370,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
 
   useEffect(() => {
     postUndefinedDriverEvent()
-     const updateIntervalId = setInterval(postUndefinedDriverEvent, 60000);
+     const updateIntervalId = setInterval(postUndefinedDriverEvent, 30000);
    
      return () => clearInterval(updateIntervalId);
   }, []);
@@ -720,12 +720,13 @@ const LoginScreen = ({navigation, handleLogin}) => {
           onClose={closeErrorModal} // Función para cerrar el modal
         />
       )}
-      {driverStatus === 'D' ? (
-        <View style={styles2.overlay}>
-          <FloatingMessage
-            message={languageModule.lang(language,'PleasesigninbeforeanymovementintheCMV')}
-          />
-        </View>): null}
+      {(driverStatus === 'D' && (!currentDriver || currentDriver === '')) ? (
+       <View style={styles2.overlay}>
+         <FloatingMessage
+           message={languageModule.lang(language,'PleasesigninbeforeanymovementintheCMV')}
+         />
+       </View>
+      ) : null}
       {footer()}
     </View>
   );
