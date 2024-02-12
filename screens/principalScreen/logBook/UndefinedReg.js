@@ -148,7 +148,6 @@ const ListSection = () => {
       date.setHours(date.getHours() + hours);
       return date;
     }
-
     function convertirTimestampAFechaYHora(timestamp) {
       const date = new Date(timestamp * 1000); 
       const dia = date.getDate();
@@ -162,7 +161,6 @@ const ListSection = () => {
       const minutosFormatados = minutos < 10 ? `0${minutos}` : minutos;
     
       const fechaHoraFormateada = `${diaFormatado}/${mesFormatado}/${año} - ${horasFormatadas}:${minutosFormatados}`;
-    
       return fechaHoraFormateada;
     }
 
