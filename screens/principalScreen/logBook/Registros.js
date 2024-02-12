@@ -194,7 +194,7 @@ const ListSection = () => {
               style={{
                 marginHorizontal: 20,
                 padding: 15,
-                backgroundColor: '#E6F4EA', // Color verde del diseño
+                backgroundColor: event.recordOrigin === 4 && event.recordStatus === 1 ? '#bfcde6' : '#E6F4EA', // Color azul si recordOrigin es 4 y recordStatus es 1, de lo contrario color verde
                 borderRadius: 10,
                 marginBottom: 20,
               }}
@@ -248,6 +248,11 @@ const ListSection = () => {
                 ? convertirTimestampAFechaYHora(event.certified.timeStamp._seconds)
                 : "No"}
               </Text>
+              {event.recordOrigin === 4 && event.recordStatus === 1 && (
+            <Text style={{ color: 'white' }}>
+              {languageModule.lang(language, 'assumedRecord')}
+            </Text>
+            )}
               {/* Opciones de edición/visualización/eliminación */}
               <View style={{ position: 'absolute', top: 10, right: 10 }}>
                 <TouchableOpacity
