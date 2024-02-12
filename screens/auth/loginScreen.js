@@ -20,6 +20,7 @@ import { checkAndRequestBluetoothScanPermission } from '../bluetooth/constructor
 import { startGlobalLocationTracking } from '../../components/ELDlocation';
 import { useTimer } from '../../global_functions/timerFunctions';
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import {setKey,setDefaults,setLanguage,setRegion,fromAddress,fromLatLng,fromPlaceId,setLocationType,geocode,RequestType,} from "react-geocode";
 
 const languageModule = require('../../global_functions/variables');
 const { width } = Dimensions.get("window");
@@ -44,6 +45,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
   const {eldData,driverStatus,currentDriver,acumulatedVehicleKilometers,lastDriverStatus} = useSelector((state) => state.eldReducer);
   const [eldAccuracy, setEldAccuracy] = useState();
   const [currentCords, setCurrentCords] = useState({});
+  const [location, setlocation] = useState({});
   const [driverDistance, setDrivedDistance] = useState(0);
   const [backClickCount, setBackClickCount] = useState(0);
   const [users, setUsers] = useState([
@@ -155,6 +157,76 @@ const LoginScreen = ({navigation, handleLogin}) => {
       };
   }, []);
 
+    //Aqui obtenemos la direccion proveniente de la ubicacion
+  const getLocation = async (latitude, longitude) => { 
+
+      setDefaults({
+        key: "AIzaSyD7ybUYP7u9Bd-PBFJ1UHDtblyK1Y-ieEk", 
+        language: language.toLocaleLowerCase().replace("eng", "en").replace("esp", "es"),
+        region: language.toLocaleLowerCase().replace("eng", "en").replace("esp", "es"),
+      });
+  
+      try {
+      const { results } = await fromLatLng(latitude, longitude);
+  
+      if (results && results.length > 0) {
+        const address = results[0].formatted_address;
+        const { city, state, country } = results[0].address_components.reduce(
+          (acc, component) => {
+            if (component.types.includes("locality"))
+              acc.city = component.long_name;
+            else if (component.types.includes("administrative_area_level_1"))
+              acc.state = component.long_name;
+            else if (component.types.includes("country"))
+              acc.country = component.long_name;
+            return acc;
+          },
+          {}
+        );
+  
+        const geonamesBaseUrl = "http://api.geonames.org/findNearbyJSON";
+        const geonamesUsername = "danielwguzman";
+        const geonamesUrl = `${geonamesBaseUrl}?lat=${latitude}&lng=${longitude}&username=${geonamesUsername}`;
+  
+        const geonamesResponse = await fetch(geonamesUrl);
+        const geonamesData = await geonamesResponse.json();
+  
+        if (geonamesData && geonamesData.geonames && geonamesData.geonames.length > 0) {
+          const nearestCity = geonamesData.geonames[0];
+          const locationString = `${nearestCity.distance} ${languageModule.lang(language, 'kmAwayFrom')} ${nearestCity.name}, ${nearestCity.adminCodes1.ISO3166_2}`;
+          const distance = nearestCity.distance;
+          const distanceString = distance.toString();
+          const slicedDistance = distanceString.slice(0, distanceString.indexOf('.') + 3);
+          setlocation({
+            "address": address,
+            "city": city,
+            "state": state,
+            "country": country,
+            "reachOf": {
+              "city": nearestCity.name,
+              "state": nearestCity.adminCodes1.ISO3166_2,
+              "country": nearestCity.countryName,
+              "distance": slicedDistance,
+            }
+          });
+        } else {
+          console.error("No se encontraron resultados de Geonames.");
+        }
+        
+      } else {
+        console.error("No se encontraron resultados de react-geocode.");
+      }
+      } catch (error) {
+        console.error('Error en la geocodificación inversa:', error.message);
+      }
+  };
+  
+  useEffect(() => {
+    if(eldData?.coords?.latitude && eldData?.coords?.longitude){
+      getLocation(eldData?.coords?.latitude, eldData?.coords?.longitude);  
+    }
+  }, [eldData]);
+
   // Obtener la lista de carriers cuando el componente se monta
   useEffect(() => {
     const fetchCarriers = async () => {
@@ -227,10 +299,10 @@ const LoginScreen = ({navigation, handleLogin}) => {
            });
            //Si no estamos logueados asignamos un accuracy por defecto y esperamos el logueo
         }else{
-          setEldAccuracy(0.007)
+          setEldAccuracy(0.2)
           return await AsyncStorage.setItem(
             "eldAccuracy",
-            JSON.stringify({ accuracy: 0.007 })
+            JSON.stringify({ accuracy: 0.2 })
             )
         }
       });
@@ -251,7 +323,9 @@ const LoginScreen = ({navigation, handleLogin}) => {
           driverStatus,
           acumulatedVehicleKilometers,
           lastDriverStatus,
-          1
+          1,
+          "",
+          location
         )
       );
   
@@ -286,7 +360,8 @@ const LoginScreen = ({navigation, handleLogin}) => {
         undefinedDriver,
         eldData,
         acumulatedVehicleKilometers,
-        lastDriverStatus
+        lastDriverStatus,
+        location
       ).then(async (eventData) => {
         console.log("Evento del undefined driver posteado");
       })
@@ -295,7 +370,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
 
   useEffect(() => {
     postUndefinedDriverEvent()
-     const updateIntervalId = setInterval(postUndefinedDriverEvent, 60000);
+     const updateIntervalId = setInterval(postUndefinedDriverEvent, 30000);
    
      return () => clearInterval(updateIntervalId);
   }, []);
@@ -420,7 +495,8 @@ const LoginScreen = ({navigation, handleLogin}) => {
                                 res.data[0],
                                 eldData,
                                 acumulatedVehicleKilometers,
-                                lastDriverStatus
+                                lastDriverStatus,
+                                location
                               )
                             );  
                             return await eld.getAccuracy(carrierID, res.data[0].cmv.id).then(async (accuracy) => {
@@ -519,7 +595,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
                 currentCords.timestamp
               ).toLocaleTimeString()}`}
             </Text>
-          ) : null}        
+          ) : null}   
           <View
           style={{
             justifyContent: "center",

@@ -127,7 +127,8 @@ export const postDriverEvent = async (
   currentChofer,
   eldData,
   acumulatedVehicleKilometers,
-  lastDriverStatus
+  lastDriverStatus,
+  address
 ) => {
   return await currentCMV().then(async (cmv) => {
     const eventData = {
@@ -157,6 +158,7 @@ export const postDriverEvent = async (
         shippingDocumentNumber: cmv?.numeroDeDocumentoDeEnvio,
       },
       carrier: currentChofer?.carrier,
+      address: address ? address : "",
     };
     
     if (

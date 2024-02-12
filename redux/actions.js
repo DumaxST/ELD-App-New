@@ -54,7 +54,8 @@ export const setDriverStatus = (
   acumulatedVehicleKilometers,
   lastDriverStatus,
   recordOrigin,
-  currentAnnotation
+  currentAnnotation,
+  address
 ) => {
   return async (dispatch) => {
     let isDriving = await isStillDriving(eldData);
@@ -72,7 +73,8 @@ export const setDriverStatus = (
               currentDriver,
               eldData,
               acumulatedVehicleKilometers,
-              lastDriverStatus
+              lastDriverStatus,
+              address
             ).then(() => {
               return dispatch({
                 type: SET_DRIVER_STATUS,
@@ -96,7 +98,8 @@ export const setDriverStatus = (
       currentDriver,
       eldData,
       acumulatedVehicleKilometers,
-      lastDriverStatus
+      lastDriverStatus,
+      address
     ).then(() => {
       return dispatch({
         type: SET_DRIVER_STATUS,
@@ -215,7 +218,8 @@ export const setCurrentDriver = (
   driverData,
   eldData,
   acumulatedVehicleKilometers,
-  lastDriverStatus
+  lastDriverStatus,
+  address
 ) => {
   return async (dispatch) => {
     return await AsyncStorage.setItem(
@@ -226,6 +230,20 @@ export const setCurrentDriver = (
       //   type: SET_CURRENT_DRIVER,
       //   value: driverData,
       // });
+      let lastEvent = {
+        recordStatus: 1,
+        recordOrigin: 2,
+        type: getEventTypeCode('ON').type,
+        code: getEventTypeCode('ON').code,
+        currentAnnotation: '',
+        tempDriverStatus: 'ON',
+        currentDriver: driverData,
+        eldData: eldData,
+        acumulatedVehicleKilometers: acumulatedVehicleKilometers,
+        lastDriverStatus: lastDriverStatus,
+        location: address
+      }
+      await AsyncStorage.setItem("lastEvent", JSON.stringify(lastEvent) )
       return await postDriverEvent(
         {
           recordStatus: 1,
@@ -238,7 +256,8 @@ export const setCurrentDriver = (
         driverData,
         eldData,
         acumulatedVehicleKilometers,
-        lastDriverStatus
+        lastDriverStatus,
+        address
       ).then(() => {
         return dispatch({
           type: SET_CURRENT_DRIVER,
@@ -254,7 +273,8 @@ export const logOutCurrentDriver = (
   currentDriver,
   eldData,
   acumulatedVehicleKilometers,
-  lastDriverStatus
+  lastDriverStatus,
+  address
 ) => {
   return async (dispatch) => {
     // Se corrigió el doble "await"
@@ -270,7 +290,8 @@ export const logOutCurrentDriver = (
       currentDriver,
       eldData,
       acumulatedVehicleKilometers,
-      lastDriverStatus
+      lastDriverStatus,
+      address
     ).then(async () => {   
       await AsyncStorage.removeItem("currentDriver");
       await AsyncStorage.removeItem("currentCMV");
