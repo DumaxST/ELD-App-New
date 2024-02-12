@@ -1,6 +1,15 @@
 import * as Location from 'expo-location';
 
 export const startGlobalLocationTracking = async (updateLocationCallback) => {
+
+  const foregroundPermission =
+  await Location.requestForegroundPermissionsAsync();
+  // let locationSubscrition = null;
+  
+  if (!foregroundPermission.granted) {
+    console.log("Please grant location permissions");
+    return;
+  }
     
   const locationOptions = {
     accuracy: Location.Accuracy.High,

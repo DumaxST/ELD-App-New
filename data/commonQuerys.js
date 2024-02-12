@@ -18,6 +18,29 @@ export const authDriver = async (userName, carrierID, language, password) => {
   });
 }
 
+export const authToken = async (userName, carrierID, token, language) => {
+  return await postAxios("/api/auth/authToken", {
+    userName: userName,
+    carrierID: carrierID,
+    token: token,
+    language: language,
+  }).then((res) =>{
+    return res
+  }).catch((err) => {
+    console.error("authToken", err);
+  });
+}
+
+export const removeToken = async (token) => {
+  return await postAxios("/api/auth/deleteToken", {
+    token: token
+  }).then((res) =>{
+    return res
+  }).catch((err) => {
+    console.error("removeToken", err);
+  });
+}
+
 export const getCarriersOptions = async () => {
   return await getAxios("/api/app/carriers").then((res) =>{
     return res
@@ -104,7 +127,8 @@ export const postDriverEvent = async (
   currentChofer,
   eldData,
   acumulatedVehicleKilometers,
-  lastDriverStatus
+  lastDriverStatus,
+  address
 ) => {
   return await currentCMV().then(async (cmv) => {
     const eventData = {
@@ -134,6 +158,7 @@ export const postDriverEvent = async (
         shippingDocumentNumber: cmv?.numeroDeDocumentoDeEnvio,
       },
       carrier: currentChofer?.carrier,
+      address: address ? address : "",
     };
     
     if (
