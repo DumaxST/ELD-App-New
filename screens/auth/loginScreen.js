@@ -3,14 +3,13 @@ import React, { useState, useCallback, useEffect } from "react";
 import { Alert,StyleSheet, View,ScrollView, Modal, Image, Dimensions, BackHandler, TouchableOpacity } from 'react-native';
 import { Input, Button, Text } from 'react-native-elements';
 import { Colors, Fonts, Sizes } from "../../constants/styles";
-import { useNavigation } from '@react-navigation/native';
+import { getEventTypeCode, postDriverEvent } from "../../data/commonQuerys";
 import SelectDropdown from 'react-native-select-dropdown'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from "@react-navigation/native";
-import { authDriver, eld, getCarriersOptions, getTheUserIsAdmin} from "../../data/commonQuerys";
+import { authDriver, eld, getCarriersOptions, getTheUserIsAdmin, authToken} from "../../data/commonQuerys";
 import { getCurrentDriver } from "../../config/localStorage";
 import { useSelector, useDispatch } from "react-redux";
-import * as Location from "expo-location";
 import { Audio } from "expo-av";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { isStillDriving } from "../../components/eldFunctions";
@@ -21,6 +20,7 @@ import { checkAndRequestBluetoothScanPermission } from '../bluetooth/constructor
 import { startGlobalLocationTracking } from '../../components/ELDlocation';
 import { useTimer } from '../../global_functions/timerFunctions';
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import {setKey,setDefaults,setLanguage,setRegion,fromAddress,fromLatLng,fromPlaceId,setLocationType,geocode,RequestType,} from "react-geocode";
 
 const languageModule = require('../../global_functions/variables');
 const { width } = Dimensions.get("window");
@@ -45,6 +45,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
   const {eldData,driverStatus,currentDriver,acumulatedVehicleKilometers,lastDriverStatus} = useSelector((state) => state.eldReducer);
   const [eldAccuracy, setEldAccuracy] = useState();
   const [currentCords, setCurrentCords] = useState({});
+  const [location, setlocation] = useState({});
   const [driverDistance, setDrivedDistance] = useState(0);
   const [backClickCount, setBackClickCount] = useState(0);
   const [users, setUsers] = useState([
@@ -141,13 +142,90 @@ const LoginScreen = ({navigation, handleLogin}) => {
   
   //Obtenemos la ubicacion con efectos
   useEffect(() => {
-    startGlobalLocationTracking(async (Location) => {
-      setDrivedDistance(await isStillDriving(Location));
-      setCurrentCords({ ...Location?.coords, timestamp: Location.timestamp });
-      dispatch(setTrackingTimeStamp(Location.timestamp));
-      dispatch(setELD({ ...Location, id: "mHlqeeq5rfz3Cizlia23" })); //tenemos que ver de donde sacamos el ELD
-    });
-  }, [currentCords]);
+    const intervalId = setInterval(() => {
+      startGlobalLocationTracking(async (Location) => {
+        setDrivedDistance(await isStillDriving(Location));
+        setCurrentCords({ ...Location?.coords, timestamp: Location.timestamp });
+        dispatch(setTrackingTimeStamp(Location.timestamp));
+        dispatch(setELD({ ...Location, id: "mHlqeeq5rfz3Cizlia23" })); //tenemos que ver de donde sacamos el ELD
+      });
+    }, 1000); // Actualiza la ubicación cada 10 segundos
+    
+      // Limpia el intervalo cuando el componente se desmonta
+      return () => {
+        clearInterval(intervalId);
+      };
+  }, []);
+
+    //Aqui obtenemos la direccion proveniente de la ubicacion
+  const getLocation = async (latitude, longitude) => { 
+
+      setDefaults({
+        key: "AIzaSyD7ybUYP7u9Bd-PBFJ1UHDtblyK1Y-ieEk", 
+        language: language.toLocaleLowerCase().replace("eng", "en").replace("esp", "es"),
+        region: language.toLocaleLowerCase().replace("eng", "en").replace("esp", "es"),
+      });
+  
+      try {
+      const { results } = await fromLatLng(latitude, longitude);
+  
+      if (results && results.length > 0) {
+        const address = results[0].formatted_address;
+        const { city, state, country } = results[0].address_components.reduce(
+          (acc, component) => {
+            if (component.types.includes("locality"))
+              acc.city = component.long_name;
+            else if (component.types.includes("administrative_area_level_1"))
+              acc.state = component.long_name;
+            else if (component.types.includes("country"))
+              acc.country = component.long_name;
+            return acc;
+          },
+          {}
+        );
+  
+        const geonamesBaseUrl = "http://api.geonames.org/findNearbyJSON";
+        const geonamesUsername = "danielwguzman";
+        const geonamesUrl = `${geonamesBaseUrl}?lat=${latitude}&lng=${longitude}&username=${geonamesUsername}`;
+  
+        const geonamesResponse = await fetch(geonamesUrl);
+        const geonamesData = await geonamesResponse.json();
+  
+        if (geonamesData && geonamesData.geonames && geonamesData.geonames.length > 0) {
+          const nearestCity = geonamesData.geonames[0];
+          const locationString = `${nearestCity.distance} ${languageModule.lang(language, 'kmAwayFrom')} ${nearestCity.name}, ${nearestCity.adminCodes1.ISO3166_2}`;
+          const distance = nearestCity.distance;
+          const distanceString = distance.toString();
+          const slicedDistance = distanceString.slice(0, distanceString.indexOf('.') + 3);
+          setlocation({
+            "address": address,
+            "city": city,
+            "state": state,
+            "country": country,
+            "reachOf": {
+              "city": nearestCity.name,
+              "state": nearestCity.adminCodes1.ISO3166_2,
+              "country": nearestCity.countryName,
+              "distance": slicedDistance,
+            }
+          });
+        } else {
+          console.error("No se encontraron resultados de Geonames.");
+        }
+        
+      } else {
+        console.error("No se encontraron resultados de react-geocode.");
+      }
+      } catch (error) {
+        console.error('Error en la geocodificación inversa:', error.message);
+      }
+  };
+  
+  useEffect(() => {
+    if(eldData?.coords?.latitude && eldData?.coords?.longitude){
+      getLocation(eldData?.coords?.latitude, eldData?.coords?.longitude);  
+    }
+  }, [eldData]);
 
   // Obtener la lista de carriers cuando el componente se monta
   useEffect(() => {
@@ -177,10 +255,23 @@ const LoginScreen = ({navigation, handleLogin}) => {
 
   //obtenemes el estado del conductor para mandar el sonido en caso de que sea D
   useEffect(() => {
-    if (driverStatus == "D" && currentDriver == null) {
-      playSound();
-    }
-  }, [driverStatus]);
+    const checkDriverStatus = () => {
+      if (driverStatus === "D") {
+        playSound();
+        console.log(driverStatus);
+      }
+    };
+  
+    // Llama a checkDriverStatus inmediatamente
+    checkDriverStatus();
+  
+    const intervalId = setInterval(checkDriverStatus, 10000); // Verifica el estado del conductor cada segundo
+  
+    // Limpia el intervalo cuando el componente se desmonta
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [driverStatus, currentDriver]); // Dependencias actualizadas
   
   //Usamos el efecto para obtener datos del eld currancy
   useEffect(() => {
@@ -208,10 +299,10 @@ const LoginScreen = ({navigation, handleLogin}) => {
            });
            //Si no estamos logueados asignamos un accuracy por defecto y esperamos el logueo
         }else{
-          setEldAccuracy(0.015)
+          setEldAccuracy(0.2)
           return await AsyncStorage.setItem(
             "eldAccuracy",
-            JSON.stringify({ accuracy: 0.015 })
+            JSON.stringify({ accuracy: 0.2 })
             )
         }
       });
@@ -224,7 +315,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
   
   //Aqui asignamos el undefined driver y cambiamos el estado si continua o si para el camion
   const updateDriverStatus = () => {
-    if (eldData) {
+    if (Object.keys(eldData).length > 0) {
       dispatch(
         setDriverStatus(
           eldData,
@@ -232,7 +323,9 @@ const LoginScreen = ({navigation, handleLogin}) => {
           driverStatus,
           acumulatedVehicleKilometers,
           lastDriverStatus,
-          1
+          1,
+          "",
+          location
         )
       );
   
@@ -250,12 +343,38 @@ const LoginScreen = ({navigation, handleLogin}) => {
   
   useEffect(() => {
     updateDriverStatus();
+  }, [eldData, driverStatus, acumulatedVehicleKilometers, lastDriverStatus]);
+  
+  //Aqui vamos a postear el off-duty del undefined cada 60 min
+  const postUndefinedDriverEvent = async () => {
+    if (Object.keys(eldData).length > 0 && driverStatus === "OFF-DUTY") {
+      await postDriverEvent(
+        {
+          recordStatus: 1,
+          recordOrigin: 2,
+          type: getEventTypeCode(driverStatus).type,
+          code: getEventTypeCode(driverStatus).code,
+        },
+        "user is not logged in",
+        driverStatus,
+        undefinedDriver,
+        eldData,
+        acumulatedVehicleKilometers,
+        lastDriverStatus,
+        location
+      ).then(async (eventData) => {
+        console.log("Evento del undefined driver posteado");
+      })
+    }
+  }
 
-     const updateIntervalId = setInterval(updateDriverStatus, 60000);
+  useEffect(() => {
+    postUndefinedDriverEvent()
+     const updateIntervalId = setInterval(postUndefinedDriverEvent, 30000);
    
      return () => clearInterval(updateIntervalId);
-  }, [eldData]);
-  
+  }, []);
+
   // Obtenermos nuestro current language desde el AsyncStorage
   useEffect(() => {
     const getPreferredLanguage = async () => {
@@ -271,7 +390,6 @@ const LoginScreen = ({navigation, handleLogin}) => {
     ];
     setLanguageOptions(options);
   }, []);
-
   
   //Funciones a usar
   const backAction = () => {
@@ -318,7 +436,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
   };
 
   const authUser = async () => {
-    if(!currentCords){
+    if(!Object.keys(eldData).length > 0){
       errorMessages.push([languageModule.lang(language, 'locationNotAvailable')]);
       openErrorModal();
       return;
@@ -377,7 +495,8 @@ const LoginScreen = ({navigation, handleLogin}) => {
                                 res.data[0],
                                 eldData,
                                 acumulatedVehicleKilometers,
-                                lastDriverStatus
+                                lastDriverStatus,
+                                location
                               )
                             );  
                             return await eld.getAccuracy(carrierID, res.data[0].cmv.id).then(async (accuracy) => {
@@ -402,7 +521,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
                               })
                             }); 
                           }
-                        })        
+                        })                            
                     }catch(error){
                       console.log("Error al pasar al driver:" + error)
                     }
@@ -476,7 +595,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
                 currentCords.timestamp
               ).toLocaleTimeString()}`}
             </Text>
-          ) : null}        
+          ) : null}   
           <View
           style={{
             justifyContent: "center",
@@ -486,7 +605,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
             width: 200,
           }}
         >
-          <Text>{"Version 1.0"}</Text> 
+          <Text>{"Version 1.0.1"}</Text> 
           </View>
           <View style={{ marginTop: Sizes.fixPadding, alignItems: 'center', width: 200 }}>
       <SelectDropdown
@@ -540,7 +659,6 @@ const LoginScreen = ({navigation, handleLogin}) => {
       </Modal>
     );
   }
-
   //Pantalla a retornar
   return (
     <View style={styles.container}>
@@ -577,6 +695,7 @@ const LoginScreen = ({navigation, handleLogin}) => {
           autoCapitalize="none"
           inputStyle={styles.input}
           inputContainerStyle={styles.inputContainer}
+          disabled={driverStatus === 'D' && (!currentDriver || currentDriver === '') || (!Object.keys(eldData).length > 0)}
         />
         <Input
           placeholder={languageModule.lang(language,'password')}
@@ -586,12 +705,14 @@ const LoginScreen = ({navigation, handleLogin}) => {
           autoCapitalize="none"
           inputStyle={styles.input}
           inputContainerStyle={styles.inputContainer}
+          disabled={driverStatus === 'D' && (!currentDriver || currentDriver === '') || (!Object.keys(eldData).length > 0)}
         />
     </View>
       <Button
         title={languageModule.lang(language,'login')}
         onPress={authUser}
         buttonStyle={styles.loginButton}
+        disabled={driverStatus === 'D' && (!currentDriver || currentDriver === '')}
       />
       {showErrorModal && (
         <FloatingMessageError

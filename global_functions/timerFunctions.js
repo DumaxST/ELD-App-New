@@ -5,26 +5,59 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const languageModule = require('../global_functions/variables');
 import { currentCMV, getCurrentDriver } from "../config/localStorage";
 import { eldAccuracy, lastEldData } from "../config/localStorage";
+import * as BackgroundFetch from 'expo-background-fetch';
+import * as TaskManager from 'expo-task-manager';
 
 const TimerContext = createContext();
 
-export const TimerProvider = ({ children }) => {
+const TASK_NAME = 'checkTimerExpiration';
 
-  const [language, setLanguage] = useState('');
+TaskManager.defineTask(TASK_NAME, async () => {
+  // Aquí puedes realizar las tareas que deseas ejecutar en segundo plano
+  console.log("Tarea en segundo plano ejecutada");
+});
+
+export const TimerProvider = ({ children }) => {
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [language, setlanguage] = useState('');
   const intervalIdRef = useRef(null);
   const startTimeRef = useRef(null);
-  const {eldData,driverStatus,currentDriver,acumulatedVehicleKilometers,lastDriverStatus} = useSelector((state) => state.eldReducer);
-  
+  const { eldData, driverStatus, currentDriver, acumulatedVehicleKilometers, lastDriverStatus } = useSelector((state) => state.eldReducer);
+
+  //Aqui obtenemos el idioma seleccionado desde la primera pantalla
   useEffect(() => {
-    const getPreferredLanguage = async () => {
-      try {
-        setLanguage(await AsyncStorage.getItem("preferredLanguage"));
-      } catch (error) {
-        console.error("Error al obtener el idioma:", error);
+      const getPreferredLanguage = async () => {
+         try {
+           setlanguage(await AsyncStorage.getItem("preferredLanguage"));
+         } catch (error) {
+           console.log(error);
+         }
+      };
+      getPreferredLanguage();
+  }, []);
+
+  // Registra la tarea en segundo plano
+  useEffect(() => {
+    const registerBackgroundFetch = async () => {
+      const status = await BackgroundFetch.getStatusAsync();
+      if (status === BackgroundFetch.Status.Restricted || status === BackgroundFetch.Status.Denied) {
+        console.warn('Background fetch is unavailable for this app.');
+        return;
       }
+
+      await BackgroundFetch.registerTaskAsync(TASK_NAME, {
+        minimumInterval: 60, // Tiempo mínimo entre ejecuciones en segundos
+        stopOnTerminate: false, // Permite que la tarea continúe ejecutándose después de cerrar la aplicación
+        startOnBoot: true, // Permite que la tarea se inicie automáticamente al reiniciar el dispositivo
+      });
     };
-    getPreferredLanguage();
-  }, [language]);
+
+    registerBackgroundFetch();
+
+    return () => {
+      BackgroundFetch.unregisterTaskAsync(TASK_NAME);
+    };
+  }, []);
 
   const convertElapsedTime = (currentTimeStamp, previousTimeStamp) => {
     const secondsDiff = currentTimeStamp - previousTimeStamp;
@@ -32,103 +65,74 @@ export const TimerProvider = ({ children }) => {
     return minutes;
   };
 
-  function convertirTimestampAFechaYHora(timestamp) {
-    try {
-      const date = new Date(timestamp * 1000);
-      const dia = date.getDate();
-      const mes = date.getMonth() + 1;
-      const año = date.getFullYear();
-      const horas = date.getHours();
-      const minutos = date.getMinutes();
-      const diaFormatado = dia.toString().padStart(2, '0');
-      const mesFormatado = mes.toString().padStart(2, '0');
-      const horasFormatadas = horas.toString().padStart(2, '0');
-      const minutosFormatados = minutos.toString().padStart(2, '0');
-
-      const fechaHoraFormateada = `${diaFormatado}/${mesFormatado}/${año} - ${horasFormatadas}:${minutosFormatados}`;
-
-      return fechaHoraFormateada;
-    } catch (error) {
-      console.error("Error al convertir timestamp a fecha y hora:", error);
-      return "Error al convertir timestamp";
-    }
-  }
-
   const startTimer = () => {
-    if (intervalIdRef.current === null) {
-      //Iniciamos el temporizador
+    if (!isTimerRunning) {
+      console.log("temporizador iniciado");
+      setIsTimerRunning(true);
       startTimeRef.current = Math.floor(Date.now() / 1000);
-      intervalIdRef.current = setTimeout(() => {
+      intervalIdRef.current = setInterval(() => {
         checkTimerExpiration();
-      }, 60000); // 60000 milisegundos = 1 minuto
+      }, 60000);
     } else {
-      console.warn("El temporizador ya se ejectua");
+      console.warn("El temporizador ya se está ejecutando");
     }
   };
-
+  
   const restartTimer = () => {
-    //Aqui reiniciamos el temporizador
-    if (intervalIdRef.current !== null) {
-      clearTimeout(intervalIdRef.current);
+    console.log("temporizador reiniciado")
+    startTimeRef.current = Math.floor(Date.now() / 1000);
+    setIsTimerRunning(false);
+    setIsTimerRunning(true);
+  };
+
+  const stopTimer = () => {
+    if (isTimerRunning) {
+      console.log("temporizador detenido");
+      setIsTimerRunning(false);
+      clearInterval(intervalIdRef.current);
       intervalIdRef.current = null;
-      startTimer();
     } else {
-      console.warn("No hay temporizador para reiniciar.");
+      console.warn("El temporizador ya está detenido");
     }
   };
 
   const checkTimerExpiration = async () => {
-    //Aqui checamos el tiempo transcurrido y comparamos con el tiempo de inicio y de ahi posteamos el evento
     const actualTime = Math.floor(Date.now() / 1000);
     const minutesDiff = convertElapsedTime(actualTime, startTimeRef.current);
-    console.log("Actual:", convertirTimestampAFechaYHora(actualTime), "Inicio:", convertirTimestampAFechaYHora(startTimeRef.current), "Diferencia:", minutesDiff);
-    if (minutesDiff === 59) {
-      return await getCurrentDriver()
-      .then(async (currentDriver) => {
-        await postDriverEvent(
+    console.log("Minutos transcurridos:", minutesDiff);
+
+    if (minutesDiff >= 60) {
+      await AsyncStorage.getItem("lastEvent").then(async (lastEvent) => {
+        if (lastEvent) {
+          const lastEventParsed = JSON.parse(lastEvent);
+          await postDriverEvent(
             {
-            recordStatus: 1,
-            recordOrigin: 1,
-            type: getEventTypeCode(driverStatus).type,
-            code: getEventTypeCode(driverStatus).code,
+              recordStatus: 1,
+              recordOrigin: 1,
+              type: getEventTypeCode(lastEventParsed?.tempDriverStatus).type,
+              code: getEventTypeCode(lastEventParsed?.tempDriverStatus).code,
             },
             languageModule.lang(language, "60minutesofinactivity"),
-            driverStatus,
-            currentDriver,
-            eldDatas,
-            acumulatedVehicleKilometers,
-            lastDriverStatus
-          ).then(async () => { 
-                 
-          restartTimer();
-          })
-          .catch((err) => {
-            console.error("Error al postear evento de inactividad:", err);
-          });
+            lastEventParsed?.tempDriverStatus,
+            lastEventParsed?.currentDriver,
+            lastEventParsed?.eldData,
+            lastEventParsed?.acumulatedVehicleKilometers,
+            lastEventParsed?.lastDriverStatus,
+            lastEventParsed?.location
+          )
+            .then(async () => {
+              restartTimer();
+            })
+            .catch((err) => {
+              console.error("Error al postear evento de inactividad:", err);
+            });
         }
-      )     
-    }
-  };
-
-  const stopTimer = () => {
-    console.log('Deteniendo el temporizador...', intervalIdRef.current);
-    if (intervalIdRef.current !== null) {
-      clearTimeout(intervalIdRef.current);
-      intervalIdRef.current = null;
-    } else {
-      console.warn("No hay temporizador para detener.");
-    }
-  };
-
-  const statusActual = () => {
-    console.log('Estado actual:', {
-      startTime: startTimeRef.current,
-      intervalId: intervalIdRef.current,
-    });
+      });
+    } 
   };
 
   return (
-    <TimerContext.Provider value={{ startTimer, restartTimer, stopTimer, checkTimerExpiration, statusActual}}>
+    <TimerContext.Provider value={{ startTimer, restartTimer, stopTimer }}>
       {children}
     </TimerContext.Provider>
   );
