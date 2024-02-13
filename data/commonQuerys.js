@@ -233,6 +233,16 @@ export const DriverEvent = {
       justUpdate: justUpdate,
     });
   },
+  makeHistory: async (carrierID, driverID, eldID, editedEvent) => {
+    return await putAxios(`/api/carrier/driver/event`, {
+      lang: "Eng",
+      userID: "WhnYqXKAhEeCFDmLWlg5M3MYc1R2",
+      carrierID,
+      driverID,
+      eldID,
+      event: editedEvent,
+    });
+  },
   history: {
     reject: async (driverID, originalEvent, eventHistoryID, rejected) => {
       return await putAxios(`/api/admin/driverEvent/reject`, {
