@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { View, Text,Modal, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import {eld, removeToken} from '../../../data/commonQuerys'
+import React, { useState, useCallback, useEffect, useRef } from "react";
+import { View, Text,Modal, TouchableOpacity, StyleSheet, Image, Pressable } from 'react-native';
+import {eld, removeToken, pendingCertifyDriverEvents} from '../../../data/commonQuerys'
 import { useDispatch, useSelector } from "react-redux";
 import { useTimer } from '../../../global_functions/timerFunctions';
 import { getCurrentDriver, getCurrentUsers } from "../../../config/localStorage";
@@ -29,6 +29,8 @@ const DrawerMenu = ({ navigation, handleLogout }) => {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [userON, setUserON] = useState('');
   const [userImage, setUserImage] = useState();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [pendingEventsToCertify, setPendingEventsToCertify] = useState(false);
 
   
   const sourceDriverImage = require('../../../assets/images/user/userDriver.jpg');
@@ -44,6 +46,24 @@ const DrawerMenu = ({ navigation, handleLogout }) => {
     };
     getPreferredLanguage();
   }, []);
+
+    //CertifyLogs
+  //Obtenemos los eventos pendientes de certificar y advertimos al usuario
+  const hasRun = useRef(false);
+  const getUncertifiedEvents = async () => {
+    await pendingCertifyDriverEvents('mHlqeeq5rfz3Cizlia23', userON?.data?.id, userON?.data?.carrier?.id).then((response) => {
+      if(response){
+        setPendingEventsToCertify(response)
+      }
+    })
+  }
+
+  useEffect(() => { 
+    if (userON?.data?.id && userON?.data?.carrier?.id && !hasRun.current) {
+    getUncertifiedEvents()
+    hasRun.current = true;
+    }
+  }, [userON]);
 
   useEffect(() => {
     const getUsers = async () => {
@@ -117,7 +137,12 @@ const DrawerMenu = ({ navigation, handleLogout }) => {
           }
         });
       } else {
-        console.error("No se encontraron resultados de Geonames.");
+        setlocation({
+          "address": address,
+          "city": city,
+          "state": state,
+          "country": country,
+        });
       }
       
     } else {
@@ -143,7 +168,6 @@ const DrawerMenu = ({ navigation, handleLogout }) => {
         if(res?.data?.message == "Token eliminado exitosamente."){
         await AsyncStorage.removeItem('token');
         await AsyncStorage.removeItem('users');
-        await AsyncStorage.removeItem('lastEvent');
         // Despachar la acción y esperar a que se complete
         await new Promise(resolve => {   
           dispatch(logOutCurrentDriver(currentDriver, eldData, acumulatedVehicleKilometers, lastDriverStatus, location))
@@ -173,6 +197,14 @@ const DrawerMenu = ({ navigation, handleLogout }) => {
     setShowErrorModal(false); // Cierra el modal
     setErrorMessages([]); // Limpia los mensajes de error
   };
+
+  const checkpendingEvents = async () => {
+    if(pendingEventsToCertify){
+      setModalVisible(true);
+    }else{
+      logOutDriver();
+    }
+  }
 
   //funciones de renderizado
 
@@ -309,6 +341,44 @@ const DrawerMenu = ({ navigation, handleLogout }) => {
     );
   }
 
+  function advCertifyDialog() {  
+    return (
+      <View>
+         <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>{languageModule.lang(language, 'pendingEventsToCertify')}</Text>
+            <View style={styles.modalButtons}>
+            <Pressable
+                style={[styles.modalButton, styles.buttonNotReady]}
+                onPress={logOutDriver}
+              >
+                <Text style={styles.modalButtonText}>{languageModule.lang(language, 'skip')}</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalButton, styles.buttonAgree]}
+                onPress={() => {
+                  setModalVisible(false)
+                  navigation.navigate('CertificarLogs');
+                }}
+              >
+                <Text style={styles.modalButtonText}>{languageModule.lang(language, 'certify')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      </View>
+    )
+  }
+
   return (
     <View style={styles.menuContainer}>
       {/* Título del menú */}
@@ -332,7 +402,7 @@ const DrawerMenu = ({ navigation, handleLogout }) => {
       <View style={styles.separator} />
       <TouchableOpacity
           style={{...styles.menuItem, flexDirection: 'row', alignItems: 'center'}}
-          onPress={logOutDriver}
+          onPress={checkpendingEvents}
         >
           <Icon name="logout" size={18} color="#4CAF50" style={styles.icon} />
           <Text style={styles.menuItemText}>{languageModule.lang(language, 'logout')}</Text>
@@ -344,11 +414,64 @@ const DrawerMenu = ({ navigation, handleLogout }) => {
           onClose={closeErrorModal} // Función para cerrar el modal
         />
       )}
+      {advCertifyDialog()}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '100%',
+    marginTop: 20,
+  },
+  modalButton: {
+    flex: 1,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    elevation: 2,
+    marginHorizontal: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonAgree: {
+    backgroundColor: '#4CAF50',
+  },
+  buttonNotReady: {
+    backgroundColor: '#CC0B0A',
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
   menuContainer: {
     marginTop: 5,
     flex: 1,

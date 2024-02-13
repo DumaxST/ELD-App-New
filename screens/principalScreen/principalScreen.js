@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollView,View, Text, TouchableOpacity, StyleSheet, Image,Dimensions, Modal} from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { ScrollView, Button,Pressable, View, Text, TouchableOpacity, StyleSheet, Image,Dimensions, Modal} from 'react-native';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { Entypo } from '@expo/vector-icons';
 import * as Progress from "react-native-progress";
@@ -8,7 +8,7 @@ import { Input, Overlay } from "react-native-elements";
 import { Colors, Fonts, Sizes } from "../../constants/styles";
 const languageModule = require('../../global_functions/variables');
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getEventTypeCode, postDriverEvent } from "../../data/commonQuerys";
+import { getEventTypeCode, postDriverEvent, pendingCertifyDriverEvents, getDriverEvents } from "../../data/commonQuerys";
 import { useDispatch, useSelector } from "react-redux";
 import {setDriverStatus,setELD,setTrackingTimeStamp} from "../../redux/actions";
 import { getCurrentDriver, getCurrentUsers } from "../../config/localStorage";
@@ -36,6 +36,47 @@ const PrincipalScreen = ({ navigation }) => {
   const [users, setUsers] = useState('');
   const [userON, setUserON] = useState('');
   const { restartTimer } = useTimer();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [advPersonalContinue, setAdvPersonalContinue] = useState(false);
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0'); 
+  const day = String(today.getDate()).padStart(2, '0');
+  const formattedDate = `${year}-${month}-${day}`;
+
+  //CertifyLogs
+  //Obtenemos los eventos pendientes de certificar y advertimos al usuario
+  const hasRun = useRef(false);
+  const getUncertifiedEvents = async () => {
+    await pendingCertifyDriverEvents('mHlqeeq5rfz3Cizlia23', userON?.data?.id, userON?.data?.carrier?.id).then((response) => {
+      if(response){
+        setModalVisible(true);
+      }
+    })
+  }
+
+  useEffect(() => { 
+    if (userON?.data?.id && userON?.data?.carrier?.id && !hasRun.current) {
+    getUncertifiedEvents()
+    hasRun.current = true;
+    }
+  }, [userON]);
+
+  //Obtenemos el evento mas reciente, si es PERSONAL le preguntamos al usuario si desea continuar con ese estado
+  const personalhasRun = useRef(false);
+  useEffect(() => {
+    const getLastEvent = async () => {
+      let lastevent = await AsyncStorage.getItem("lastPCorYM");
+      if(lastevent == "PC"){
+        setAdvPersonalContinue(true);
+      }
+    }
+
+    if (userON?.data?.id && userON?.data?.carrier?.id && !personalhasRun.current) {
+      getLastEvent()
+      personalhasRun.current = true;
+    }
+  }, [userON]);
 
   //obtenemos el usuario principal (Solo para acciones, el mando sigue siendo de el currentDriver)
   useEffect(() => {
@@ -43,6 +84,10 @@ const PrincipalScreen = ({ navigation }) => {
       try {
         let users = await getCurrentUsers();
         const userActive = users.find(user => user.isActive === true);
+        let lastevent = await AsyncStorage.getItem("lastPCorYM");
+        if(lastevent == "PC"){       
+        userActive.status = lastevent;
+        }
         setUserON(userActive);
         setUsers(users);
       } catch (error) {
@@ -81,6 +126,17 @@ const PrincipalScreen = ({ navigation }) => {
       return () => {
         clearInterval(intervalId);
       };
+  }, []);
+  
+  useEffect(() => {
+    if (driverDistance > 0) {
+      let lastevent = AsyncStorage.getItem("lastPCorYM");
+      if(lastevent){
+      AsyncStorage.removeItem("lastPCorYM");
+      }
+      setTempDriverStatus("ON");
+      postDriverEventF();
+    }
   }, []);
 
   //Aqui obtenemos la direccion proveniente de la ubicacion
@@ -135,8 +191,13 @@ const PrincipalScreen = ({ navigation }) => {
             "distance": slicedDistance,
           }
         }); 
-      } else {
-        console.error("No se encontraron resultados de Geonames.");
+      } else{
+        setlocation({
+          "address": address,
+          "city": city,
+          "state": state,
+          "country": country,
+        });
       }
       
     } else {
@@ -187,6 +248,7 @@ const PrincipalScreen = ({ navigation }) => {
   
   //Funciones
   const postDriverEventF = async () => {
+    AsyncStorage.removeItem("lastPCorYM");
     if(userON?.role == "userCoDriver"){
       let lastEvent = {
         recordStatus: 1,
@@ -438,13 +500,13 @@ const PrincipalScreen = ({ navigation }) => {
               style={[
                 styles.centerButton,
                 { position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -60 }, { translateY: -60 }] },
-                ((userON?.role === "userCoDriver" && userON?.status === "OFF-DUTY") || (userON?.role !== "userCoDriver" && driverStatus === "OFF-DUTY")) && styles.selectedButton,
+                ((userON?.role === "userCoDriver" && userON?.status === "OFF-DUTY") || (userON?.role !== "userCoDriver" && userON?.status === "OFF-DUTY")) && styles.selectedButton,
                 (userON?.data?.exemptDriverConfiguration?.value == "E" || (userON?.role === "userCoDriver" && driverStatus === "D")) && styles.disabledButton,
               ]}
               onPress={() => changeDriverStatus('OFF-DUTY')}
               disabled={userON?.data?.exemptDriverConfiguration?.value == "E" || (userON?.role === "userCoDriver" && driverStatus === "D")}
             >
-              <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "OFF-DUTY") || (userON?.role !== "userCoDriver" && driverStatus === "OFF-DUTY")) && styles.selectedText]}>
+              <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "OFF-DUTY") || (userON?.role !== "userCoDriver" && userON?.status === "OFF-DUTY")) && styles.selectedText]}>
                 {languageModule.lang(language, 'offDuty')}
               </Text>
             </TouchableOpacity>           
@@ -454,26 +516,26 @@ const PrincipalScreen = ({ navigation }) => {
               <TouchableOpacity
                 style={[
                 styles.stateButton,
-                ((userON?.role === "userCoDriver" && userON?.status === "ON") || (userON?.role !== "userCoDriver" && driverStatus === "ON")) && styles.selectedButton,
+                ((userON?.role === "userCoDriver" && userON?.status === "ON") || (userON?.role !== "userCoDriver" && userON?.status === "ON")) && styles.selectedButton,
                 (userON?.data?.exemptDriverConfiguration?.value == "E" || (userON?.role === "userCoDriver" && driverStatus === "D")) && styles.disabledButton,
                 ]}
                 onPress={() => changeDriverStatus('ON')}
                 disabled={userON?.data?.exemptDriverConfiguration?.value == "E" || (userON?.role === "userCoDriver" && driverStatus === "D")}
               >
-                <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "ON") || (userON?.role !== "userCoDriver" && driverStatus === "ON")) && styles.selectedText]}>
+                <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "ON") || (userON?.role !== "userCoDriver" && userON?.status === "ON")) && styles.selectedText]}>
                   {languageModule.lang(language, 'onDuty')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  ((userON?.role === "userCoDriver" && userON?.status === "D") || (userON?.role !== "userCoDriver" && driverStatus === "D")) && styles.selectedButton,
+                  ((userON?.role === "userCoDriver" && userON?.status === "D") || (userON?.role !== "userCoDriver" && userON?.status === "D")) && styles.selectedButton,
                   (userON?.data?.exemptDriverConfiguration?.value == "E" || (userON?.role === "userCoDriver" && driverStatus === "D")) && styles.disabledButton,
                   ]}
                 onPress={() => changeDriverStatus('D')}
                 disabled={userON?.data?.exemptDriverConfiguration?.value == "E" || (userON?.role === "userCoDriver" && driverStatus === "D")}
               >
-                <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "D") || (userON?.role !== "userCoDriver" && driverStatus === "D")) && styles.selectedText]}>
+                <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "D") || (userON?.role !== "userCoDriver" && userON?.status === "D")) && styles.selectedText]}>
                   {languageModule.lang(language, 'driving')}
                 </Text>
               </TouchableOpacity>
@@ -484,28 +546,28 @@ const PrincipalScreen = ({ navigation }) => {
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  ((userON?.role === "userCoDriver" && userON?.status === "SB") || (userON?.role !== "userCoDriver" && driverStatus === "SB")) && styles.selectedButton,
+                  ((userON?.role === "userCoDriver" && userON?.status === "SB") || (userON?.role !== "userCoDriver" && userON?.status === "SB")) && styles.selectedButton,
                   { right: -25 },
                   (userON?.data?.exemptDriverConfiguration?.value == "E") && styles.disabledButton,
                 ]}
                 onPress={() => changeDriverStatus('SB')}
                 disabled={userON?.data?.exemptDriverConfiguration?.value == "E"}
               >
-                <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "SB") || (userON?.role !== "userCoDriver" && driverStatus === "SB")) && styles.selectedText]}>
+                <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "SB") || (userON?.role !== "userCoDriver" && userON?.status === "SB")) && styles.selectedText]}>
                   {languageModule.lang(language, 'Sleeper')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  ((userON?.role === "userCoDriver" && userON?.status === "PS") || (userON?.role !== "userCoDriver" && driverStatus === "PS")) && styles.selectedButton,
+                  ((userON?.role === "userCoDriver" && userON?.status === "PS") || (userON?.role !== "userCoDriver" && userON?.status === "PS")) && styles.selectedButton,
                   { marginLeft: 80 },
                   (userON?.data?.exemptDriverConfiguration?.value == "E") && styles.disabledButton,
                 ]}
                 onPress={() => changeDriverStatus('PS')}
                 disabled={userON?.data?.exemptDriverConfiguration?.value == "E"}
               >
-                 <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "PS") || (userON?.role !== "userCoDriver" && driverStatus === "PS")) && styles.selectedText]}>
+                 <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "PS") || (userON?.role !== "userCoDriver" && userON?.status === "PS")) && styles.selectedText]}>
                   {languageModule.lang(language, 'passenger')}
                 </Text>
               </TouchableOpacity>
@@ -515,28 +577,28 @@ const PrincipalScreen = ({ navigation }) => {
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  ((userON?.role === "userCoDriver" && userON?.status === "YM") || (userON?.role !== "userCoDriver" && driverStatus === "YM")) && styles.selectedButton,
+                  ((userON?.role === "userCoDriver" && userON?.status === "YM") || (userON?.role !== "userCoDriver" && userON?.status === "YM")) && styles.selectedButton,
                   (!userON.data?.yard || (userON?.role === "userCoDriver" && driverStatus === "D")) && styles.disabledButton,
                    userON?.data?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
                 ]}
                 onPress={() => currentDriver?.yard == true ? changeDriverStatus("YM") : null}
                 disabled={userON?.data?.exemptDriverConfiguration?.value == "E" || (userON?.role === "userCoDriver" && driverStatus === "D")}
               >
-                <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "YM") || (userON?.role !== "userCoDriver" && driverStatus === "YM")) && styles.selectedText]}>
+                <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "YM") || (userON?.role !== "userCoDriver" && userON?.status === "YM")) && styles.selectedText]}>
                   YARD
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.stateButton,
-                  ((userON?.role === "userCoDriver" && userON?.status === "PC") || (userON?.role !== "userCoDriver" && driverStatus === "PC")) && styles.selectedButton,
+                  ((userON?.role === "userCoDriver" && userON?.status === "PC") || (userON?.role !== "userCoDriver" && userON?.status === "PC")) && styles.selectedButton,
                   (!userON.data?.personalUse|| (userON?.role === "userCoDriver" && driverStatus === "D")) && styles.disabledButton,
                    userON?.data?.exemptDriverConfiguration?.value == "E" && styles.disabledButton,
                 ]}
                 onPress={() => currentDriver?.personalUse == true ? changeDriverStatus("PC"): null}
                 disabled={userON?.data?.exemptDriverConfiguration?.value == "E" || (userON?.role === "userCoDriver" && driverStatus === "D")}
               >
-                <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "PC") || (userON?.role !== "userCoDriver" && driverStatus === "PC")) && styles.selectedText]}>
+                <Text style={[styles.buttonText, ((userON?.role === "userCoDriver" && userON?.status === "PC") || (userON?.role !== "userCoDriver" && userON?.status === "PC")) && styles.selectedText]}>
                   PERSONAL
                 </Text>
               </TouchableOpacity>
@@ -673,6 +735,10 @@ const PrincipalScreen = ({ navigation }) => {
                   currentAnnotation
                 )
               );
+              AsyncStorage.setItem("lastPCorYM", tempDriverStatus);
+              let user = users.find((user) => user.isActive === true);
+              user.status = tempDriverStatus;
+              await AsyncStorage.setItem("users", JSON.stringify(users));
               setAnnotationDialog(false);
             }}
             style={styles.buttonStyle}
@@ -954,6 +1020,85 @@ const PrincipalScreen = ({ navigation }) => {
     );
   }
 
+  function advCertifyDialog() {  
+    return (
+      <View>
+         <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>{languageModule.lang(language, 'pendingEventsToCertify')}</Text>
+            <View style={styles.modalButtons}>
+            <Pressable
+                style={[styles.modalButton, styles.buttonNotReady]}
+                onPress={() => {setModalVisible(false)}}
+              >
+                <Text style={styles.modalButtonText}>{languageModule.lang(language, 'skip')}</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalButton, styles.buttonAgree]}
+                onPress={() => {
+                  setModalVisible(false)
+                  navigation.navigate('CertificarLogs');
+                }}
+              >
+                <Text style={styles.modalButtonText}>{languageModule.lang(language, 'certify')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      </View>
+    )
+  }
+
+  function advContinuePersonal(){
+    return (
+      <View>
+         <Modal
+        animationType="slide"
+        transparent={true}
+        visible={advPersonalContinue}
+        onRequestClose={() => {
+          setAdvPersonalContinue(false);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>{languageModule.lang(language, 'advContinuePersonal')}</Text>
+            <View style={styles.modalButtons}>
+            <Pressable
+                style={[styles.modalButton, styles.buttonNotReady]}
+                onPress={() => {
+                  setAdvPersonalContinue(false)
+                }}
+              >
+                <Text style={styles.modalButtonText}>{languageModule.lang(language, 'cancel')}</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalButton, styles.buttonAgree]}
+                onPress={() => {              
+                  setAdvPersonalContinue(false);
+                  setTempDriverStatus("PC");
+                  setAnnotationDialog(true)
+                }}
+              >
+                <Text style={styles.modalButtonText}>{languageModule.lang(language, 'confirm')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      </View>
+    )
+  }
+
   //Graficas de estadisticas
   function onTurnoInfo() {
       return (
@@ -1152,11 +1297,65 @@ const PrincipalScreen = ({ navigation }) => {
       {anotationDialog()}
       {observacionesDialog()}
       {stopDialog()}
+      {advCertifyDialog()}
+      {advContinuePersonal()}
       </ScrollView>
   );
   };
 
   const styles = StyleSheet.create({
+    centeredView: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 22,
+    },
+    modalView: {
+      margin: 20,
+      backgroundColor: 'white',
+      borderRadius: 20,
+      padding: 35,
+      alignItems: 'center',
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+    },
+    modalText: {
+      marginBottom: 15,
+      textAlign: 'center',
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      width: '100%',
+      marginTop: 20,
+    },
+    modalButton: {
+      flex: 1,
+      borderRadius: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      elevation: 2,
+      marginHorizontal: 5,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    buttonAgree: {
+      backgroundColor: '#4CAF50',
+    },
+    buttonNotReady: {
+      backgroundColor: '#CC0B0A',
+    },
+    modalButtonText: {
+      color: 'white',
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
     userInfoContainer: {
       flexDirection: 'row',
       alignItems: 'center',

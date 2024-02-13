@@ -76,31 +76,50 @@ export const eld = {
 };
 
 // DRIVER EVENTS ===============================================================
-export const getDriverEvents = async (eldID, certified, timeFrame, undefined) => {
-  return await getCurrentDriver()
-    .then(async (currentDriver) => {
+export const getDriverEvents = async (eldID, certified, timeFrame, driverID, carrierID) => {
       return await getAxios("/api/carrier/driver/events", {
         userID: "WhnYqXKAhEeCFDmLWlg5M3MYc1R2",
-        carrierID: currentDriver.carrier.id,
-        driverID: undefined ? "Jg6XvXYVCvPCrdIZMOQeZ8WeH3d2" : currentDriver.id, // PLACE UNDEFINED DRIVER ID
+        carrierID: carrierID,
+        driverID: driverID, 
         eldID: eldID, //Cambiar cuando API este actualizada
         certified: certified,  //agregar un tipo de dato desde API
         timeFrame: JSON.stringify(timeFrame) //Agregar un dropdown para seleccionar el timeFrame,
       });
-    })
-    .catch((err) => console.error(err));
 };
 
-export const certifyDriverEvents = async (eventsArray, eldID) => {
-  return await getCurrentDriver().then(async (currentDriver) => {
+//*-----------------START-CertifyLogs----------------------------------*//
+export const certifyDriverEvents = async (eventsArray, eldID, driverID, carrierID) => {
     return await putAxios("/api/carrier/driver/events/certify", {
-      carrierID: currentDriver.carrier.id,
-      driverID: currentDriver.id,
+      carrierID: carrierID,
+      driverID: driverID,
       eldID: eldID,
       eventsIDs: eventsArray,
     });
-  });
 };
+
+export const pendingCertifyDriverEvents = async (eldID, driverID, carrierID) => {
+  const today = new Date();
+  const twentyFourHoursAgo = new Date(today.getTime() - 48 * 60 * 60 * 1000);
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const day = `${date.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }; 
+  const events = await getDriverEvents(eldID, "undefined", { from: "", to: formatDate(twentyFourHoursAgo)}, driverID, carrierID);
+  if(events.length > 0){
+    const uncertifiedEvents = events.some(event => event?.certified?.value === false);
+    if(uncertifiedEvents){
+      return true
+    }else{
+      return false
+    }
+  }
+}
+
+
+//*-----------------FINISH-CertifyLogs----------------------------------*//
 
 export const getEventTypeCode = (tempDriverStatus) => {
   switch (tempDriverStatus) {
@@ -212,6 +231,16 @@ export const DriverEvent = {
       eldID: "mHlqeeq5rfz3Cizlia23",
       event: editedEvent,
       justUpdate: justUpdate,
+    });
+  },
+  makeHistory: async (carrierID, driverID, eldID, editedEvent) => {
+    return await putAxios(`/api/carrier/driver/event`, {
+      lang: "Eng",
+      userID: "WhnYqXKAhEeCFDmLWlg5M3MYc1R2",
+      carrierID,
+      driverID,
+      eldID,
+      event: editedEvent,
     });
   },
   history: {

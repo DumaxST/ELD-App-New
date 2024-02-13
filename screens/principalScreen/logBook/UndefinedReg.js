@@ -1,4 +1,4 @@
-import {TextInput,StyleSheet,Modal,Text,View, ActivityIndicator,SafeAreaView,ScrollView,FlatList,Dimensions,StatusBar,Image,TouchableOpacity,} from "react-native";
+import {Alert,TextInput,StyleSheet,Modal,Text,View, ActivityIndicator,SafeAreaView,ScrollView,FlatList,Dimensions,StatusBar,Image,TouchableOpacity,} from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { Fonts, Colors, Sizes } from "../../../constants/styles";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
@@ -6,7 +6,7 @@ import { Overlay } from "react-native-elements";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getDriverEvents, DriverEvent } from "../../../data/commonQuerys";
-import { getCurrentDriver } from "../../../config/localStorage";
+import { getCurrentDriver, getCurrentUsers } from "../../../config/localStorage";
 import { editDriverLogEvent } from "../../../redux/actions";
 import { geoTimeStamp } from "../../../components/eldFunctions";
 import { useSelector, useDispatch } from "react-redux";
@@ -24,8 +24,16 @@ const ListSection = () => {
   const [currentEventDetails, setCurretEventDetails] = useState({});
   const [driverEvents, setDriverEvents] = useState([]);
   const [unidentifiedEvents, setUnidentifiedEvents] = useState([]);
+  const [users, setUsers] = useState('');
+  const [userON, setUserON] = useState('');
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [secondModalVisible, setSecondModalVisible] = useState(false);
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0'); 
+  const day = String(today.getDate()).padStart(2, '0');
+  const formattedDate = `${year}-${month}-${day}`;
   const [state, setState] = useState({
     numeroDelCamion: "",
     numeroDelTrailer: "",
@@ -39,47 +47,24 @@ const ListSection = () => {
       numeroDeDocumentoDeEnvio,
       odometroVisual,
   } = state;
-  
-    //editamos con la funcion de put driver 
-  const handleSave = async () => {  
-      setModalVisible(false);
-      setIsLoading(true);     
-      return await getCurrentDriver()
-      .then(async (currentDriver) => {    
-        DriverEvent.put(selectedEvent, currentDriver, false).then((res) => {       
-        setIsLoading(true);  
-        getData()
-        }).catch((err) => {  
-          console.log(err)
-        })
-      })
-  };
-  
-  const handleButtonClick = (dutyStatus) => {
-      setSelectedButton(dutyStatus);
-      setSelectedEvent((prevEvent) => ({
-        ...prevEvent,
-        dutyStatus: dutyStatus,
-      }));
-  };
-
   const updateState = (data) => setState((state) => ({ ...state, ...data }));
-
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0'); 
-  const day = String(today.getDate()).padStart(2, '0');
   
-  const formattedDate = `${year}-${month}-${day}`;
-  
-  const getData = async () => {
-    await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: "", to: formattedDate}, true).then(async (events) => {
-        setDriverEvents(events);
-        setIsLoading(false);
-        return;
-    });
-  };
   //Uso de efectos de inicio del screen
+  //obtenemos el usuario principal (Solo para acciones, el mando sigue siendo de el currentDriver)
+  useEffect(() => {
+    const getUsers = async () => {
+      try {
+        let users = await getCurrentUsers();
+        const userActive = users.find(user => user.isActive === true);
+        setUserON(userActive);
+        setUsers(users);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+      getUsers();
+  }, []);
+
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
   useEffect(() => {
       const getPreferredLanguage = async () => {
@@ -91,14 +76,45 @@ const ListSection = () => {
       };
       getPreferredLanguage();
   }, []);
+
+  const getData = async () => {
+    await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: "", to: formattedDate}, 'Jg6XvXYVCvPCrdIZMOQeZ8WeH3d2', userON?.data?.carrier?.id ).then(async (events) => {
+        setDriverEvents(events);
+        setIsLoading(false);
+        return;
+    });
+  };
   
+  const hasRun = useRef(false);
+
   useEffect(() => {
-    //vamos a obtener la fecha actual, pero existe un dropdown en el demo referencia, checar con Isaias
-    // en otro issue
-    getData();
-  }, []);
+    if (userON?.data?.id && userON?.data?.carrier?.id && !hasRun.current) {
+      getData();
+      hasRun.current = true;
+    }
+  }, [userON]);
 
   //funciones de logica de screen
+  //editamos con la funcion de put driver 
+  const handleSave = async () => {  
+    if (!selectedEvent?.cmv?.vin || !selectedEvent?.cmv?.number || !selectedEvent?.cmv?.powerUnitNumber || !selectedEvent?.address?.address || !selectedEvent?.address?.reachOf || !selectedEvent?.commentOrAnnotation) {
+      setSecondModalVisible(true);
+      return;
+    }
+    setModalVisible(false);
+    setIsLoading(true);        
+      DriverEvent.put(selectedEvent, userON?.data, false).then((res) => {       
+      setIsLoading(true);  
+      getData()
+      }).catch((err) => {  
+        console.log(err)
+      })
+  };
+    
+  const handleSaveRestInfo = () => {
+    setSecondModalVisible(false);
+  };
+
   function traducirStatus(status){
     switch (status) {
       case "ON":
@@ -295,7 +311,7 @@ const ListSection = () => {
           <View style={styles.modalContainer}>
             <Text style={{...styles.modalTitle, marginTop: -10}}>{`${languageModule.lang(language, "areYouSureYouWantTo")} ${languageModule.lang(language, "assumeRecord")}?`}</Text>
             
-            {/* Aquí puedes agregar los detalles del evento que quieras mostrar */}
+            {/* Aquí agregamos los detalles estables (no editables del evento) */}
             <Text>{languageModule.lang(language, "status")}{": "}{languageModule.lang(language,traducirStatus(selectedEvent?.dutyStatus))}</Text>
             <Text>{languageModule.lang(language, "sequenceIDNumber")}{": "}{`${selectedEvent?.sequenceIDNumber?.decimal} - ${selectedEvent?.sequenceIDNumber?.hexadecimal}`}</Text>
             <Text>{languageModule.lang(language, "recordOrigin")}{": "}{`${selectedEvent?.recordOrigin}`}</Text>
@@ -318,13 +334,184 @@ const ListSection = () => {
                         4
                       )}:${selectedEvent?.geoTimeStamp?.time.substring(4, 6)} `}
             </Text>
-            
             {/* Botones */}
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.cancelButton} onPress={closeModal}>
                 <Text style={styles.buttonText}>{languageModule.lang(language, 'cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                <Text style={styles.buttonText}>{languageModule.lang(language, 'confirm')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </View>
+    );
+  }
+
+  function RestInformation() {
+    return (
+      <View>
+        <Modal visible={secondModalVisible} animationType="slide">
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>{languageModule.lang(language, 'addTheRestOfTheInformation')}</Text>
+            <ScrollView>
+            <Text style={{textAlign: "left"}}>{languageModule.lang(language, "truckVIN")}</Text>
+            <TextInput
+              style={{
+                ...styles.input,
+                borderColor: selectedEvent?.cmv?.vin ? 'green' : '#cc0b0a',
+              }}
+              value={selectedEvent?.cmv?.vin || ''}
+              placeholder={selectedEvent?.cmv?.vin || ''}
+              onChangeText={(text) => {
+                setSelectedEvent((prevEvent) => ({
+                  ...prevEvent,
+                  cmv: { ...prevEvent.cmv, vin: text },
+                }));
+              }}
+            />
+            <Text style={{textAlign: "left"}}>{languageModule.lang(language, "truckNumber")}</Text>
+            <TextInput
+              style={{
+                ...styles.input,
+                borderColor: selectedEvent?.cmv?.number ? 'green' : '#cc0b0a',
+              }}
+              value={selectedEvent?.cmv?.number || ''}
+              placeholder={selectedEvent?.cmv?.number || ''}
+              onChangeText={(text) => {
+                setSelectedEvent((prevEvent) => ({
+                  ...prevEvent,
+                  cmv: { ...prevEvent.cmv, number: text },
+                }));
+              }}
+            />
+            <Text style={{textAlign: "left"}}>{languageModule.lang(language, "powerUnitNumber")}</Text>
+            <TextInput
+              style={{
+                ...styles.input,
+                borderColor: selectedEvent?.cmv?.powerUnitNumber ? 'green' : '#cc0b0a',
+              }}
+              value={selectedEvent?.cmv?.powerUnitNumber || ''}
+              placeholder={selectedEvent?.cmv?.powerUnitNumber || ''}
+              onChangeText={(text) => {
+                setSelectedEvent((prevEvent) => ({
+                  ...prevEvent,
+                  cmv: { ...prevEvent.cmv, powerUnitNumber: text },
+                }));
+              }}
+            />
+            <Text style={{textAlign: "left"}}>{languageModule.lang(language, "location")}</Text>
+            <TextInput  
+              editable={true}
+              style={{
+                ...styles.input,
+                borderColor: selectedEvent?.address?.address ? 'green' : '#cc0b0a',
+              }}
+              value={selectedEvent?.address?.address || ''}
+              placeholder={selectedEvent?.address?.address || languageModule.lang(language, 'address')}
+              onChangeText={(address) => {
+                setSelectedEvent((prevEvent) => ({
+                  ...prevEvent,
+                  address: {
+                    ...prevEvent.address,
+                    address,
+                  },
+                }));
+              }}
+            />
+            <Text style={{textAlign: "left"}}>{languageModule.lang(language, 'closestLocation')}</Text>
+            <TextInput
+             keyboardType="numeric"
+             editable={true}
+             style={{
+               ...styles.input,
+               borderColor: selectedEvent?.address?.reachOf?.distance ? 'green' : '#cc0b0a',
+             }}
+             value={selectedEvent?.address?.reachOf?.distance || ''}
+             placeholder={selectedEvent?.address?.reachOf?.distance || languageModule.lang(language, 'distanceOnKM')}
+             onChangeText={(distance) => {
+               // Filtrar solo caracteres numéricos utilizando expresiones regulares
+               const numericDistance = distance.replace(/[^0-9]/g, '');
+           
+               setSelectedEvent((prevEvent) => ({
+                 ...prevEvent,
+                 address: {
+                   ...prevEvent.address,
+                   reachOf: {
+                     ...(prevEvent.address?.reachOf || {}),
+                     distance: numericDistance,
+                   },
+                 },
+               }));
+             }}
+            />
+            <TextInput
+              editable={true}
+              style={{
+                ...styles.input,
+                borderColor: selectedEvent?.address?.reachOf?.city ? 'green' : '#cc0b0a',
+              }}
+              value={selectedEvent?.address?.reachOf?.city || ''}
+              placeholder={selectedEvent?.address?.reachOf?.city || languageModule.lang(language, 'city')}
+              onChangeText={(city) => {
+                setSelectedEvent((prevEvent) => ({
+                  ...prevEvent,
+                  address: {
+                    ...prevEvent.address,
+                    reachOf: {
+                      ...prevEvent.address.reachOf,
+                      city,
+                    },
+                  },
+                }));
+              }}
+            />
+            
+            <TextInput
+             editable={true}
+             maxLength={3}
+             style={{
+               ...styles.input,
+               borderColor: selectedEvent?.address?.reachOf?.state ? 'green' : '#cc0b0a',
+             }}
+             value={selectedEvent?.address?.reachOf?.state || ''}
+             placeholder={selectedEvent?.address?.reachOf?.state || languageModule.lang(language, 'state') + ` (${languageModule.lang(language, 'example')} "TX")`}
+             onChangeText={(state) => {
+               if (state.length <= 3) {
+                 setSelectedEvent((prevEvent) => ({
+                   ...prevEvent,
+                   address: {
+                     ...prevEvent.address,
+                     reachOf: {
+                       ...prevEvent.address.reachOf,
+                       state,
+                     },
+                   },
+                 }));
+               }
+             }}
+            />
+           <Text style={{textAlign: "left"}}>{languageModule.lang(language, "commentOrAnnotation")}</Text>
+             <TextInput
+               style={{
+                ...styles.input,
+                borderColor: selectedEvent?.commentOrAnnotation ? 'green' : '#cc0b0a',
+              }}
+               value={selectedEvent?.commentOrAnnotation || ''}
+               placeholder={selectedEvent?.commentOrAnnotation || ''}
+               onChangeText={(text) => {
+                 setSelectedEvent((prevEvent) => ({
+                   ...prevEvent, commentOrAnnotation: text,
+                 }));
+               }}
+             />
+            </ScrollView>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setSecondModalVisible(false)}>
+                <Text style={styles.buttonText}>{languageModule.lang(language, 'cancel')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.saveButton} onPress={handleSaveRestInfo}>
                 <Text style={styles.buttonText}>{languageModule.lang(language, 'confirm')}</Text>
               </TouchableOpacity>
             </View>
@@ -346,6 +533,7 @@ const ListSection = () => {
         <Logs />
       )}
       {ConfirmEventModal()}
+      {RestInformation()}
     </View>
   );
 };
