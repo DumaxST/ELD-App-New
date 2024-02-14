@@ -115,13 +115,13 @@ const ListSection = () => {
       }
       setCommentModalVisible(false);
       setModalVisible(false);
- DriverEvent.makeHistory(userON?.data?.carrier?.id, userON?.data?.id, "mHlqeeq5rfz3Cizlia23", selectedEvent).then((res) => {
+DriverEvent.makeHistory(userON?.data?.carrier?.id, userON?.data?.id, "mHlqeeq5rfz3Cizlia23", selectedEvent).then((res) => {
         DriverEvent.put(selectedEvent, userON?.data, true).then((res) => {       
         setIsLoading(true);  
         getData()
         }).catch((err) => {  
           console.log(err)
- }) }).catch((err) => {
+}) }).catch((err) => {
         console.log(err)
       })
   };
