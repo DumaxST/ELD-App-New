@@ -29,7 +29,8 @@ const ListSection = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [secondModalVisible, setSecondModalVisible] = useState(false);
-  const today = new Date();
+
+ const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, '0'); 
   const day = String(today.getDate()).padStart(2, '0');
@@ -47,14 +48,7 @@ const ListSection = () => {
       numeroDeDocumentoDeEnvio,
       odometroVisual,
   } = state;
-  
-  const handleButtonClick = (dutyStatus) => {
-      setSelectedButton(dutyStatus);
-      setSelectedEvent((prevEvent) => ({
-        ...prevEvent,
-        dutyStatus: dutyStatus,
-      }));
-  };
+
   const updateState = (data) => setState((state) => ({ ...state, ...data }));
   
   //Uso de efectos de inicio del screen

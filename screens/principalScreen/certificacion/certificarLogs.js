@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, StyleSheet, Modal, Pressable } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import {Alert, View, Text, TouchableOpacity, FlatList, ActivityIndicator, StyleSheet, Modal, Pressable, Image } from 'react-native';
 const languageModule = require('../../../global_functions/variables');
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {certifyDriverEvents,getDriverEvents,postDriverEvent,} from "../../../data/commonQuerys";
@@ -7,6 +7,7 @@ import { getCurrentDriver } from "../../../config/localStorage";
 import { setDriverStatus } from "../../../redux/actions";
 import { useDispatch, useSelector } from "react-redux";
 import { FontAwesome } from '@expo/vector-icons';
+import { getCurrentUsers } from "../../../config/localStorage";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const CertificarRegistros = ({navigation}) => {
@@ -20,6 +21,8 @@ const CertificarRegistros = ({navigation}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRange, setSelectedRange] = useState(null);
   const [newModalVisible, setNewModalVisible] = useState(false);
+  const [users, setUsers] = useState('');
+  const [userON, setUserON] = useState('');
   const updateState = (data) => setState((state) => ({ ...state, ...data }));
   const today = new Date();
   const twentyFourHoursAgo = new Date(today.getTime() - 24 * 60 * 60 * 1000);
@@ -27,6 +30,21 @@ const CertificarRegistros = ({navigation}) => {
     (state) => state.eldReducer
   );
 
+  //obtenemos nuestros datos de certificacion con efecto de montaje
+  //obtenemos el usuario en cuestion
+  useEffect(() => {
+    const getUsers = async () => {
+      try {
+        let users = await getCurrentUsers();
+        const userActive = users.find(user => user.isActive === true);
+        setUserON(userActive);
+        setUsers(users);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+      getUsers();
+  }, []);
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
   useEffect(() => {
       const getPreferredLanguage = async () => {
@@ -38,67 +56,91 @@ const CertificarRegistros = ({navigation}) => {
         }
       };
       getPreferredLanguage();
-  }, []);
+  }, []);  
+  
+  const getData = async () => {
+    await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: "", to: formatDate(today)}, userON?.data?.id, userON?.data?.carrier?.id).then(async (events) => {
+      if(events.length > 0){
+        setDriverEvents(events);
+        const registrosByDay = filteredAndGroupedEvents(events);
+        setRegistros(registrosByDay);
+        return;
+      }
+    });
+  };
+  
+  const filteredAndGroupedEvents = (events) => {
+    // Filtra los eventos por día
+    const eventsByDay = events.reduce((acc, event) => {
+      const nanoseconds = event.geoTimeStamp.timeStamp._nanoseconds || 0;
+      const seconds = event.geoTimeStamp.timeStamp._seconds || 0;
+      
+      // Construir la fecha utilizando nanosegundos y segundos
+      const eventDate = new Date(seconds * 1000 + nanoseconds / 1000000);
+
+      acc[formatDate(eventDate)] = acc[formatDate(eventDate)] || [];
+      acc[formatDate(eventDate)].push(event);
+      return acc;
+    }, {});
+  
+    // Retorna un arreglo de objetos con información para cada día
+    return Object.entries(eventsByDay).map(([day, events]) => {
+      const startDate = new Date(day);
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 1); // Incrementa la fecha en 1 día
+  
+      return {
+        id: day,
+        fechaInicio: formatDate(startDate),
+        fechaFin: formatDate(endDate),
+        seleccionado: false,
+        certified: false,
+        events,
+      };
+    });
+  };
+  
+  const hasRun = useRef(false);
+
+  const getData = async () => {
+    await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: formatDate(twentyFourHoursAgo), to: formatDate(today)}, userON?.data?.id, userON?.data?.carrier?.id).then(async (events) => {
+      if(events.length > 0){
+        setDriverEvents(events);
+        const nuevosIds = events.map(evento => evento.id);
+        const uniqueIds = [...new Set(nuevosIds)]; 
+        setIdEvents(uniqueIds);
+        return;
+      }else{
+        setDriverEvents(0);
+        return;
+      }
+    });
+  };
+  
+  const hasRun = useRef(false);
 
   useEffect(() => {
-    const getData = async () => {
-      await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: formatDate(twentyFourHoursAgo), to: formatDate(today)}).then(async (events) => {
-        if(events.length > 0){
-          setDriverEvents(events);
-          const nuevosIds = events.map(evento => evento.id);
-          const uniqueIds = [...new Set(nuevosIds)]; 
-          setIdEvents(uniqueIds);
-          return;
-        }else{
-          setDriverEvents(0);
-          return;
-        }
-      });
-    };
-    getData();
+    if (userON?.data?.id && userON?.data?.carrier?.id && !hasRun.current) {
+   hasRun.current = true;
+      getData()
+    }
+  }, [userON]);
 
-    setTimeout(() => {
-      const registros24HoursPeriod = [
-        {
-          id: 1,
-          fechaInicio: formatDate(twentyFourHoursAgo),
-          fechaFin: formatDate(today),
-          seleccionado: false,
-          certified : true,
-        },
-      ];
-      setRegistros(registros24HoursPeriod);
+  useEffect(() => {
+    if (driverEvents.length > 0) {
       setLoading(false);
-    }, 2000); 
-  }, []);
+    }
+  }, [driverEvents]);
 
   //funciones de logica de la pantalla
 
-  const postEvent = async (recordOrigin, status) => {
-    await getCurrentDriver().then(async (currentDriver) => {
-      // CHER FOR RECERTIFICATIONS "n"
-      await postDriverEvent(
-        {
-          recordStatus: 1,
-          recordOrigin: recordOrigin,
-          type: 4,
-          code: 1,
-        },
-        "",
-        status,
-        currentDriver,
-        eldData,
-        acumulatedVehicleKilometers
-      );
-    });
-  };
-
-  const formatDate = (date) => {
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
     const year = date.getFullYear();
     const month = `${date.getMonth() + 1}`.padStart(2, '0');
     const day = `${date.getDate()}`.padStart(2, '0');
     return `${year}-${month}-${day}`;
-  };
+  }; 
 
   const handleCloseModal = () => {
     setModalVisible(false);
@@ -116,22 +158,36 @@ const CertificarRegistros = ({navigation}) => {
     if (selectedRange) {
       setModalVisible(true);
     } else {
-      console.log('No se ha seleccionado ningún rango');
+      Alert.alert(
+        "Error",
+        languageModule.lang(language, 'selectArangeToContinue'),
+        [
+          { text: "OK" }
+        ]
+      );
+      return;
     }
     }
   };
 
   const handleSelectRange = (item) => {
-    const updatedRegistros = registros.map((registro) => {
-      if (registro.id === item.id) {
-        return { ...registro, seleccionado: !registro.seleccionado };
-      } else {
-        return registro;
+    const nuevosIds = item.events.map(evento => evento.id);
+    const uniqueIds = [...new Set(nuevosIds)]; 
+    setIdEvents(uniqueIds);
+    setSelectedRange(item);
+  };
+
+  const certifyEvents = async () => { 
+    await certifyDriverEvents(idEvents, "mHlqeeq5rfz3Cizlia23", userON?.data?.id, userON?.data?.carrier?.id).then(async (response) => {
+      if (response) {   
+        getData()
+        handleCloseModal()
+        setLoading(true);
+        setModalVisible(false);
+        setSelectedRange(null);
       }
     });
-    setSelectedRange(item);
-    setRegistros(updatedRegistros);
-  };
+  }
 
   //funciones de renderizado
 
@@ -139,6 +195,28 @@ const CertificarRegistros = ({navigation}) => {
     return (
       <View>
         <Text style={styles.title}>{languageModule.lang(language, 'certifyLogs')}</Text>
+      </View>
+    );
+  }
+
+  function userInfo() {
+    return (
+      <View style={styles.userInfoContainer}>
+        <View style={styles.userAvatarContainer}>
+          <Image
+            source={require('../../../assets/images/certy.png')}
+            style={{...styles.userAvatar, marginLeft: 10, width: 60, height: 60, borderRadius: 30,}}
+          />
+        </View>
+        <View style={styles.userInfo}>
+          <Text style={styles.userName}>
+          {userON?.data?.displayName ? `${userON.data.displayName}` : languageModule.lang(language, 'loading')}
+          </Text>
+          <Text style={styles.userRole}>
+          {userON?.role ? languageModule.lang(language, userON.role) : languageModule.lang(language, 'loading')}
+          </Text>
+          <View style={styles.innerSeparator} />
+        </View>
       </View>
     );
   }
@@ -179,14 +257,8 @@ const CertificarRegistros = ({navigation}) => {
               </Pressable>
               <Pressable
                 style={[styles.modalButton, styles.buttonAgree]}
-                onPress={async () => {
-                  await certifyDriverEvents(idEvents, "mHlqeeq5rfz3Cizlia23").then(() => {
-                    // dispatch(setDriverStatus("ON"));
-                    // postEvent(1, "ON");
-                    handleCloseModal();
-                    navigation.push("AppMenu");
-                  });
-                }}
+
+                onPress={certifyEvents}
               >
                 <Text style={styles.modalButtonText}>{languageModule.lang(language, 'Agree')}</Text>
               </Pressable>
@@ -225,6 +297,7 @@ const CertificarRegistros = ({navigation}) => {
   return (
     <View style={styles.container}>
       {header()}
+      {userInfo()}
       {loading ? (
         <ActivityIndicator style={styles.loadingIndicator} size="large" color="#4CAF50" />
       ) : registros.length === 0 ? (
@@ -237,25 +310,25 @@ const CertificarRegistros = ({navigation}) => {
               style={[
                 styles.registroItem,
                 {
-                  backgroundColor: item.seleccionado ? '#4CAF50' : driverEvents[0]?.certified?.value ? '#FFFFFF' : '#FFFFFF',
-                  pointerEvents: driverEvents[0]?.certified?.value ? 'none' : 'auto',
+                  backgroundColor: selectedRange === item ? '#4CAF50' : '#FFFFFF',
+                  pointerEvents: item.events.some(event => !event?.certified?.value == true) ? 'auto' : 'none',
                 },
               ]}
               onPress={() => handleSelectRange(item)}
-              >
-              <Text style={{ color: item.seleccionado ? '#FFFFFF' : '#333333' }}>
+            >
+              <Text style={{ color: selectedRange === item ? '#FFFFFF' : '#333333' }}>
                 {`${item.fechaInicio} ${'12:00'} ${'    a    '} ${item.fechaFin} ${'12:00'}`}
               </Text>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              {driverEvents[0]?.certified?.value && (
-                      <Ionicons name={"medal-outline"} size={27} color="#48d1cc" />
+              {item.events.every(event => event?.certified?.value === true) && (
+                <Ionicons name={"medal-outline"} size={27} color="#48d1cc" />
               )}
-              <Text style={{ color: item.seleccionado ? '#FFFFFF' : '#333333' }}>
-                {driverEvents[0]?.certified?.value
+              <Text style={{ color: selectedRange === item ? '#FFFFFF' : '#333333' }}>
+                {item.events.every(event => event?.certified?.value === true)
                   ? `${languageModule.lang(language, 'allRecordsAreCertified')}`
-                  : `${languageModule.lang(language, 'logs')}: ${driverEvents.length}`}
+                  : `${languageModule.lang(language, 'logs')}: ${item.events.length}`}
               </Text>
-            </View>
+              </View>
             </TouchableOpacity>
           )}
           keyExtractor={(item) => item.id.toString()}
@@ -267,9 +340,39 @@ const CertificarRegistros = ({navigation}) => {
       {advmodal()}
     </View>
   );
+
 };
 
 const styles = StyleSheet.create({
+  innerSeparator: {
+    height: 1,
+    backgroundColor: '#ddd',
+    marginVertical: 5,
+  },
+  userInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userAvatarContainer: {
+    marginRight: 10,
+  },
+  userAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 8, 
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  userRole: {
+    fontSize: 12,
+    color: '#777',  
+  },
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
