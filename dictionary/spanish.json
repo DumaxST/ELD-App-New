@@ -124,7 +124,7 @@
     "youCantCertify": "No puedes certificar si no hay eventos durante el día de hoy. Inténtalo más tarde.",
     "termsOfCertification": "“Por la presente certifico que mis entradas de datos y mi registro de estado de servicio durante este período de 24 horas son verdaderos y correctos.”",
     "thereAreNoRecords": "No hay registros disponibles",
-    "allRecordsAreCertified": "Todos los registros de las ultimas 24hrs están certificados",
+    "allRecordsAreCertified": "Todos los registros de el rango de fechas estan certificados",
     "isNotAllowedanAdmin": "No está permitido que un usuario administrador inicie sesión, por favor contacte a soporte",
     "locationNotAvailable": "Ubicación no disponible: porfavor espere o intente mas tarde",
     "60minutesofinactivity": "60 minutos de inactividad",
@@ -147,5 +147,11 @@
     "addTheRestOfTheInformation": "Agrega el resto de la información",
     "emptyFields": "Campos vacíos",
     "distanceOnKM": "Distancia en KM",
-    "example": "Ejemplo"
+   "example": "Ejemplo",
+    "addCommentToContinue": "Agrega un comentario para continuar con la edición",
+    "selectArangeToContinue": "Selecciona un rango para continuar con la Certificación",
+    "pendingEventsToCertify": "Hay eventos pendientes para certificar, certificalos ahora",
+    "skip": "Omitir",
+    "advContinuePersonal":"Te encuentras en uso personal, ¿deseas continuar usandolo?",
+    "timeZone": "Zona horaria"
 }

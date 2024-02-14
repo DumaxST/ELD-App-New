@@ -6,7 +6,7 @@ import { Overlay } from "react-native-elements";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getDriverEvents, DriverEvent } from "../../../data/commonQuerys";
-import { getCurrentDriver } from "../../../config/localStorage";
+import { getCurrentDriver, getCurrentUsers } from "../../../config/localStorage";
 import { editDriverLogEvent } from "../../../redux/actions";
 import { geoTimeStamp } from "../../../components/eldFunctions";
 import { useSelector, useDispatch } from "react-redux";
@@ -24,9 +24,16 @@ const ListSection = () => {
   const [currentEventDetails, setCurretEventDetails] = useState({});
   const [driverEvents, setDriverEvents] = useState([]);
   const [unidentifiedEvents, setUnidentifiedEvents] = useState([]);
+  const [users, setUsers] = useState('');
+  const [userON, setUserON] = useState('');
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [secondModalVisible, setSecondModalVisible] = useState(false);
+ const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0'); 
+  const day = String(today.getDate()).padStart(2, '0');
+  const formattedDate = `${year}-${month}-${day}`;
   const [state, setState] = useState({
     numeroDelCamion: "",
     numeroDelTrailer: "",
@@ -40,47 +47,25 @@ const ListSection = () => {
       numeroDeDocumentoDeEnvio,
       odometroVisual,
   } = state;
-  
-    //editamos con la funcion de put driver 
-  const handleSave = async () => {  
-      if (!selectedEvent?.cmv?.vin || !selectedEvent?.cmv?.number || !selectedEvent?.cmv?.powerUnitNumber || !selectedEvent?.address?.address || !selectedEvent?.address?.reachOf || !selectedEvent?.commentOrAnnotation) {
-        setSecondModalVisible(true);
-        return;
-      }
-      setModalVisible(false);
-      setIsLoading(true);     
-      return await getCurrentDriver()
-      .then(async (currentDriver) => {    
-        DriverEvent.put(selectedEvent, currentDriver, false).then((res) => {       
-        setIsLoading(true);  
-        getData()
-        }).catch((err) => {  
-          console.log(err)
-        })
-      })
-  };
-  
-  const handleSaveRestInfo = () => {
-    setSecondModalVisible(false);
-  };
 
   const updateState = (data) => setState((state) => ({ ...state, ...data }));
-
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0'); 
-  const day = String(today.getDate()).padStart(2, '0');
   
-  const formattedDate = `${year}-${month}-${day}`;
-  
-  const getData = async () => {
-    await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: "", to: formattedDate}, true).then(async (events) => {
-        setDriverEvents(events);
-        setIsLoading(false);
-        return;
-    });
-  };
   //Uso de efectos de inicio del screen
+  //obtenemos el usuario principal (Solo para acciones, el mando sigue siendo de el currentDriver)
+  useEffect(() => {
+    const getUsers = async () => {
+      try {
+        let users = await getCurrentUsers();
+        const userActive = users.find(user => user.isActive === true);
+        setUserON(userActive);
+        setUsers(users);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+      getUsers();
+  }, []);
+
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
   useEffect(() => {
       const getPreferredLanguage = async () => {
@@ -92,14 +77,45 @@ const ListSection = () => {
       };
       getPreferredLanguage();
   }, []);
+
+  const getData = async () => {
+    await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: "", to: formattedDate}, 'Jg6XvXYVCvPCrdIZMOQeZ8WeH3d2', userON?.data?.carrier?.id ).then(async (events) => {
+        setDriverEvents(events);
+        setIsLoading(false);
+        return;
+    });
+  };
   
+  const hasRun = useRef(false);
+
   useEffect(() => {
-    //vamos a obtener la fecha actual, pero existe un dropdown en el demo referencia, checar con Isaias
-    // en otro issue
-    getData();
-  }, []);
+    if (userON?.data?.id && userON?.data?.carrier?.id && !hasRun.current) {
+      getData();
+      hasRun.current = true;
+    }
+  }, [userON]);
 
   //funciones de logica de screen
+  //editamos con la funcion de put driver 
+  const handleSave = async () => {  
+    if (!selectedEvent?.cmv?.vin || !selectedEvent?.cmv?.number || !selectedEvent?.cmv?.powerUnitNumber || !selectedEvent?.address?.address || !selectedEvent?.address?.reachOf || !selectedEvent?.commentOrAnnotation) {
+      setSecondModalVisible(true);
+      return;
+    }
+    setModalVisible(false);
+    setIsLoading(true);        
+      DriverEvent.put(selectedEvent, userON?.data, false).then((res) => {       
+      setIsLoading(true);  
+      getData()
+      }).catch((err) => {  
+        console.log(err)
+      })
+  };
+    
+  const handleSaveRestInfo = () => {
+    setSecondModalVisible(false);
+  };
+
   function traducirStatus(status){
     switch (status) {
       case "ON":
@@ -319,7 +335,6 @@ const ListSection = () => {
                         4
                       )}:${selectedEvent?.geoTimeStamp?.time.substring(4, 6)} `}
             </Text>
-
             {/* Botones */}
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.cancelButton} onPress={closeModal}>
