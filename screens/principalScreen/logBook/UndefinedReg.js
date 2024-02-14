@@ -48,6 +48,7 @@ const ListSection = () => {
       numeroDeDocumentoDeEnvio,
       odometroVisual,
   } = state;
+
   const updateState = (data) => setState((state) => ({ ...state, ...data }));
   
   //Uso de efectos de inicio del screen
