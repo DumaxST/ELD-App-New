@@ -44,7 +44,7 @@ const PrincipalScreen = ({ navigation }) => {
   const [base, setBase] = useState('');
   const { restartTimer } = useTimer();
   const [modalVisible, setModalVisible] = useState(false);
-  const [advPersonalContinue, setAdvPersonalContinue] = useState(false);
+const [advPersonalContinue, setAdvPersonalContinue] = useState(false);
   const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, '0'); 
@@ -68,9 +68,7 @@ const PrincipalScreen = ({ navigation }) => {
     hasRun.current = true;
     }
   }, [userON]);
-
-  //Obtenemos el evento mas reciente, si es PERSONAL le preguntamos al usuario si desea continuar con ese estado
-  const personalhasRun = useRef(false);
+const personalhasRun = useRef(false);
   useEffect(() => {
     const getLastEvent = async () => {
       let lastevent = await AsyncStorage.getItem("lastPCorYM");
@@ -1098,8 +1096,7 @@ const getBaseData = async () => {
       </View>
     )
   }
-
-  function advContinuePersonal(){
+function advContinuePersonal(){
     return (
       <View>
          <Modal
@@ -1139,7 +1136,6 @@ const getBaseData = async () => {
       </View>
     )
   }
-
   //Graficas de estadisticas
   function onTurnoInfo() {
       return (
@@ -1339,6 +1335,7 @@ const getBaseData = async () => {
       {observacionesDialog()}
       {stopDialog()}
       {advCertifyDialog()}
+
       {advContinuePersonal()}
       </ScrollView>
   );
