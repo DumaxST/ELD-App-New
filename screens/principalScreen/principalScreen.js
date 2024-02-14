@@ -4,12 +4,18 @@ import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { Entypo } from '@expo/vector-icons';
 import * as Progress from "react-native-progress";
 const { width } = Dimensions.get("window");
+import moment from 'moment';
+import 'moment-timezone';
 import { Input, Overlay } from "react-native-elements";
 import { Colors, Fonts, Sizes } from "../../constants/styles";
 const languageModule = require('../../global_functions/variables');
+const gmtModule = require('../../global_functions/gmtTraductor');
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getEventTypeCode, postDriverEvent, pendingCertifyDriverEvents, getDriverEvents } from "../../data/commonQuerys";
+import { getEventTypeCode, postDriverEvent, pendingCertifyDriverEvents, getDriverEvents, getBase} from "../../data/commonQuerys";
 import { useDispatch, useSelector } from "react-redux";
+import {setDriverStatus,setELD,setTrackingTimeStamp} from "../../redux/actions";
+import { getCurrentDriver, getCurrentUsers } from "../../config/localStorage";
+import { isStillDriving } from "../../components/eldFunctions";
 import {setDriverStatus,setELD,setTrackingTimeStamp} from "../../redux/actions";
 import { getCurrentDriver, getCurrentUsers } from "../../config/localStorage";
 import { isStillDriving } from "../../components/eldFunctions";
@@ -35,6 +41,7 @@ const PrincipalScreen = ({ navigation }) => {
   const {eldData,currentDriver,driverStatus,acumulatedVehicleKilometers,lastDriverStatus,trackingTimestamp} = useSelector((state) => state.eldReducer);
   const [users, setUsers] = useState('');
   const [userON, setUserON] = useState('');
+  const [base, setBase] = useState('');
   const { restartTimer } = useTimer();
   const [modalVisible, setModalVisible] = useState(false);
   const [advPersonalContinue, setAdvPersonalContinue] = useState(false);
@@ -75,6 +82,17 @@ const PrincipalScreen = ({ navigation }) => {
     if (userON?.data?.id && userON?.data?.carrier?.id && !personalhasRun.current) {
       getLastEvent()
       personalhasRun.current = true;
+    }
+  }, [userON]);
+const getBaseData = async () => {
+    let base = await getBase(language, userON?.data?.id, userON?.data?.carrier?.id, userON?.data?.base?.id);
+    setBase(base);
+  }
+  const basehasRun = useRef(false);
+  useEffect(() => {
+    if(userON?.data?.id && userON?.data?.carrier?.id && !basehasRun.current){
+      getBaseData();
+      basehasRun.current = true;
     }
   }, [userON]);
 
@@ -126,6 +144,17 @@ const PrincipalScreen = ({ navigation }) => {
       return () => {
         clearInterval(intervalId);
       };
+  }, []);
+  
+  useEffect(() => {
+    if (driverDistance > 0) {
+      let lastevent = AsyncStorage.getItem("lastPCorYM");
+      if(lastevent){
+      AsyncStorage.removeItem("lastPCorYM");
+      }
+      setTempDriverStatus("ON");
+      postDriverEventF();
+    }
   }, []);
 
   //Aqui obtenemos la direccion proveniente de la ubicacion
@@ -237,6 +266,7 @@ const PrincipalScreen = ({ navigation }) => {
   
   //Funciones
   const postDriverEventF = async () => {
+    AsyncStorage.removeItem("lastPCorYM");
     if(userON?.role == "userCoDriver"){
       let lastEvent = {
         recordStatus: 1,
@@ -445,6 +475,14 @@ const PrincipalScreen = ({ navigation }) => {
   }
 
   function userInfo() {
+
+    //obtenemos el UTC de la base
+    //y procedemos a traducirlo con nuestro dic de zona horaria
+    let baseUTCzone = gmtModule.traducirGMTformat(base?.timeZoneOffsetFromUTC?.option);
+    const timestamp = trackingTimestamp;
+    const fechaMoment = moment(timestamp);
+    const fechaConvertida = fechaMoment.tz(baseUTCzone);
+
     return (
       <View style={styles.userInfoContainer}>
         <View style={styles.userAvatarContainer}>
@@ -473,9 +511,24 @@ const PrincipalScreen = ({ navigation }) => {
           <Text style={styles.coordinates}>
             {`${languageModule.lang(language, 'longitude')}: ${eldData?.coords?.longitude ? eldData?.coords?.longitude.toFixed(3) : languageModule.lang(language, 'loading')}`}
           </Text> */}
-          <Text style={styles.updatedOn}>
-            {`${languageModule.lang(language, 'Updatedon')}: ${new Date(trackingTimestamp).toDateString()} ${new Date(trackingTimestamp).toLocaleTimeString()}`}
-          </Text>
+          {trackingTimestamp && fechaConvertida?.format ? (
+            <Text style={styles.updatedOn}>
+              {`${languageModule.lang(language,'Updatedon')}: ${fechaConvertida?.format('YYYY-MM-DD hh:mm A')}`}
+            </Text>
+          ) : (
+            <Text style={styles.updatedOn}>
+              {`${languageModule.lang(language,'Updatedon')}: ${languageModule.lang(language,'loading')}`}
+            </Text>
+          )}
+          {base ? (
+              <Text style={styles.updatedOn}>
+                {`${languageModule.lang(language,'timeZone')}: ${base?.timeZoneOffsetFromUTC?.option}`}
+              </Text>
+            ) : (
+              <Text style={styles.updatedOn}>
+                {`${languageModule.lang(language,'timeZone')}: ${languageModule.lang(language,'loading')}`}
+              </Text>
+            )}
         </View>
       </View>
     );
@@ -1074,7 +1127,6 @@ const PrincipalScreen = ({ navigation }) => {
                 onPress={() => {              
                   setAdvPersonalContinue(false);
                   setTempDriverStatus("PC");
-                  AsyncStorage.removeItem("lastPCorYM");
                   setAnnotationDialog(true)
                 }}
               >

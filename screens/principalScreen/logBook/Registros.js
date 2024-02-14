@@ -7,6 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getDriverEvents, DriverEvent } from "../../../data/commonQuerys";
 import { getCurrentDriver } from "../../../config/localStorage";
+import { getDriverEvents, DriverEvent } from "../../../data/commonQuerys";
+import { getCurrentDriver } from "../../../config/localStorage";
 import { editDriverLogEvent } from "../../../redux/actions";
 import { useDispatch } from "react-redux";
 import { getCurrentUsers } from "../../../config/localStorage";
@@ -26,6 +28,7 @@ const ListSection = () => {
   const [users, setUsers] = useState('');
   const [userON, setUserON] = useState('');
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedButton, setSelectedButton] = useState(null);
   const [selectedButton, setSelectedButton] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [commentModalVisible, setCommentModalVisible] = useState(false);
@@ -112,13 +115,16 @@ const ListSection = () => {
       }
       setCommentModalVisible(false);
       setModalVisible(false);
-      setIsLoading(true);     
+setIsLoading(true); 
+      DriverEvent.makeHistory(userON?.data?.carrier?.id, userON?.data?.id, "mHlqeeq5rfz3Cizlia23", selectedEvent).then((res) => {
         DriverEvent.put(selectedEvent, userON?.data, true).then((res) => {       
         setIsLoading(true);  
         getData()
         }).catch((err) => {  
           console.log(err)
-        })
+        }) }).catch((err) => {
+        console.log(err)
+      })
   };
   
   const handleButtonClick = (dutyStatus) => {
@@ -604,7 +610,7 @@ const ListSection = () => {
               }));
             }}
           />
-          {/*-----------------------*/}
+
         </View>    
         </ScrollView>  
           {/* Botones */}

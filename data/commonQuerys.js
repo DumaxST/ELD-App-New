@@ -87,6 +87,18 @@ export const getDriverEvents = async (eldID, certified, timeFrame, driverID, car
       });
 };
 
+
+//BASES  ===============================================================
+
+export const getBase = async (lang, userID, carrierID, baseID) => {
+  return await getAxios("/api/carrier/base", {
+    lang: lang ? lang : "Eng",
+    userID: userID,
+    carrierID: carrierID,
+    baseID: baseID
+  });
+};
+
 //*-----------------START-CertifyLogs----------------------------------*//
 export const certifyDriverEvents = async (eventsArray, eldID, driverID, carrierID) => {
     return await putAxios("/api/carrier/driver/events/certify", {
@@ -231,6 +243,16 @@ export const DriverEvent = {
       eldID: "mHlqeeq5rfz3Cizlia23",
       event: editedEvent,
       justUpdate: justUpdate,
+    });
+  },
+  makeHistory: async (carrierID, driverID, eldID, editedEvent) => {
+    return await putAxios(`/api/carrier/driver/event`, {
+      lang: "Eng",
+      userID: "WhnYqXKAhEeCFDmLWlg5M3MYc1R2",
+      carrierID,
+      driverID,
+      eldID,
+      event: editedEvent,
     });
   },
   history: {
