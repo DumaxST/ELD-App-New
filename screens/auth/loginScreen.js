@@ -4,9 +4,7 @@ import { Alert,StyleSheet, View,ScrollView, Modal, Image, Dimensions, BackHandle
 import { Input, Button, Text } from 'react-native-elements';
 import { Colors, Fonts, Sizes } from "../../constants/styles";
 import { getEventTypeCode, postDriverEvent } from "../../data/commonQuerys";
-import SelectDropdown from 'react-native-select-dropdown'
-import { getEventTypeCode, postDriverEvent } from "../../data/commonQuerys";
-import SelectDropdown from 'react-native-select-dropdown'
+import SelectDropdown from 'react-native-select-dropdown';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from "@react-navigation/native";
 import { authDriver, eld, getCarriersOptions, getTheUserIsAdmin, authToken} from "../../data/commonQuerys";

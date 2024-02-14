@@ -102,23 +102,6 @@ const CertificarRegistros = ({navigation}) => {
   
   const hasRun = useRef(false);
 
-  const getData = async () => {
-    await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: formatDate(twentyFourHoursAgo), to: formatDate(today)}, userON?.data?.id, userON?.data?.carrier?.id).then(async (events) => {
-      if(events.length > 0){
-        setDriverEvents(events);
-        const nuevosIds = events.map(evento => evento.id);
-        const uniqueIds = [...new Set(nuevosIds)]; 
-        setIdEvents(uniqueIds);
-        return;
-      }else{
-        setDriverEvents(0);
-        return;
-      }
-    });
-  };
-  
-  const hasRun = useRef(false);
-
   useEffect(() => {
     if (userON?.data?.id && userON?.data?.carrier?.id && !hasRun.current) {
    hasRun.current = true;

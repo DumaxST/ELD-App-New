@@ -16,9 +16,6 @@ import { useDispatch, useSelector } from "react-redux";
 import {setDriverStatus,setELD,setTrackingTimeStamp} from "../../redux/actions";
 import { getCurrentDriver, getCurrentUsers } from "../../config/localStorage";
 import { isStillDriving } from "../../components/eldFunctions";
-import {setDriverStatus,setELD,setTrackingTimeStamp} from "../../redux/actions";
-import { getCurrentDriver, getCurrentUsers } from "../../config/localStorage";
-import { isStillDriving } from "../../components/eldFunctions";
 import { TextInput } from "react-native-paper";
 import { useTimer } from '../../global_functions/timerFunctions';
 import { startGlobalLocationTracking } from '../../components/ELDlocation';
@@ -44,7 +41,7 @@ const PrincipalScreen = ({ navigation }) => {
   const [base, setBase] = useState('');
   const { restartTimer } = useTimer();
   const [modalVisible, setModalVisible] = useState(false);
-const [advPersonalContinue, setAdvPersonalContinue] = useState(false);
+  const [advPersonalContinue, setAdvPersonalContinue] = useState(false);
   const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, '0'); 
@@ -82,7 +79,8 @@ const personalhasRun = useRef(false);
       personalhasRun.current = true;
     }
   }, [userON]);
-const getBaseData = async () => {
+
+  const getBaseData = async () => {
     let base = await getBase(language, userON?.data?.id, userON?.data?.carrier?.id, userON?.data?.base?.id);
     setBase(base);
   }
