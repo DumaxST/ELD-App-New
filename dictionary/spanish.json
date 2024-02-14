@@ -147,7 +147,7 @@
     "addTheRestOfTheInformation": "Agrega el resto de la información",
     "emptyFields": "Campos vacíos",
     "distanceOnKM": "Distancia en KM",
-    "example": "Ejemplo",
+   "example": "Ejemplo",
     "addCommentToContinue": "Agrega un comentario para continuar con la edición",
     "selectArangeToContinue": "Selecciona un rango para continuar con la Certificación",
     "pendingEventsToCertify": "Hay eventos pendientes para certificar, certificalos ahora",
