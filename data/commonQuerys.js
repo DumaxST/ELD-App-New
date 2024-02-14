@@ -99,7 +99,6 @@ export const getBase = async (lang, userID, carrierID, baseID) => {
   });
 };
 
-
 //*-----------------START-CertifyLogs----------------------------------*//
 export const certifyDriverEvents = async (eventsArray, eldID, driverID, carrierID) => {
     return await putAxios("/api/carrier/driver/events/certify", {

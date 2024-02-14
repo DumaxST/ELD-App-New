@@ -12,7 +12,6 @@ const languageModule = require('../../global_functions/variables');
 const gmtModule = require('../../global_functions/gmtTraductor');
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getEventTypeCode, postDriverEvent, pendingCertifyDriverEvents, getDriverEvents, getBase} from "../../data/commonQuerys";
-
 import { useDispatch, useSelector } from "react-redux";
 import {setDriverStatus,setELD,setTrackingTimeStamp} from "../../redux/actions";
 import { getCurrentDriver, getCurrentUsers } from "../../config/localStorage";

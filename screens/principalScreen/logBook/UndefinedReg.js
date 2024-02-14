@@ -29,7 +29,6 @@ const ListSection = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [secondModalVisible, setSecondModalVisible] = useState(false);
-
  const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, '0'); 
