@@ -11,6 +11,7 @@ import { getDriverEvents, DriverEvent } from "../../../data/commonQuerys";
 import { getCurrentDriver } from "../../../config/localStorage";
 import { editDriverLogEvent } from "../../../redux/actions";
 import { useDispatch } from "react-redux";
+import { getCurrentUsers } from "../../../config/localStorage";
 
 
 const { height, width } = Dimensions.get("window");
@@ -24,11 +25,19 @@ const ListSection = () => {
   const [currentEventDetails, setCurretEventDetails] = useState({});
   const [driverEvents, setDriverEvents] = useState([]);
   const [unidentifiedEvents, setUnidentifiedEvents] = useState([]);
+  const [users, setUsers] = useState('');
+  const [userON, setUserON] = useState('');
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedButton, setSelectedButton] = useState(null);
   const [selectedButton, setSelectedButton] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [commentModalVisible, setCommentModalVisible] = useState(false);
+
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0'); 
+  const day = String(today.getDate()).padStart(2, '0');
+  const formattedDate = `${year}-${month}-${day}`;
   const [state, setState] = useState({
     numeroDelCamion: "",
     numeroDelTrailer: "",
@@ -42,62 +51,24 @@ const ListSection = () => {
       numeroDeDocumentoDeEnvio,
       odometroVisual,
   } = state;
-
-
-  //editamos con la funcion de put driver 
-  const handleSave = async () => {  
-    if (!selectedEvent?.commentOrAnnotation) {
-      Alert.alert(
-        "Error",
-        languageModule.lang(language, 'addCommentToContinue'),
-        [
-          { text: "OK" }
-        ]
-      );
-      return;
-    }
-    setCommentModalVisible(false);
-    setModalVisible(false);
-    setIsLoading(true);     
-    return await getCurrentDriver()
-    .then(async (currentDriver) => {   
-      DriverEvent.put(selectedEvent, currentDriver, true).then((res) => {       
-      setIsLoading(true);  
-      getData()
-      }).catch((err) => {  
-        console.log(err)
-      })
-    })
-  };
-
-  const handleButtonClick = (dutyStatus) => {
-    setSelectedButton(dutyStatus);
-    setSelectedEvent((prevEvent) => ({
-      ...prevEvent,
-      dutyStatus: dutyStatus,
-    }));
-  };
-
-
   const updateState = (data) => setState((state) => ({ ...state, ...data }));
 
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0'); 
-  const day = String(today.getDate()).padStart(2, '0');
-  
-  const formattedDate = `${year}-${month}-${day}`;
-  const getData = async () => {
-    try {
-      const events = await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: "", to: formattedDate });
-      setDriverEvents(events);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error al obtener eventos:', error);
-      setIsLoading(false);
-    }
-  };
   //Uso de efectos de inicio del screen
+  //obtenemos el usuario principal (Solo para acciones, el mando sigue siendo de el currentDriver)
+  useEffect(() => {
+    const getUsers = async () => {
+      try {
+        let users = await getCurrentUsers();
+        const userActive = users.find(user => user.isActive === true);
+        setUserON(userActive);
+        setUsers(users);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+      getUsers();
+  }, []);
+
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
   useEffect(() => {
       const getPreferredLanguage = async () => {
@@ -110,13 +81,62 @@ const ListSection = () => {
       getPreferredLanguage();
   }, []);
 
+  const getData = async () => {
+    try {
+      const events = await getDriverEvents('mHlqeeq5rfz3Cizlia23', "undefined", { from: "", to: formattedDate }, userON?.data?.id, userON?.data?.carrier?.id );
+      setDriverEvents(events);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error al obtener eventos:', error);
+      setIsLoading(false);
+    }
+  };
+  
+  const hasRun = useRef(false);
+
   useEffect(() => {
-      //vamos a obtener la fecha actual, pero existe un dropdown en el demo referencia, checar con Isaias
-      // en otro issue
+    if (userON?.data?.id && userON?.data?.carrier?.id && !hasRun.current) {
       getData();
-  }, []);
+      hasRun.current = true;
+    }
+  }, [userON]);
 
   //funciones de logica de screen
+  //editamos con la funcion de put driver 
+  const handleSave = async () => {  
+      if (!selectedEvent?.commentOrAnnotation) {
+        Alert.alert(
+          "Error",
+          languageModule.lang(language, 'addCommentToContinue'),
+          [
+            { text: "OK" }
+          ]
+        );
+        return;
+      }
+      setCommentModalVisible(false);
+      setModalVisible(false);
+      setIsLoading(true); 
+      DriverEvent.makeHistory(userON?.data?.carrier?.id, userON?.data?.id, "mHlqeeq5rfz3Cizlia23", selectedEvent).then((res) => {
+        DriverEvent.put(selectedEvent, userON?.data, true).then((res) => {       
+        setIsLoading(true);  
+        getData()
+        }).catch((err) => {  
+          console.log(err)
+        })
+      }).catch((err) => {
+        console.log(err)
+      })
+  };
+  
+  const handleButtonClick = (dutyStatus) => {
+      setSelectedButton(dutyStatus);
+      setSelectedEvent((prevEvent) => ({
+        ...prevEvent,
+        dutyStatus: dutyStatus,
+      }));
+  };
+  
   function traducirStatus(status){
       switch (status) {
         case "ON":
@@ -149,7 +169,28 @@ const ListSection = () => {
   };
 
   //funciones de renderizado
-    
+  function userInfo() {
+    return (
+      <View style={styles.userInfoContainer}>
+        <View style={styles.userAvatarContainer}>
+          <Image
+            source={require('../../../assets/images/bitacora.png')}
+            style={styles.userAvatar}
+          />
+        </View>
+        <View style={styles.userInfo}>
+          <Text style={styles.userName}>
+          {userON?.data?.displayName ? `${userON.data.displayName}` : languageModule.lang(language, 'loading')}
+          </Text>
+          <Text style={styles.userRole}>
+          {userON?.role ? languageModule.lang(language, userON.role) : languageModule.lang(language, 'loading')}
+          </Text>
+          <View style={styles.innerSeparator} />
+        </View>
+      </View>
+    );
+  }
+
   function Logs() {
       const convertElapsedTime = (currentTimeStamp, previousTimeStamp) => {
         const secondsDiff = previousTimeStamp - currentTimeStamp;
@@ -625,6 +666,7 @@ const ListSection = () => {
 
   return (
     <View style={styles.sectionContainer}>
+      {userInfo()}
       {isLoading ? (
         <View style={[styles.container, styles.horizontal]}>
           <ActivityIndicator size="large" color="#4CAF50" />
@@ -641,6 +683,35 @@ const ListSection = () => {
 };
 
 const styles = StyleSheet.create({
+  innerSeparator: {
+    height: 1,
+    backgroundColor: '#ddd',
+    marginVertical: 5,
+  },
+  userInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userAvatarContainer: {
+    marginRight: 10,
+  },
+  userAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 8, 
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  userRole: {
+    fontSize: 12,
+    color: '#777',  
+  },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',

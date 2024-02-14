@@ -23,6 +23,8 @@ import { startGlobalLocationTracking } from '../../components/ELDlocation';
 import { useTimer } from '../../global_functions/timerFunctions';
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import {setKey,setDefaults,setLanguage,setRegion,fromAddress,fromLatLng,fromPlaceId,setLocationType,geocode,RequestType,} from "react-geocode";
+import moment from 'moment';
+import 'moment-timezone';
 
 const languageModule = require('../../global_functions/variables');
 const { width } = Dimensions.get("window");
@@ -576,6 +578,12 @@ const LoginScreen = ({navigation, handleLogin}) => {
   }
 
   const footer = () => {
+    const zonaHorariaActual = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const timestamp = currentCords?.timestamp;
+    const fechaMoment = moment(timestamp);
+    const fechaFormateada = fechaMoment.format('YYYY-MM-DDTHH:mm:ss');
+    const fechaConvertida = fechaMoment.tz(zonaHorariaActual);
+
     return (
       <View
           style={{
@@ -594,14 +602,23 @@ const LoginScreen = ({navigation, handleLogin}) => {
               : languageModule.lang(language,'loading')
           } `}</Text>
             {currentCords.timestamp ? (
-            <Text>
-              {`${languageModule.lang(language,'Updatedon')}: ${new Date(
-                currentCords.timestamp
-              ).toDateString()} ${new Date(
-                currentCords.timestamp
-              ).toLocaleTimeString()}`}
-            </Text>
-          ) : null}   
+              <Text>
+                {`${languageModule.lang(language,'Updatedon')}: ${fechaConvertida.format('YYYY-MM-DD hh:mm A')}`}
+              </Text>
+            ) : (
+              <Text>
+                {`${languageModule.lang(language,'Updatedon')}: ${languageModule.lang(language,'loading')}`}
+              </Text>
+            )}  
+            {zonaHorariaActual ? (
+              <Text>
+                {`${languageModule.lang(language,'timeZone')}: ${zonaHorariaActual}`}
+              </Text>
+            ) : (
+              <Text>
+                {`${languageModule.lang(language,'timeZone')}: ${languageModule.lang(language,'loading')}`}
+              </Text>
+            )}
           <View
           style={{
             justifyContent: "center",
