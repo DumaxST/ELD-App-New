@@ -7,6 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getDriverEvents, DriverEvent } from "../../../data/commonQuerys";
 import { getCurrentDriver } from "../../../config/localStorage";
+import { getDriverEvents, DriverEvent } from "../../../data/commonQuerys";
+import { getCurrentDriver } from "../../../config/localStorage";
 import { editDriverLogEvent } from "../../../redux/actions";
 import { useDispatch } from "react-redux";
 import { getCurrentUsers } from "../../../config/localStorage";
@@ -27,8 +29,10 @@ const ListSection = () => {
   const [userON, setUserON] = useState('');
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedButton, setSelectedButton] = useState(null);
+  const [selectedButton, setSelectedButton] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [commentModalVisible, setCommentModalVisible] = useState(false);
+
   const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, '0'); 
@@ -608,7 +612,6 @@ const ListSection = () => {
               }));
             }}
           />
-          {/*-----------------------*/}
         </View>    
         </ScrollView>  
           {/* Botones */}
