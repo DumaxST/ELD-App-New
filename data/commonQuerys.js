@@ -87,6 +87,18 @@ export const getDriverEvents = async (eldID, certified, timeFrame, driverID, car
       });
 };
 
+//BASES  ===============================================================
+
+export const getBase = async (lang, userID, carrierID, baseID) => {
+  return await getAxios("/api/carrier/base", {
+    lang: lang ? lang : "Eng",
+    userID: userID,
+    carrierID: carrierID,
+    baseID: baseID
+  });
+};
+
+
 //*-----------------START-CertifyLogs----------------------------------*//
 export const certifyDriverEvents = async (eventsArray, eldID, driverID, carrierID) => {
     return await putAxios("/api/carrier/driver/events/certify", {
