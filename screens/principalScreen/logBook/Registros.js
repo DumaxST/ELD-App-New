@@ -1,3 +1,5 @@
+import moment from 'moment';
+import 'moment-timezone';
 import {Alert,TextInput,StyleSheet,Modal,Text,View, ActivityIndicator,SafeAreaView,ScrollView,FlatList,Dimensions,StatusBar,Image,TouchableOpacity,} from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { Fonts, Colors, Sizes } from "../../../constants/styles";
@@ -5,13 +7,12 @@ import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { Overlay } from "react-native-elements";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { getDriverEvents, DriverEvent } from "../../../data/commonQuerys";
-import { getCurrentDriver } from "../../../config/localStorage";
-import { getDriverEvents, DriverEvent } from "../../../data/commonQuerys";
+import { getDriverEvents, DriverEvent, getBase } from "../../../data/commonQuerys";
 import { getCurrentDriver } from "../../../config/localStorage";
 import { editDriverLogEvent } from "../../../redux/actions";
 import { useDispatch } from "react-redux";
 import { getCurrentUsers } from "../../../config/localStorage";
+const gmtModule = require('../../../global_functions/gmtTraductor');
 
 
 const { height, width } = Dimensions.get("window");
@@ -20,6 +21,7 @@ const languageModule = require('../../../global_functions/variables');
 const ListSection = () => {
   const dispatch = useDispatch();
   const [language, setlanguage] = useState(""); 
+  const [base, setBase] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [eventDetailsDialog, setEventDetailsDialog] = useState(false);
   const [currentEventDetails, setCurretEventDetails] = useState({});
@@ -28,7 +30,6 @@ const ListSection = () => {
   const [users, setUsers] = useState('');
   const [userON, setUserON] = useState('');
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [selectedButton, setSelectedButton] = useState(null);
   const [selectedButton, setSelectedButton] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [commentModalVisible, setCommentModalVisible] = useState(false);
@@ -97,6 +98,20 @@ const ListSection = () => {
     if (userON?.data?.id && userON?.data?.carrier?.id && !hasRun.current) {
       getData();
       hasRun.current = true;
+    }
+  }, [userON]);
+
+  
+  const getBaseData = async () => {
+    let base = await getBase(language, userON?.data?.id, userON?.data?.carrier?.id, userON?.data?.base?.id);
+    setBase(base);
+  }
+
+  const basehasRun = useRef(false);
+  useEffect(() => {
+    if(userON?.data?.id && userON?.data?.carrier?.id && !basehasRun.current){
+      getBaseData();
+      basehasRun.current = true;
     }
   }, [userON]);
 
@@ -189,6 +204,7 @@ DriverEvent.makeHistory(userON?.data?.carrier?.id, userON?.data?.id, "mHlqeeq5rf
   }
 
   function Logs() {
+
       const convertElapsedTime = (currentTimeStamp, previousTimeStamp) => {
         const secondsDiff = previousTimeStamp - currentTimeStamp;
         const millisecondsDiff = secondsDiff * 1000;
@@ -235,6 +251,17 @@ DriverEvent.makeHistory(userON?.data?.carrier?.id, userON?.data?.id, "mHlqeeq5rf
       const tiempoTranscurrido = currentSeconds - tiempoEventoUTC6;
       const horas = Math.floor(tiempoTranscurrido / 3600);
       const minutos = Math.floor((tiempoTranscurrido % 3600) / 60);
+
+      //funcion para traducir nuestro timeStamp de Certificado a la zona horaria actual timezonefromoffsetUTC
+      function convertTimeStampToUTC(timestamp) {       
+      //obtenemos el UTC de la base
+      //y procedemos a traducirlo con nuestro dic de zona horaria
+      let baseUTCzone = gmtModule.traducirGMTformat(base?.timeZoneOffsetFromUTC?.option);
+      const timeOnStamp = new Date(timestamp * 1000);
+      const fechaMoment = moment(timeOnStamp);
+      const fechaConvertida = fechaMoment.tz(baseUTCzone);
+      return fechaConvertida.format('DD-MM-YYYY - HH:mm');
+      }
 
       return (
         <ScrollView>
@@ -297,14 +324,14 @@ DriverEvent.makeHistory(userON?.data?.carrier?.id, userON?.data?.id, "mHlqeeq5rf
               <Text>
               {languageModule.lang(language, "certified")}{": "}
               {event?.certified?.value
-                ? convertirTimestampAFechaYHora(event.certified.timeStamp._seconds)
+                ? convertTimeStampToUTC(event?.certified?.timeStamp._seconds) + " " + base?.timeZoneOffsetFromUTC?.option
                 : "No"}
               </Text>
               {event.recordOrigin === 4 && event.recordStatus === 1 && (
             <Text style={{ color: 'white' }}>
               {languageModule.lang(language, 'assumedRecord')}
             </Text>
-            )}
+              )}
               {/* Opciones de edición/visualización/eliminación */}
               <View style={{ position: 'absolute', top: 10, right: 10 }}>
                 <TouchableOpacity
