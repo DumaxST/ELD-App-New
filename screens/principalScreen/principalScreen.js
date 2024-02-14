@@ -12,6 +12,7 @@ const languageModule = require('../../global_functions/variables');
 const gmtModule = require('../../global_functions/gmtTraductor');
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getEventTypeCode, postDriverEvent, pendingCertifyDriverEvents, getDriverEvents, getBase} from "../../data/commonQuerys";
+
 import { useDispatch, useSelector } from "react-redux";
 import {setDriverStatus,setELD,setTrackingTimeStamp} from "../../redux/actions";
 import { getCurrentDriver, getCurrentUsers } from "../../config/localStorage";
@@ -84,8 +85,7 @@ const PrincipalScreen = ({ navigation }) => {
       personalhasRun.current = true;
     }
   }, [userON]);
-
-  const getBaseData = async () => {
+const getBaseData = async () => {
     let base = await getBase(language, userON?.data?.id, userON?.data?.carrier?.id, userON?.data?.base?.id);
     setBase(base);
   }

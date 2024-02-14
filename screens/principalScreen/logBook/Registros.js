@@ -32,7 +32,6 @@ const ListSection = () => {
   const [selectedButton, setSelectedButton] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [commentModalVisible, setCommentModalVisible] = useState(false);
-
   const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, '0'); 
@@ -612,6 +611,7 @@ const ListSection = () => {
               }));
             }}
           />
+
         </View>    
         </ScrollView>  
           {/* Botones */}
