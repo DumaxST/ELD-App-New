@@ -204,7 +204,6 @@ DriverEvent.makeHistory(userON?.data?.carrier?.id, userON?.data?.id, "mHlqeeq5rf
   }
 
   function Logs() {
-
       const convertElapsedTime = (currentTimeStamp, previousTimeStamp) => {
         const secondsDiff = previousTimeStamp - currentTimeStamp;
         const millisecondsDiff = secondsDiff * 1000;
@@ -260,7 +259,7 @@ DriverEvent.makeHistory(userON?.data?.carrier?.id, userON?.data?.id, "mHlqeeq5rf
       const timeOnStamp = new Date(timestamp * 1000);
       const fechaMoment = moment(timeOnStamp);
       const fechaConvertida = fechaMoment.tz(baseUTCzone);
-      return fechaConvertida.format('DD-MM-YYYY - HH:mm');
+      return fechaConvertida.format('YYYY-MM-DD  hh:mm A');
       }
 
       return (
@@ -284,27 +283,12 @@ DriverEvent.makeHistory(userON?.data?.carrier?.id, userON?.data?.id, "mHlqeeq5rf
               <Text>{languageModule.lang(language, "recordOrigin")}{": "}{`${event?.recordOrigin}`}</Text>
               <Text>{languageModule.lang(language, "recordStatus")}{": "}{event?.recordStatus}</Text>
               <Text>{languageModule.lang(language, "startTime")}{": "}
-                    {`${event?.geoTimeStamp?.date.substring(
-                          0,
-                          2
-                        )}/${event?.geoTimeStamp?.date.substring(
-                          2,
-                          4
-                        )}/${event?.geoTimeStamp?.date.substring(
-                          4,
-                          6
-                        )} - ${event?.geoTimeStamp?.time.substring(
-                          0,
-                          2
-                        )}:${event?.geoTimeStamp?.time.substring(
-                          2,
-                          4
-                        )}:${event?.geoTimeStamp?.time.substring(4, 6)} `}
+                    {`${convertTimeStampToUTC(event?.geoTimeStamp?.timeStamp?._seconds) + " " + base?.timeZoneOffsetFromUTC?.option}`}
               </Text>
               <Text>{languageModule.lang(language, "finishTime")}{": "}                        
               {i === 0
-              ? `${month}/${day}/${year} - ${hour}:${minutes}:${seconds}`
-              : `${driverEvents[i - 1]?.geoTimeStamp?.date.substring(0, 2)}/${driverEvents[i - 1]?.geoTimeStamp?.date.substring(2, 4)}/${driverEvents[i - 1]?.geoTimeStamp?.date.substring(4, 6)} - ${driverEvents[i - 1]?.geoTimeStamp?.time.substring(0, 2)}:${driverEvents[i - 1]?.geoTimeStamp?.time.substring(2, 4)}:${driverEvents[i - 1]?.geoTimeStamp?.time.substring(4, 6)} `}
+              ? `${convertTimeStampToUTC(currentSeconds) + " " + base?.timeZoneOffsetFromUTC?.option}`
+              : `${convertTimeStampToUTC(driverEvents[i - 1]?.geoTimeStamp?.timeStamp?._seconds) + " " + base?.timeZoneOffsetFromUTC?.option}`}
               </Text>
               <Text>{languageModule.lang(language, "elapsedTime")}{": "}                        
                           {i == 0
