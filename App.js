@@ -10,6 +10,7 @@ import { TimerProvider } from './global_functions/timerFunctions';
 import DrawerMenu from './screens/principalScreen/Menu/DrawerMenu';
 import LoginScreen from './screens/auth/loginScreen';
 import BluetoothScreen from './screens/bluetooth/bluetoothScreen';
+import BluetoothScreenReal from "./screens/bluetooth/bluetoothScreenReal";
 import PrincipalScreen from './screens/principalScreen/principalScreen';
 import AppMenu from './screens/principalScreen/Menu/appMenu';
 import LogBook from './screens/principalScreen/logBook/logBook';
@@ -55,6 +56,7 @@ const DrawerNavigator = ({ handleLogout }) => {
 const MainStackNavigator = ({ handleLogout }) => (
   <Stack.Navigator>
     <Stack.Screen name="BluetoothScreen" component={BluetoothScreen} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }} />
+    <Stack.Screen name="BluetoothScreenReal" component={BluetoothScreenReal} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }} />
     <Stack.Screen name="Diagnostico" component={Diagnostico} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
     <Stack.Screen name="PerfilVehiculo" component={PerfilVehiculo} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
     <Stack.Screen name="PrincipalScreen" options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}>
