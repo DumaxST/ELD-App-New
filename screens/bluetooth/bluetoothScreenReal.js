@@ -1,9 +1,10 @@
 import React, {useState, useEffect} from 'react';
-import {Alert,Image,ActivityIndicator,SafeAreaView,Dimensions,StyleSheet,View,Text,StatusBar,TouchableOpacity,NativeModules,NativeEventEmitter,Platform,PermissionsAndroid,FlatList,TouchableHighlight,Pressable} from 'react-native';
+import {Alert, Modal, Image,ActivityIndicator,SafeAreaView,Dimensions,StyleSheet,View,Text,StatusBar,TouchableOpacity,NativeModules,NativeEventEmitter,Platform,PermissionsAndroid,FlatList,TouchableHighlight,Pressable} from 'react-native';
 import { checkAndRequestBluetoothScanPermission } from './constructor';
 import { Fonts, Colors, Sizes } from "../../constants/styles";
 import { Overlay } from "react-native-elements";
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import BleManager, {BleDisconnectPeripheralEvent,BleManagerDidUpdateValueForCharacteristicEvent,BleScanCallbackType,BleScanMatchMode,BleScanMode,Peripheral} from 'react-native-ble-manager';
 import axios from 'axios';
@@ -21,6 +22,8 @@ const ALLOW_DUPLICATES = true;
 
 const BluetoothScreen = ({navigation}) => {
   //Declaracion de variables
+  const [errorMessages, setErrorMessages] = useState([]);
+  const [showErrorModal, setShowErrorModal] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [loadingStates, setLoadingStates] = useState({});
   const [peripherals, setPeripherals] = useState(new Map());
@@ -241,6 +244,8 @@ const BluetoothScreen = ({navigation}) => {
         await BleManager.disconnect(peripheral.id);
       } catch (error) {
         setLoadingStates(prevStates => ({ ...prevStates, [peripheral.id]: false }));
+        errorMessages.push([languageModule.lang(language, 'errorTryingToConnect')])
+        openErrorModal();
         console.error(
           `[togglePeripheralConnection][${peripheral.id}] error when trying to disconnect device.`,
           error,
@@ -313,15 +318,7 @@ const BluetoothScreen = ({navigation}) => {
         await sleep(900);
   
         const peripheralData = await BleManager.retrieveServices(peripheral.id);
-        console.debug(
-          `[connectPeripheral][${peripheral.id}] retrieved peripheral services`,
-          peripheralData,
-        );
-  
         const rssi = await BleManager.readRSSI(peripheral.id);
-        console.debug(
-          `[connectPeripheral][${peripheral.id}] retrieved current RSSI value: ${rssi}.`,
-        );
   
         if (peripheralData.characteristics) {
           for (let characteristic of peripheralData.characteristics) {
@@ -382,6 +379,8 @@ const BluetoothScreen = ({navigation}) => {
       }
     } catch (error) {
       setLoadingStates(prevStates => ({ ...prevStates, [peripheral.id]: false }));
+      errorMessages.push([languageModule.lang(language, 'errorConexionELDDevice')])
+      openErrorModal();
       console.error(
         `[connectPeripheral][${peripheral.id}] connectPeripheral error`,
         error,
@@ -445,18 +444,28 @@ const BluetoothScreen = ({navigation}) => {
     setShowAdvertenciaDialog(false);
   };
 
+  const openErrorModal = () => {
+    setShowErrorModal(true); // Muestra el modal
+  };
+
+  const closeErrorModal = () => {
+    setShowErrorModal(false); // Cierra el modal
+    setErrorMessages([]); // Limpia los mensajes de error
+  };
+
   //funciones de renderizado
   function renderItem({item}) {
   const macAddress = item.id;
-  const url = `https://api.macvendors.com/${encodeURIComponent(macAddress)}`;
-  let vendor = ''; 
-  axios.get(url)
-    .then(response => {
-      vendor = response.data;
-    })
-    .catch(error => {
-      vendor = 'Not Found';
-    });
+  function getVendor(macAddress) {
+    const url = `https://api.macvendors.com/${encodeURIComponent(macAddress)}`;
+    axios.get(url)
+      .then(response => {
+        return response.data;
+      })
+      .catch(error => {
+        return ''
+      });
+  }
 
     return (
       <View style={styles.deviceItem}>
@@ -466,6 +475,7 @@ const BluetoothScreen = ({navigation}) => {
             {item.name.length > 10 ? item.name.substring(0, 10) + '...' : item.name}
           </Text>
             <Text style={styles.deviceText}>{item.id}</Text>
+            <Text style={styles.deviceText}>{getVendor(item.id)}</Text>
             <View style={styles.rssiContainer}>
               <Icon name="signal" size={20} color="#4CAF50" />
               <Text style={styles.rssiText}>{item.rssi}</Text>
@@ -490,6 +500,23 @@ const BluetoothScreen = ({navigation}) => {
           </View>
       );
   };
+
+  function FloatingMessageError({ message, onClose }) {
+    return (
+      <Modal visible={true} transparent animationType="fade">
+        <View style={stylesAlert.modalBackground}>
+          <View style={stylesAlert.modalContainer}>
+            <TouchableOpacity onPress={onClose} style={stylesAlert.closeButton}>
+              <Ionicons name="close-circle-outline" size={24} color="white" />
+            </TouchableOpacity>
+            {message.map((message, index) => (
+          <Text key={index} style={stylesAlert.errorMessage}>{message}</Text>
+           ))}
+          </View>
+        </View>
+      </Modal>
+    );
+  }
 
   function advertenciaDialog() {
     return (
@@ -575,6 +602,12 @@ const BluetoothScreen = ({navigation}) => {
             )
           )}
         {advertenciaDialog()}
+        {showErrorModal && (
+        <FloatingMessageError
+          message={errorMessages}
+          onClose={closeErrorModal} // Función para cerrar el modal
+        />
+        )}
         </View>
   );
 
@@ -747,6 +780,28 @@ const styles2 = StyleSheet.create({
     connectButton: {
       alignItems: "center",
     },
+});
+
+const stylesAlert = StyleSheet.create({
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    backgroundColor: '#cc0b0a',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  closeButton: {
+    alignSelf: 'flex-end',
+  },
+  errorMessage: {
+    color: 'white',
+    marginTop: 8,
+  },
 });
 
 export default BluetoothScreen;

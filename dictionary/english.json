@@ -155,5 +155,7 @@
     "pendingEventsToCertify": "Pending events to certify, certify now",
     "skip": "Skip",
     "advContinuePersonal": "You are in personal use. Do you want to continue using it?",
-    "timeZone": "Time Zone"
+    "timeZone": "Time Zone",
+    "errorConexionELDDevice": "Error in the connection with the ELD device, please check the eld information or try again",
+    "errorTryingToConnect": "Error trying to connect to the device, please try again"
 }
