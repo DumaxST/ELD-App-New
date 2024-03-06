@@ -1,10 +1,12 @@
 import React, {useState, useEffect} from 'react';
-import {Alert,ActivityIndicator,SafeAreaView,Dimensions,StyleSheet,View,Text,StatusBar,TouchableOpacity,NativeModules,NativeEventEmitter,Platform,PermissionsAndroid,FlatList,TouchableHighlight,Pressable} from 'react-native';
+import {Alert,Image,ActivityIndicator,SafeAreaView,Dimensions,StyleSheet,View,Text,StatusBar,TouchableOpacity,NativeModules,NativeEventEmitter,Platform,PermissionsAndroid,FlatList,TouchableHighlight,Pressable} from 'react-native';
 import { checkAndRequestBluetoothScanPermission } from './constructor';
 import { Fonts, Colors, Sizes } from "../../constants/styles";
 import { Overlay } from "react-native-elements";
+import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import BleManager, {BleDisconnectPeripheralEvent,BleManagerDidUpdateValueForCharacteristicEvent,BleScanCallbackType,BleScanMatchMode,BleScanMode,Peripheral} from 'react-native-ble-manager';
+import axios from 'axios';
 const BleManagerModule = NativeModules.BleManager;
 const languageModule = require('../../global_functions/variables');
 const { height, width } = Dimensions.get("window");
@@ -20,6 +22,7 @@ const ALLOW_DUPLICATES = true;
 const BluetoothScreen = ({navigation}) => {
   //Declaracion de variables
   const [isScanning, setIsScanning] = useState(false);
+  const [loadingStates, setLoadingStates] = useState({});
   const [peripherals, setPeripherals] = useState(new Map());
   const [language, setlanguage] = useState('');
   const [showButtons, setShowButtons] = useState(true);
@@ -200,6 +203,7 @@ const BluetoothScreen = ({navigation}) => {
     console.debug(
       `[handleDisconnectedPeripheral][${event.peripheral}] disconnected.`
     );
+    setLoadingStates(prevStates => ({ ...prevStates, [event.peripheral.id]: false }));
     setPeripherals(map => {
       let p = map.get(event.peripheral);
       if (p) {
@@ -233,14 +237,17 @@ const BluetoothScreen = ({navigation}) => {
   const togglePeripheralConnection = async (peripheral) => {
     if (peripheral && peripheral.connected) {
       try {
+        setLoadingStates(prevStates => ({ ...prevStates, [peripheral.id]: false }));
         await BleManager.disconnect(peripheral.id);
       } catch (error) {
+        setLoadingStates(prevStates => ({ ...prevStates, [peripheral.id]: false }));
         console.error(
           `[togglePeripheralConnection][${peripheral.id}] error when trying to disconnect device.`,
           error,
         );
       }
-    } else {
+    } else {   
+      setLoadingStates(prevStates => ({ ...prevStates, [peripheral.id]: true }));
       await connectPeripheral(peripheral);
     }
   };
@@ -290,6 +297,7 @@ const BluetoothScreen = ({navigation}) => {
         });
   
         await BleManager.connect(peripheral.id);
+        setLoadingStates(prevStates => ({ ...prevStates, [peripheral.id]: false }));
         console.debug(`[connectPeripheral][${peripheral.id}] connected.`);
   
         setPeripherals(map => {
@@ -352,6 +360,7 @@ const BluetoothScreen = ({navigation}) => {
                   // Suscribirse a eventos de notificación
                   BleManager.addListener('BleManagerDidUpdateValueForCharacteristic', handleNotification);
                 } catch (error) {
+                  setLoadingStates(prevStates => ({ ...prevStates, [peripheral.id]: false }));
                   console.error(
                     `[connectPeripheral][${peripheral.id}] failed to retrieve descriptor ${descriptor} for characteristic ${characteristic}:`,
                     error,
@@ -372,6 +381,7 @@ const BluetoothScreen = ({navigation}) => {
         });
       }
     } catch (error) {
+      setLoadingStates(prevStates => ({ ...prevStates, [peripheral.id]: false }));
       console.error(
         `[connectPeripheral][${peripheral.id}] connectPeripheral error`,
         error,
@@ -437,22 +447,47 @@ const BluetoothScreen = ({navigation}) => {
 
   //funciones de renderizado
   function renderItem({item}) {
+  const macAddress = item.id;
+  const url = `https://api.macvendors.com/${encodeURIComponent(macAddress)}`;
+  let vendor = ''; 
+  axios.get(url)
+    .then(response => {
+      vendor = response.data;
+    })
+    .catch(error => {
+      vendor = 'Not Found';
+    });
+
     return (
-        <View style={styles.deviceItem}>
-          <Text style={styles.deviceText}>{item.name}</Text>
+      <View style={styles.deviceItem}>
+          <Image source={require('../../assets/images/trucks/eld_device.png')} style={styles.imageStyle} />
+          <View style={styles.itemContainer}>
+          <Text style={styles.itemName}>
+            {item.name.length > 10 ? item.name.substring(0, 10) + '...' : item.name}
+          </Text>
+            <Text style={styles.deviceText}>{item.id}</Text>
+            <View style={styles.rssiContainer}>
+              <Icon name="signal" size={20} color="#4CAF50" />
+              <Text style={styles.rssiText}>{item.rssi}</Text>
+            </View>
+          </View>
           <TouchableOpacity
-            style={[
-              styles.connectButton,
-              { backgroundColor: item.connected ? '#4CAF50' : '#cccccc' },
-            ]}
-            onPress={() => togglePeripheralConnection(item)}
-            disabled={item.connecting || item.advertising.isConnetable === false}
+           style={[
+             styles.connectButton,
+             { backgroundColor: item.connected ? '#cc0b0a' : '#4CAF50' },
+           ]}
+           onPress={() => togglePeripheralConnection(item)}
+           disabled={item.connecting || item.advertising.isConnetable === false || loadingStates[item.id]}
           >
+          {loadingStates[item.id] ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
             <Text style={styles.buttonText}>
-              {item.connected ? 'Conectado' : 'Conectar'}
+              {item.connected ? 'Desconectar' : 'Conectar'}
             </Text>
+          )}
           </TouchableOpacity>
-        </View>
+          </View>
       );
   };
 
@@ -547,6 +582,33 @@ const BluetoothScreen = ({navigation}) => {
 
   
 const styles = StyleSheet.create({
+  deviceItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  imageStyle: {
+    width: 50,
+    height: 50,
+    marginRight: -10,
+  },
+  itemContainer: {
+    flexDirection: 'column',
+  },
+  rssiContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  itemName: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 5,
+  },
+  rssiText: {
+    fontSize: 12,
+    color: '#333',
+    textAlign: 'center',
+    marginVertical: 10,
+  },
     container: {
       flex: 1,
       backgroundColor: '#ffffff',
@@ -575,7 +637,7 @@ const styles = StyleSheet.create({
       marginBottom: 10,
     },
     deviceText: {
-      fontSize: 16,
+      fontSize: 12,
       color: '#333333',
     },
     connectButton: {
