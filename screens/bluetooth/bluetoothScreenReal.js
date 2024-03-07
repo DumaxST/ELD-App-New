@@ -304,7 +304,8 @@ const BluetoothScreen = ({navigation}) => {
         await BleManager.connect(peripheral.id);
         setLoadingStates(prevStates => ({ ...prevStates, [peripheral.id]: false }));
         console.debug(`[connectPeripheral][${peripheral.id}] connected.`);
-  
+        pushToDiagnostico();
+        
         setPeripherals(map => {
           let p = map.get(peripheral.id);
           if (p) {
@@ -350,7 +351,8 @@ const BluetoothScreen = ({navigation}) => {
                   const handleNotification = (data) => {
                   //console.log('Datos de notificación:', data.value);
                   const utf8String = String.fromCharCode.apply(null, data.value);
-                  console.log('Datos en UTF-8:', utf8String);
+                  const jsonObject = JSON.parse(utf8String);
+                  console.log(jsonObject);
                   // Realizar el procesamiento necesario, como la conversión de datos a UTF-8
                   };
                   
@@ -455,8 +457,8 @@ const BluetoothScreen = ({navigation}) => {
 
   //funciones de renderizado
   function renderItem({item}) {
-  const macAddress = item.id;
-  function getVendor(macAddress) {
+  
+    function getVendor(macAddress) {
     const url = `https://api.macvendors.com/${encodeURIComponent(macAddress)}`;
     axios.get(url)
       .then(response => {
@@ -465,7 +467,7 @@ const BluetoothScreen = ({navigation}) => {
       .catch(error => {
         return ''
       });
-  }
+    }
 
     return (
       <View style={styles.deviceItem}>
