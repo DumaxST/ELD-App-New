@@ -155,5 +155,6 @@
     "advContinuePersonal":"Te encuentras en uso personal, ¿deseas continuar usandolo?",
     "timeZone": "Zona horaria",
     "errorConexionELDDevice": "Error de conexión con el dispositivo ELD, por favor verifica la informacion del dispositivo o intenta nuevamente",
-    "errorTryingToConnect": "Error al intentar conectarse, por favor intenta nuevamente"
+    "errorTryingToConnect": "Error al intentar conectarse, por favor intenta nuevamente",
+    "selectVehicle": "Selecciona un vehículo"
 }

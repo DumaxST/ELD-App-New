@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {View,Text,TextInput,TouchableOpacity,ScrollView,SafeAreaView,StyleSheet,Dimensions,StatusBar,} from 'react-native';
+import {View,Text,TextInput,Image,TouchableOpacity,ScrollView,SafeAreaView,StyleSheet,Dimensions,StatusBar,} from 'react-native';
 import { Colors, Fonts, Sizes } from '../../../constants/styles';
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentDriver, currentCMV } from "../../../config/localStorage";
@@ -146,18 +146,26 @@ const PerfilVehiculo = ({ navigation }) => {
         </View>)
   }
  
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar translucent={false} backgroundColor={Colors.primaryColor} />
       <Text style={styles.title}>{languageModule.lang(language, 'vehicleProfile')}</Text>
-      <View style={styles.formContainer}>
+      <View style={styles2.buttonContainer}>
+        <TouchableOpacity style={styles2.button}>
+          <Image
+            source={require('../../../assets/images/trucks/truck3.png')}
+            style={styles2.buttonImage}
+          />
+          <Text style={styles2.buttonText}>{languageModule.lang(language, "selectVehicle")}</Text>
+        </TouchableOpacity>
+        </View>
+        <View style={styles.formContainer}>
       <ScrollView showsVerticalScrollIndicator={false}>
-       {truckNumberInput()}
+       {/* {truckNumberInput()}
         {truckVINInput()}
         {truckTrailerInput()}
         {truckShippingDocumentInput()}
-        {odometroVisualInput()}
+        {odometroVisualInput()} */}
         </ScrollView>
       </View>
       <TouchableOpacity style={styles.submitButton} onPress={updateCMVProfile}>
@@ -212,6 +220,46 @@ const styles = StyleSheet.create({
     color: Colors.whiteColor,
     fontSize: 18,
     fontWeight: 'bold',
+  },
+});
+
+const styles2 = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff', // Fondo blanco
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#333', // Color de texto oscuro
+  },
+  buttonContainer: {
+    marginTop: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+  },
+  button: {
+    alignItems: 'center',
+    backgroundColor: '#ffffff', // Verde elegante
+    borderRadius: 10,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  buttonImage: {
+    width: 120,
+    height: 120,
+    marginBottom: 5,
+  },
+  buttonText: {
+    color: '#000000', // Texto blanco
   },
 });
 
