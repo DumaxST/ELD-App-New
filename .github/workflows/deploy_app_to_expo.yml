@@ -40,7 +40,7 @@ jobs:
         - name: Use Node.js
           uses: actions/setup-node@v2
           with:
-                node-version: '14'
+                node-version: '10.2.5'
 
         - name: Extract PR Number
           id: pr
@@ -69,7 +69,7 @@ jobs:
           run: npm install @config-plugins/react-native-ble-plx
 
           
-        - name: Install PLUGINS
+        - name: Install expo/config-plugins
           run: npm install @expo/config-plugins
         
 
