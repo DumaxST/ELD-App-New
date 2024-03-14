@@ -124,7 +124,6 @@ const PerfilVehiculo = ({ navigation }) => {
 
  //funciones de renderizado 
 
-
   const selectedVehicle = () => {
   return (
     <View style={{...styles.container, marginTop: 5}}>
@@ -210,6 +209,19 @@ const PerfilVehiculo = ({ navigation }) => {
   );
   }
 
+  const inputsOdometer = () => {
+    return(
+      <View style={styles3.container}>
+      <View style={styles3.inputContainer}>
+        <Text style={styles3.inputLabel}>{languageModule.lang(language, 'visualOdometer')}</Text>
+        <TextInput
+          style={[styles3.input, styles3.leftInput]}
+          placeholderTextColor="#888"
+        />
+      </View>
+    </View>
+    )
+  }
  
   return (
     <SafeAreaView style={styles.container}>
@@ -234,6 +246,7 @@ const PerfilVehiculo = ({ navigation }) => {
         </View>
         {selectedVehicle()}
         {selectedTrailer()}
+        {inputsOdometer()}
         </ScrollView>
       <TouchableOpacity style={styles.submitButton} onPress={updateCMVProfile}>
         <Text style={styles.submitButtonText}>{languageModule.lang(language, 'save')}</Text>
@@ -375,6 +388,46 @@ const styles2 = StyleSheet.create({
   },
   buttonText: {
     color: '#000000', // Texto blanco
+  },
+});
+
+const styles3 = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  inputContainer: {
+    flex: 1,
+    marginRight: 10,
+    marginLeft : 10,
+  },
+  inputLabel: {
+    fontSize: 12,
+    marginBottom: 5,
+    color: '#666',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#4CAF50', // Color verde elegante
+    borderRadius: 5,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    fontSize: 16,
+    color: '#333', // Color de texto oscuro
+  },
+  leftInput: {
+    marginRight: 140,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 0, // Quita la esquina derecha del borde inferior
+    borderTopRightRadius: 0, // Quita la esquina derecha del borde superior
+  },
+  rightInput: {
+    borderLeftWidth: 0, // Quita la línea de borde izquierda
+    borderBottomLeftRadius: 0, // Quita la esquina izquierda del borde inferior
+    borderTopLeftRadius: 0, // Quita la esquina izquierda del borde superior
   },
 });
 
