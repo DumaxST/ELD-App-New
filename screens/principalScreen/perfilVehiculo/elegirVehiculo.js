@@ -349,6 +349,9 @@ const elegirVehiculo = ({ navigation }) => {
             <TouchableOpacity style={styles.scanButton} onPress={() =>{navigation.navigate('PerfilVehiculo')}}>
               <Text style={styles.buttonText}>{languageModule.lang(language, 'goBack').replace('dispositivos', '')}</Text>
             </TouchableOpacity>
+            <TouchableOpacity style={styles.continueButton} onPress={guardarTodo}>
+              <Text style={styles.buttonText}>{languageModule.lang(language, 'save')}</Text>
+            </TouchableOpacity>
           </View>
     );
   }
