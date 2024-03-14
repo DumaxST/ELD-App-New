@@ -53,8 +53,8 @@ jobs:
             JIRAISSUEID=$(echo $FULL_STRING | cut -d'-' -f1,2)
             echo "JIRAISSUEID=$JIRAISSUEID" >> $GITHUB_ENV
 
-        - name: Install Expo CLI
-          run: npm install -g expo-cli
+        - name: Install Expo CLI & PLUGINS
+          run: npm install -g expo-cli && npm install @expo/config-plugins
           
         - name: Expo Login
           env:
