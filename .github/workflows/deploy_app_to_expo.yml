@@ -62,7 +62,7 @@ jobs:
           run: echo $EXPO_CLI_PASSWORD | expo login --non-interactive --username $EXPO_CLI_USERNAME
           
         - name: Install EAS CLI
-          run: npm install -g eas-cli
+          run: npm install -g eas-cli && npm install -g expo-cli
         
         - name: Install dependencies
           run: npm install @config-plugins/react-native-ble-plx
