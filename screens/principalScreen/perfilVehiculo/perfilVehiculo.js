@@ -180,7 +180,7 @@ const PerfilVehiculo = ({ navigation }) => {
         <View style={styles.infoTarjeta}>
           <Image source={remolqueSeleccionado.imagen} style={styles.infoTarjetaImagen} />
           <Text>{ languageModule.lang(language, 'trailerNumber') + ": " + remolqueSeleccionado.numero}</Text>
-          <Text>{languageModule.lang(language, "trailerRegistrationPlace")+ ":" + remolqueSeleccionado.registeredState}</Text>
+          <Text>{languageModule.lang(language, "trailerRegistrationPlace")+ ": " + remolqueSeleccionado.registeredState}</Text>
           <TouchableOpacity
             style={{...styles.editButton, backgroundColor: 'transparent'}}
             onPress={() => handleEditar(remolqueSeleccionado)}
