@@ -30,7 +30,7 @@ jobs:
             fi
             echo "::set-output name=ready::${ready}"
 
-        # - name: PR is not ready
+  # - name: PR is not ready
         #   if: steps.check_ready.outputs.ready != 'approved'
         #   run: |
         #     echo "PR is not ready for deployment; It is in "${{steps.check_ready.outputs.ready}} state". Exiting workflow."
