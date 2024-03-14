@@ -169,5 +169,8 @@
     "trailerRegistrationPlace": "Trailer Registration Place",
     "selectedTrailer": "Selected Trailer",
     "reWrite": "Re-Write",
-    "chooseVehicle": "Choose Vehicle"
+    "chooseVehicle": "Choose Vehicle",
+    "addVehicle": "Add Vehicle",
+    "fuelType": "Fuel Type",
+    "allFieldsRequired": "All fields are required"
 }
