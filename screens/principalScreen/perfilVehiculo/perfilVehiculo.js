@@ -173,7 +173,7 @@ const PerfilVehiculo = ({ navigation }) => {
   const selectedTrailer = () => {
   return(
     <View style={{...styles.container, marginTop: 5}}>
-      <Text style={{...styles.title, fontSize: 15}}>{languageModule.lang(language, "selectedVehicle") + ":"}</Text>
+      <Text style={{...styles.title, fontSize: 15}}>{languageModule.lang(language, "selectedTrailer") + ":"}</Text>
 
       {/* Información del remolque seleccionado */}
       {remolqueSeleccionado && (
