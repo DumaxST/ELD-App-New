@@ -174,5 +174,6 @@
     "fuelType": "Fuel Type",
     "allFieldsRequired": "All fields are required",
     "vehicleInformation": "Vehicle Information",
-    "searchVehicle": "Search Vehicle"
+    "searchVehicle": "Search Vehicle",
+    "goBack": "Go Back"
 }

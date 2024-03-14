@@ -172,5 +172,6 @@
     "fuelType": "Tipo de combustible",
     "allFieldsRequired": "Todos los campos son requeridos",
     "vehicleInformation": "Información del vehículo",
-    "searchVehicle": "Buscar vehículo"
+    "searchVehicle": "Buscar vehículo",
+    "goBack": "Regresar"
 }

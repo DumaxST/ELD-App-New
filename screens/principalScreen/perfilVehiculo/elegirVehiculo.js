@@ -101,6 +101,17 @@ const elegirVehiculo = ({ navigation }) => {
     setVehiculoSeleccionado(null);
   };
 
+  const guardarTodo = () => {
+    if(miVehiculo === '') {
+        setErrorMessages([languageModule.lang(language, 'selectVehicle')]);
+        openErrorModal();
+        return;
+    }
+    AsyncStorage.setItem('currentCMV', JSON.stringify(vehiculo));
+    navigation.navigate('PerfilVehiculo');
+  };
+
+
   //funciones de renderizado
   const header = () => {
         return (
@@ -332,6 +343,16 @@ const elegirVehiculo = ({ navigation }) => {
     )
   }
 
+  const footer = () => {    
+    return (
+        <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.scanButton} onPress={() =>{navigation.navigate('PerfilVehiculo')}}>
+              <Text style={styles.buttonText}>{languageModule.lang(language, 'goBack').replace('dispositivos', '')}</Text>
+            </TouchableOpacity>
+          </View>
+    );
+  }
+
   function FloatingMessageError({ message, onClose }) {
     return (
       <Modal visible={true} transparent animationType="fade">
@@ -355,6 +376,7 @@ const elegirVehiculo = ({ navigation }) => {
         {header()}
         {inputBuscarVehiculo()}
         {listaDeVehiculos()}
+        {footer()}
         {nuevoVehiculoModal()}
         {vehiculoSeleccionadoModal()}
         {showErrorModal && (
@@ -390,6 +412,32 @@ const stylesAlert = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
+    buttonContainer: {
+        top: -50,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+      },
+      scanButton: {
+        backgroundColor: '#4CAF50',
+        paddingVertical: 16,
+        alignItems: 'center',
+        borderRadius: 8,
+        flex: 1,
+        marginRight: 10,
+      },
+      continueButton: {
+        backgroundColor: '#4CAF50',
+        paddingVertical: 16,
+        alignItems: 'center',
+        borderRadius: 8,
+        flex: 1,
+        marginLeft: 10,
+      },
+      buttonText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#ffffff',
+      },
     container: {
       flex: 1,
       backgroundColor: Colors.whiteColor,
