@@ -1,7 +1,5 @@
 name: Deploy APP to EXPO PREVIEW CHANNEL
 on: 
-    pull_request:
-        types: [opened, synchronize, reopened]
     pull_request_review:
       types: [submitted]
 
@@ -35,12 +33,12 @@ jobs:
           run: |
             echo "PR is not ready for deployment; It is in "${{steps.check_ready.outputs.ready}} state". Exiting workflow."
             echo "::error::PR is not ready for deployment."
-         #   exit 1
+            exit 1
 
         - name: Use Node.js
           uses: actions/setup-node@v2
           with:
-                node-version: '10.2.5'
+                node-version: '20'
 
         - name: Extract PR Number
           id: pr
@@ -52,12 +50,10 @@ jobs:
             FULL_STRING="${{ github.event.pull_request.head.ref }}"
             JIRAISSUEID=$(echo $FULL_STRING | cut -d'-' -f1,2)
             echo "JIRAISSUEID=$JIRAISSUEID" >> $GITHUB_ENV
+
         - name: Install Expo CLI
-          run: npm install -g expo-cli
-          
-        - name: Clear CACHE 
-          run: npx react-native start --reset-cache
-          
+          run: npm install -g expo-cli 
+
         - name: Expo Login
           env:
             EXPO_CLI_USERNAME: ${{ secrets.EXPO_CLI_USERNAME }}
@@ -69,6 +65,11 @@ jobs:
         
         - name: Install dependencies
           run: npm install @config-plugins/react-native-ble-plx
+
+          
+        - name: Install expo/config-plugins
+          run: npm install @expo/config-plugins
+        
 
         - name: Publish Update to EAS and save output
           env:
