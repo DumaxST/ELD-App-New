@@ -40,7 +40,7 @@ jobs:
         - name: Use Node.js
           uses: actions/setup-node@v2
           with:
-                node-version: '10.2.5'
+                node-version: '20'
 
         - name: Extract PR Number
           id: pr
