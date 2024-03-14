@@ -145,7 +145,6 @@ export const postCMV = async (userID, carrierID,cmv) => {
 }
 
 export const getCMVs = async (userID, carrierID, companyID) => {
-  console.log("getCMVs", userID, carrierID, companyID);
   return await getAxios("/api/carrier/cmvs", {
     userID: userID,
     carrierID: carrierID,

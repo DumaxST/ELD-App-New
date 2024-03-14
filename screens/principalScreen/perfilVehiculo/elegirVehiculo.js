@@ -61,16 +61,25 @@ const elegirVehiculo = ({ navigation }) => {
 
   useEffect(() => {
     if(userON) {
-     getCMVs(userON?.data?.id, userON?.data?.carrier?.id, userON?.data?.company?.id).then(
-       async (res) => {
-            setVehicles(res);
-            setIsLoading(false);
-       }
-     );
+       cargarVehiculos();
     }  
   }, [userON]);
 
   //funciones de la pantalla
+  const cargarVehiculos = async () => {
+    getCMVs(userON?.data?.id, userON?.data?.carrier?.id, userON?.data?.company?.id).then(
+        async (res) => {
+             setVehicles(res);
+             setIsLoading(false);
+        }
+      );
+  }
+
+  const refreshVehicles = async () => {
+    setIsLoading(true);
+    cargarVehiculos();
+  }
+
   const openErrorModal = () => {
     setShowErrorModal(true); // Muestra el modal
   };
@@ -94,6 +103,9 @@ const elegirVehiculo = ({ navigation }) => {
         return (
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text style={styles.title}>{languageModule.lang(language, 'chooseVehicle')}</Text>
+            <TouchableOpacity onPress={refreshVehicles}>   
+                    <MaterialCommunityIcons name="refresh" size={30} color={Colors.primaryColor} />
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => setNewVehicleModal(true)}>   
                     <MaterialCommunityIcons name="plus" size={30} color={Colors.primaryColor} />
             </TouchableOpacity>
@@ -265,6 +277,7 @@ const elegirVehiculo = ({ navigation }) => {
   const listaDeVehiculos = () => {
     return (
         <View style={{...styles.container, marginTop: 5}}>
+        <ScrollView>
         {isLoading ? (
         <View style={[styles.container, styles.horizontal]}>
           <ActivityIndicator size="large" color="#4CAF50" />
@@ -286,6 +299,7 @@ const elegirVehiculo = ({ navigation }) => {
           </TouchableOpacity>
         ))
       )}
+      </ScrollView>
         </View>
     )
   }
