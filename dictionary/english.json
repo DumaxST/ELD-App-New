@@ -172,5 +172,6 @@
     "chooseVehicle": "Choose Vehicle",
     "addVehicle": "Add Vehicle",
     "fuelType": "Fuel Type",
-    "allFieldsRequired": "All fields are required"
+    "allFieldsRequired": "All fields are required",
+    "vehicleInformation": "Vehicle Information"
 }

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import {View,Modal,Button,Text,TextInput,Image,TouchableOpacity,ScrollView,SafeAreaView,StyleSheet,Dimensions,StatusBar,} from 'react-native';
+import {View,Modal,Button,Text,TextInput,Image,TouchableOpacity,ActivityIndicator,ScrollView,SafeAreaView,StyleSheet,Dimensions,StatusBar,} from 'react-native';
 import { Colors, Fonts, Sizes } from '../../../constants/styles';
 import SelectDropdown from 'react-native-select-dropdown';
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentUsers } from "../../../config/localStorage";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getCurrentDriver, currentCMV } from "../../../config/localStorage";
-import { postCMV } from "../../../data/commonQuerys";
+import { postCMV, getCMVs} from "../../../data/commonQuerys";
 import { startVehicleMeters } from "../../../redux/actions";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -20,9 +20,14 @@ const elegirVehiculo = ({ navigation }) => {
   const [language, setlanguage] = useState('');
   const [users, setUsers] = useState('');
   const [userON, setUserON] = useState('');
+  const [company, setcompany] = useState('');
+  const [base, setbase] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const [errorMessages, setErrorMessages] = useState([]);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [newVehicleModal, setNewVehicleModal] = useState(false);
+  const [vehicles, setVehicles] = useState([]);
+  const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState(null);
   
   //Uso de efectos de inicio del screen
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
@@ -44,6 +49,8 @@ const elegirVehiculo = ({ navigation }) => {
         let users = await getCurrentUsers();
         const userActive = users.find(user => user.isActive === true);
         setUserON(userActive);
+        setcompany(userActive?.data?.company);
+        setbase(userActive?.data?.base);
         setUsers(users);
       } catch (error) {
         console.log(error);
@@ -51,6 +58,17 @@ const elegirVehiculo = ({ navigation }) => {
     };
       getUsers();
   }, []);
+
+  useEffect(() => {
+    if(userON) {
+     getCMVs(userON?.data?.id, userON?.data?.carrier?.id, userON?.data?.company?.id).then(
+       async (res) => {
+            setVehicles(res);
+            setIsLoading(false);
+       }
+     );
+    }  
+  }, [userON]);
 
   //funciones de la pantalla
   const openErrorModal = () => {
@@ -61,6 +79,15 @@ const elegirVehiculo = ({ navigation }) => {
     setShowErrorModal(false); // Cierra el modal
     setErrorMessages([]); // Limpia los mensajes de error
   };
+
+  const handleSeleccionarVehiculo = (vehiculo) => {
+    setVehiculoSeleccionado(vehiculoSeleccionado === vehiculo ? null : vehiculo);
+  };
+
+  const elegirVehiculo = (vehiculo) => {
+    AsyncStorage.setItem('currentCMV', JSON.stringify(vehiculo));
+    navigation.navigate('PerfilVehiculo');
+};
 
   //funciones de renderizado
   const header = () => {
@@ -91,10 +118,10 @@ const elegirVehiculo = ({ navigation }) => {
 
     const postAddingCMV = async () => {
         const cmvData = {
-            "company": userON?.company,
+            "company": company,
             "description": "Vehicle created from mobile app",
             "plate": licensePlate,
-            "trailerNumber": vehicleNumber,
+            "number": vehicleNumber,
             "powerUnitNumber": "123456", // harckodeado no se usa
             "vin": VIN,
             "gasType": {
@@ -105,7 +132,7 @@ const elegirVehiculo = ({ navigation }) => {
                 "value": "Truck",
                 "option": "Truck"
             },
-            "base": userON?.base,
+            "base": base,
             "state": vehicleRegistrationPlace,
         };
         if(cmvData.plate === '' || cmvData.trailerNumber === '' || cmvData.vin === '' || cmvData.gasType.value === '' || cmvData.state === '') {
@@ -198,6 +225,71 @@ const elegirVehiculo = ({ navigation }) => {
       );
   }
 
+  const vehiculoSeleccionadoModal = () => { 
+    return (
+        <Modal
+            animationType="slide"
+            transparent={true}
+            visible={vehiculoSeleccionado !== null}
+            onRequestClose={() => {
+                setVehiculoSeleccionado(null);
+            }}
+        >
+            <View style={styles1.modalBackground}>
+                <View style={styles1.modalContainer}>
+                    <Text style={styles1.modalTitle}>{languageModule.lang(language, 'vehicleInformation')}</Text>
+                    <TouchableOpacity onPress={() => {setVehiculoSeleccionado(null)}} style={{...stylesAlert.closeButton, marginTop: -40}}>
+                    <Ionicons name="close-circle-outline" size={24} color="black" />
+                    </TouchableOpacity>
+                    <View style={styles.infoTarjeta}>
+                        <Image source={require('../../../assets/images/trucks/truck3.png')} style={styles.infoTarjetaImagen} />
+                        <Text>{languageModule.lang(language, 'vehicleNumber') + ": " + vehiculoSeleccionado?.number}</Text>
+                        <Text>{languageModule.lang(language, 'licensePlate') + ": " + vehiculoSeleccionado?.plate}</Text>
+                        <Text>{languageModule.lang(language, 'fuelType') + ": " + vehiculoSeleccionado?.gasType?.value}</Text>
+                        <Text>{languageModule.lang(language, 'vehicleRegistrationPlace') + ": " + vehiculoSeleccionado?.state}</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles1.centeredButton}
+                      onPress={() => {
+                        elegirVehiculo(vehiculoSeleccionado);
+                      }}
+                    >
+                      <Text style={styles1.buttonText}>{languageModule.lang(language, 'chooseVehicle')}</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </Modal>
+    );
+    }
+
+  const listaDeVehiculos = () => {
+    return (
+        <View style={{...styles.container, marginTop: 5}}>
+        {isLoading ? (
+        <View style={[styles.container, styles.horizontal]}>
+          <ActivityIndicator size="large" color="#4CAF50" />
+        </View>
+      ) : vehicles.length === 0 ? (
+        <Text>{languageModule.lang(language, 'thereisNovehicleSelected')}</Text>
+      ) : (
+        vehicles.map((vehiculo) => (
+          <TouchableOpacity
+            key={vehiculo.id}
+            style={{...styles.vehiculoItem, marginTop: 10}}
+            onPress={() => {
+                handleSeleccionarVehiculo(vehiculo);
+              }}
+          >
+            <Text>{languageModule.lang(language, 'vehicleNumber') + ":"}</Text>
+            <Text>{vehiculo?.number}</Text>
+            <Image source={require('../../../assets/images/trucks/truck3.png')} style={styles.vehiculoImagen} />
+          </TouchableOpacity>
+        ))
+      )}
+        </View>
+    )
+  }
+
   function FloatingMessageError({ message, onClose }) {
     return (
       <Modal visible={true} transparent animationType="fade">
@@ -219,7 +311,9 @@ const elegirVehiculo = ({ navigation }) => {
         <SafeAreaView style={styles.container}>
         <StatusBar translucent={false} backgroundColor={Colors.primaryColor} />
         {header()}
+        {listaDeVehiculos()}
         {nuevoVehiculoModal()}
+        {vehiculoSeleccionadoModal()}
         {showErrorModal && (
         <FloatingMessageError
           message={errorMessages}
@@ -347,6 +441,20 @@ const styles = StyleSheet.create({
 });
 
 const styles1 = StyleSheet.create({
+    centeredButtonContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      centeredButton: {
+        backgroundColor: 'black',
+        padding: 10,
+        borderRadius: 5,
+      },
+      buttonText: {
+        color: 'white',
+        textAlign: 'center',
+      },
     modalBackground: {
       flex: 1,
       backgroundColor: 'rgba(0, 0, 0, 0.5)',

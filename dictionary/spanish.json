@@ -170,5 +170,6 @@
     "chooseVehicle": "Elegir vehículo",
     "addVehicle": "Agregar vehículo",
     "fuelType": "Tipo de combustible",
-    "allFieldsRequired": "Todos los campos son requeridos"
+    "allFieldsRequired": "Todos los campos son requeridos",
+    "vehicleInformation": "Información del vehículo"
 }
