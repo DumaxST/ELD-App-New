@@ -162,5 +162,7 @@
     "vehicleNumber": "Número de vehículo",
     "licensePlate": "Placa",
     "vehicleRegistrationPlace": "Lugar de registro del vehículo",
-    "thereisNovehicleSelected": "No hay vehículo seleccionado"
+    "thereisNovehicleSelected": "No hay vehículo seleccionado",
+    "thereisNotrailerSelected": "No hay remolque seleccionado",
+    "trailerRegistrationPlace": "Lugar de registro del remolque"
 }

@@ -164,5 +164,7 @@
     "vehicleNumber": "Vehicle Number",
     "licensePlate": "License Plate",
     "vehicleRegistrationPlace": "Vehicle Registration Place",
-    "thereisNovehicleSelected": "There is no vehicle selected"
+    "thereisNovehicleSelected": "There is no vehicle selected",
+    "thereisNotrailerSelected": "There is no trailer selected",
+    "trailerRegistrationPlace": "Trailer Registration Place"
 }

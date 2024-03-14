@@ -16,6 +16,7 @@ const PerfilVehiculo = ({ navigation }) => {
   //Declaracion de variables
   const [language, setlanguage] = useState("");
   const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState(null);
+  const [remolqueSeleccionado, setRemolqueSeleccionado] = useState(null);
   const [state, setState] = useState({
     numeroDelCamion: "",
     numeroDelTrailer: "",
@@ -38,6 +39,15 @@ const PerfilVehiculo = ({ navigation }) => {
       registeredState: "TX",
       imagen: require('../../../assets/images/trucks/truck3.png') },
   ]);
+
+  const [remolques, setRemolques] = useState([
+    { id: 1, 
+      nombre: 'Remolque 1', 
+      numero: 1,
+      registeredState: "CA",
+      imagen: require('../../../assets/images/trailers/trailer.png') },
+  ]);
+
 
   const updateState = (data) => setState((state) => ({ ...state, ...data }));
   
@@ -97,126 +107,115 @@ const PerfilVehiculo = ({ navigation }) => {
   };
 
   const handleSeleccionarVehiculo = (vehiculo) => {
-    setVehiculoSeleccionado(vehiculo);
-    if (vehiculoSeleccionado) {
-      setVehiculoSeleccionado("")
-    }
+    setVehiculoSeleccionado(vehiculoSeleccionado === vehiculo ? null : vehiculo);
+    setRemolqueSeleccionado(null); // Cerrar la tarjeta del remolque seleccionado
+  };
+
+  const handleSeleccionarRemolque = (remolque) => {
+    setRemolqueSeleccionado(remolqueSeleccionado === remolque ? null : remolque);
+    setVehiculoSeleccionado(null); // Cerrar la tarjeta del vehículo seleccionado
   };
 
   const handleEditar = (seleccionado) => {
     // Implementa la lógica para editar el vehículo seleccionado
     console.log(`Editar ${seleccionado.nombre}`);
   };
+  
 
  //funciones de renderizado 
 
-  const truckNumberInput = () => {
-    return(
-    <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>{languageModule.lang(language, 'truckNumber')}</Text>
-          <TextInput
-            style={styles.input}
-            value={numeroDelCamion}
-             onChangeText={(text) => updateState({ numeroDelCamion: text })}
-          />
-        </View>)
-  }
-
-  const truckVINInput = () => {
-    return(
-    <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>{languageModule.lang(language, 'truckVIN')}</Text>
-          <TextInput
-            style={styles.input}
-            value={vinDelCamion}
-             onChangeText={(text) => updateState({ vinDelCamion: text })}
-          />
-        </View>)
-  }
-
-  const truckTrailerInput = () => {
-    return(
-    <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>{languageModule.lang(language, 'trailerNumber')}</Text>
-          <TextInput
-            style={styles.input}
-            value={numeroDelTrailer}
-             onChangeText={(text) => updateState({ numeroDelTrailer: text })}
-          />
-        </View>)
-  }
-
-  const truckShippingDocumentInput = () => {
-    return(
-    <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>{languageModule.lang(language, 'shippingDocumentNumber')}</Text>
-          <TextInput
-            style={styles.input}
-            value={numeroDeDocumentoDeEnvio}
-             onChangeText={(text) => updateState({ numeroDeDocumentoDeEnvio: text })}
-          />
-        </View>)
-  }
-
-  const odometroVisualInput = () => {
-    return(
-    <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>{languageModule.lang(language, 'visualOdometer')}</Text>
-          <TextInput
-            style={styles.input}
-            value={odometroVisual}
-             onChangeText={(text) => updateState({ odometroVisual: text })}
-          />
-        </View>)
-  }
 
   const selectedVehicle = () => {
-    return (
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.container}>
-          <Text style={{...styles.title, fontSize: 15}}>{languageModule.lang(language, "selectedVehicle") + ":"}</Text>
-  
-          {/* Información del vehículo seleccionado */}
-          {vehiculoSeleccionado && (
-            <View style={styles.infoTarjeta}>
-              <Image source={vehiculoSeleccionado.imagen} style={styles.infoTarjetaImagen} />
-              <Text>{"VIN:" + vehiculoSeleccionado.VIN}</Text>
-              <Text>{languageModule.lang(language, "licensePlate")+ ":" + vehiculoSeleccionado.licensePlate}</Text>
-              <Text>{languageModule.lang(language, "vehicleRegistrationPlace")+ ":" + vehiculoSeleccionado.registeredState}</Text>
-              <TouchableOpacity
-                style={{...styles.editButton, backgroundColor: 'transparent'}}
-                onPress={() => handleEditar(vehiculoSeleccionado)}
-              >
-                <MaterialIcons  name="edit" size={24} />
-              </TouchableOpacity>
-            </View>
-          )}
-  
-          {/* Renderizar la lista de vehículos */}
-          {vehiculos.length === 0 ? (
-            <Text>{languageModule.lang(language, 'thereisNovehicleSelected')}</Text>
-          ) : (
-            vehiculos.map((vehiculo) => (
-              <TouchableOpacity
-                key={vehiculo.id}
-                style={styles.vehiculoItem}
-                onPress={() => handleSeleccionarVehiculo(vehiculo)}
-              >
-                <Text>{languageModule.lang(language, 'vehicleNumber') + ":"}</Text>
-                <Text>{vehiculo.numero}</Text>
-                <Image source={vehiculo.imagen} style={styles.vehiculoImagen} />
-              </TouchableOpacity>
-            ))
-          )}
+  return (
+    <View style={{...styles.container, marginTop: 5}}>
+      <Text style={{...styles.title, fontSize: 15}}>{languageModule.lang(language, "selectedVehicle") + ":"}</Text>
+
+      {/* Información del vehículo seleccionado */}
+      {vehiculoSeleccionado && (
+        <View style={styles.infoTarjeta}>
+          <Image source={vehiculoSeleccionado.imagen} style={styles.infoTarjetaImagen} />
+          <Text>{"VIN:" + vehiculoSeleccionado.VIN}</Text>
+          <Text>{languageModule.lang(language, "licensePlate")+ ":" + vehiculoSeleccionado.licensePlate}</Text>
+          <Text>{languageModule.lang(language, "vehicleRegistrationPlace")+ ":" + vehiculoSeleccionado.registeredState}</Text>
+          <TouchableOpacity
+            style={{...styles.editButton, backgroundColor: 'transparent'}}
+            onPress={() => handleEditar(vehiculoSeleccionado)}
+          >
+            <MaterialIcons  name="edit" size={24} />
+          </TouchableOpacity>
         </View>
-      </ScrollView>
-    );
+      )}
+
+      {/* Renderizar la lista de vehículos */}
+      {vehiculos.length === 0 ? (
+        <Text>{languageModule.lang(language, 'thereisNovehicleSelected')}</Text>
+      ) : (
+        vehiculos.map((vehiculo) => (
+          <TouchableOpacity
+            key={vehiculo.id}
+            style={styles.vehiculoItem}
+            onPress={() => {
+              handleSeleccionarVehiculo(vehiculo);
+              // Llama a la función selectedTrailer() al seleccionar un vehículo
+              selectedTrailer();
+            }}
+          >
+            <Text>{languageModule.lang(language, 'vehicleNumber') + ":"}</Text>
+            <Text>{vehiculo.numero}</Text>
+            <Image source={vehiculo.imagen} style={styles.vehiculoImagen} />
+          </TouchableOpacity>
+        ))
+      )}
+    </View>
+  );
+  };
+
+  const selectedTrailer = () => {
+  return(
+    <View style={{...styles.container, marginTop: 5}}>
+      <Text style={{...styles.title, fontSize: 15}}>{languageModule.lang(language, "selectedVehicle") + ":"}</Text>
+
+      {/* Información del remolque seleccionado */}
+      {remolqueSeleccionado && (
+        <View style={styles.infoTarjeta}>
+          <Image source={remolqueSeleccionado.imagen} style={styles.infoTarjetaImagen} />
+          <Text>{ languageModule.lang(language, 'trailerNumber') + ": " + remolqueSeleccionado.numero}</Text>
+          <Text>{languageModule.lang(language, "trailerRegistrationPlace")+ ":" + remolqueSeleccionado.registeredState}</Text>
+          <TouchableOpacity
+            style={{...styles.editButton, backgroundColor: 'transparent'}}
+            onPress={() => handleEditar(remolqueSeleccionado)}
+          >
+            <MaterialIcons  name="edit" size={24} />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Renderizar la lista de remolques */}
+      {remolques.length === 0 ? (
+        <Text>{languageModule.lang(language, 'thereisNotrailerSelected')}</Text>
+      ) : (
+        remolques.map((remolque) => (
+          <TouchableOpacity
+            key={remolque.id}
+            style={styles.vehiculoItem}
+            onPress={() => handleSeleccionarRemolque(remolque)}
+          >
+            <Text>{languageModule.lang(language, 'trailerNumber') + ":"}</Text>
+            <Text>{remolque.numero}</Text>
+            <Image source={remolque.imagen} style={styles.vehiculoImagen} />
+          </TouchableOpacity>
+        ))
+      )}
+    </View>
+  );
   }
+
  
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar translucent={false} backgroundColor={Colors.primaryColor} />
       <Text style={styles.title}>{languageModule.lang(language, 'vehicleProfile')}</Text>
+      <ScrollView >
       <View style={styles2.buttonContainer}>
         <TouchableOpacity style={styles2.button}>
           <Image
@@ -233,9 +232,9 @@ const PerfilVehiculo = ({ navigation }) => {
           <Text style={styles2.buttonText}>{languageModule.lang(language, "selectTrailer")}</Text>
         </TouchableOpacity>
         </View>
-        <View style={styles.formContainer}>
         {selectedVehicle()}
-      </View>
+        {selectedTrailer()}
+        </ScrollView>
       <TouchableOpacity style={styles.submitButton} onPress={updateCMVProfile}>
         <Text style={styles.submitButtonText}>{languageModule.lang(language, 'save')}</Text>
       </TouchableOpacity>
@@ -263,6 +262,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 4,
     elevation: 5,
+    marginVertical: -10,
   },
   vehiculoImagen: {
     width: 50,
