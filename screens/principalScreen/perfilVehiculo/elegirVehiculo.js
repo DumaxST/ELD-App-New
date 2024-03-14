@@ -28,6 +28,8 @@ const elegirVehiculo = ({ navigation }) => {
   const [newVehicleModal, setNewVehicleModal] = useState(false);
   const [vehicles, setVehicles] = useState([]);
   const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState(null);
+  const [miVehiculo, setmiVehiculo] = useState('');
+  const [buscarVehiculo ,setBuscarVehiculo] = useState('');
   
   //Uso de efectos de inicio del screen
   //Aqui obtenemos el idioma seleccionado desde la primera pantalla
@@ -95,8 +97,9 @@ const elegirVehiculo = ({ navigation }) => {
 
   const elegirVehiculo = (vehiculo) => {
     AsyncStorage.setItem('currentCMV', JSON.stringify(vehiculo));
-    navigation.navigate('PerfilVehiculo');
-};
+    setmiVehiculo(vehiculo);
+    setVehiculoSeleccionado(null);
+  };
 
   //funciones de renderizado
   const header = () => {
@@ -272,7 +275,21 @@ const elegirVehiculo = ({ navigation }) => {
             </View>
         </Modal>
     );
-    }
+  }
+
+  const inputBuscarVehiculo = () => {
+    return (
+        <View style={{...styles.inputContainer, marginTop: 20}}>
+        <TextInput
+            style={styles.input}
+            placeholder={languageModule.lang(language, 'searchVehicle')}
+            onChangeText={(text) => {
+                setBuscarVehiculo(text);
+            }}
+        />
+        </View>
+    );
+  }
 
   const listaDeVehiculos = () => {
     return (
@@ -285,10 +302,21 @@ const elegirVehiculo = ({ navigation }) => {
       ) : vehicles.length === 0 ? (
         <Text>{languageModule.lang(language, 'thereisNovehicleSelected')}</Text>
       ) : (
-        vehicles.map((vehiculo) => (
+        vehicles
+        .filter(vehiculo => 
+            vehiculo.number.includes(buscarVehiculo) ||
+            vehiculo.vin.includes(buscarVehiculo) ||
+            vehiculo.plate.includes(buscarVehiculo) ||
+            vehiculo.state.includes(buscarVehiculo)
+        )
+        .map((vehiculo) => (
           <TouchableOpacity
             key={vehiculo.id}
-            style={{...styles.vehiculoItem, marginTop: 10}}
+            style={{
+                ...styles.vehiculoItem,
+                marginTop: 10,
+                backgroundColor: miVehiculo.number === vehiculo.number && miVehiculo.vin === vehiculo.vin ? "#4CAF50" : "#eee"
+              }}
             onPress={() => {
                 handleSeleccionarVehiculo(vehiculo);
               }}
@@ -325,6 +353,7 @@ const elegirVehiculo = ({ navigation }) => {
         <SafeAreaView style={styles.container}>
         <StatusBar translucent={false} backgroundColor={Colors.primaryColor} />
         {header()}
+        {inputBuscarVehiculo()}
         {listaDeVehiculos()}
         {nuevoVehiculoModal()}
         {vehiculoSeleccionadoModal()}

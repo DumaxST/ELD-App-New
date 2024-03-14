@@ -171,5 +171,6 @@
     "addVehicle": "Agregar vehículo",
     "fuelType": "Tipo de combustible",
     "allFieldsRequired": "Todos los campos son requeridos",
-    "vehicleInformation": "Información del vehículo"
+    "vehicleInformation": "Información del vehículo",
+    "searchVehicle": "Buscar vehículo"
 }
