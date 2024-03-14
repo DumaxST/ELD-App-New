@@ -4,6 +4,7 @@ import { Colors, Fonts, Sizes } from '../../../constants/styles';
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentDriver, currentCMV } from "../../../config/localStorage";
 import { startVehicleMeters } from "../../../redux/actions";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get('window');
@@ -11,8 +12,10 @@ const languageModule = require('../../../global_functions/variables');
 
 const PerfilVehiculo = ({ navigation }) => {
   const dispatch = useDispatch();
+
   //Declaracion de variables
   const [language, setlanguage] = useState("");
+  const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState(null);
   const [state, setState] = useState({
     numeroDelCamion: "",
     numeroDelTrailer: "",
@@ -26,6 +29,15 @@ const PerfilVehiculo = ({ navigation }) => {
       numeroDeDocumentoDeEnvio,
       odometroVisual,
   } = state;
+  const [vehiculos, setVehiculos] = useState([
+    { id: 1, 
+      nombre: 'Vehículo 1',
+      numero: 29, 
+      VIN: "1293FKA102183",
+      licensePlate: "123-ABC",
+      registeredState: "TX",
+      imagen: require('../../../assets/images/trucks/truck3.png') },
+  ]);
 
   const updateState = (data) => setState((state) => ({ ...state, ...data }));
   
@@ -82,6 +94,18 @@ const PerfilVehiculo = ({ navigation }) => {
       });
     }
   );
+  };
+
+  const handleSeleccionarVehiculo = (vehiculo) => {
+    setVehiculoSeleccionado(vehiculo);
+    if (vehiculoSeleccionado) {
+      setVehiculoSeleccionado("")
+    }
+  };
+
+  const handleEditar = (seleccionado) => {
+    // Implementa la lógica para editar el vehículo seleccionado
+    console.log(`Editar ${seleccionado.nombre}`);
   };
 
  //funciones de renderizado 
@@ -145,6 +169,49 @@ const PerfilVehiculo = ({ navigation }) => {
           />
         </View>)
   }
+
+  const selectedVehicle = () => {
+    return (
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.container}>
+          <Text style={{...styles.title, fontSize: 15}}>{languageModule.lang(language, "selectedVehicle") + ":"}</Text>
+  
+          {/* Información del vehículo seleccionado */}
+          {vehiculoSeleccionado && (
+            <View style={styles.infoTarjeta}>
+              <Image source={vehiculoSeleccionado.imagen} style={styles.infoTarjetaImagen} />
+              <Text>{"VIN:" + vehiculoSeleccionado.VIN}</Text>
+              <Text>{languageModule.lang(language, "licensePlate")+ ":" + vehiculoSeleccionado.licensePlate}</Text>
+              <Text>{languageModule.lang(language, "vehicleRegistrationPlace")+ ":" + vehiculoSeleccionado.registeredState}</Text>
+              <TouchableOpacity
+                style={{...styles.editButton, backgroundColor: 'transparent'}}
+                onPress={() => handleEditar(vehiculoSeleccionado)}
+              >
+                <MaterialIcons  name="edit" size={24} />
+              </TouchableOpacity>
+            </View>
+          )}
+  
+          {/* Renderizar la lista de vehículos */}
+          {vehiculos.length === 0 ? (
+            <Text>{languageModule.lang(language, 'thereisNovehicleSelected')}</Text>
+          ) : (
+            vehiculos.map((vehiculo) => (
+              <TouchableOpacity
+                key={vehiculo.id}
+                style={styles.vehiculoItem}
+                onPress={() => handleSeleccionarVehiculo(vehiculo)}
+              >
+                <Text>{languageModule.lang(language, 'vehicleNumber') + ":"}</Text>
+                <Text>{vehiculo.numero}</Text>
+                <Image source={vehiculo.imagen} style={styles.vehiculoImagen} />
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
+      </ScrollView>
+    );
+  }
  
   return (
     <SafeAreaView style={styles.container}>
@@ -167,13 +234,7 @@ const PerfilVehiculo = ({ navigation }) => {
         </TouchableOpacity>
         </View>
         <View style={styles.formContainer}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-       {/* {truckNumberInput()}
-        {truckVINInput()}
-        {truckTrailerInput()}
-        {truckShippingDocumentInput()}
-        {odometroVisualInput()} */}
-        </ScrollView>
+        {selectedVehicle()}
       </View>
       <TouchableOpacity style={styles.submitButton} onPress={updateCMVProfile}>
         <Text style={styles.submitButtonText}>{languageModule.lang(language, 'save')}</Text>
@@ -188,6 +249,51 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.whiteColor,
     paddingHorizontal: Sizes.fixPadding * 2,
     paddingTop: Sizes.fixPadding * 2,
+  },
+  vehiculoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 10,
+    backgroundColor: '#eee', // Color de fondo gris claro
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  vehiculoImagen: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  infoTarjeta: {
+    marginTop: 20,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#fff', // Fondo blanco
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 5,
+    alignItems: 'center',
+  },
+  infoTarjetaImagen: {
+    width: 100,
+    height: 100,
+    marginBottom: 10,
+  },
+  editButton: {
+    backgroundColor: '#3498db', // Color azul brillante
+    padding: 5,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  editButtonText: {
+    color: '#fff', // Texto blanco
   },
   title: {
     fontSize: 24,

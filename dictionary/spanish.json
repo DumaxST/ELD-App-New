@@ -157,5 +157,10 @@
     "errorConexionELDDevice": "Error de conexión con el dispositivo ELD, por favor verifica la informacion del dispositivo o intenta nuevamente",
     "errorTryingToConnect": "Error al intentar conectarse, por favor intenta nuevamente",
     "selectVehicle": "Selecciona un vehículo",
-    "selectTrailer": "Selecciona un remolque"
+    "selectTrailer": "Selecciona un remolque",
+    "selectedVehicle": "Vehículo seleccionado",
+    "vehicleNumber": "Número de vehículo",
+    "licensePlate": "Placa",
+    "vehicleRegistrationPlace": "Lugar de registro del vehículo",
+    "thereisNovehicleSelected": "No hay vehículo seleccionado"
 }
