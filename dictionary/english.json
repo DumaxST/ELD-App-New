@@ -175,5 +175,6 @@
     "allFieldsRequired": "All fields are required",
     "vehicleInformation": "Vehicle Information",
     "searchVehicle": "Search Vehicle",
-    "goBack": "Go Back"
+    "goBack": "Go Back",
+    "chooseTrailer": "Choose Trailer"
 }
