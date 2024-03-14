@@ -165,5 +165,6 @@
     "thereisNovehicleSelected": "No hay vehículo seleccionado",
     "thereisNotrailerSelected": "No hay remolque seleccionado",
     "trailerRegistrationPlace": "Lugar de registro del remolque",
-    "selectedTrailer": "Remolque seleccionado"
+    "selectedTrailer": "Remolque seleccionado",
+    "reWrite": "Reescribir"
 }

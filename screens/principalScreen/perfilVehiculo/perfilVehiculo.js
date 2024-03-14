@@ -219,6 +219,13 @@ const PerfilVehiculo = ({ navigation }) => {
           placeholderTextColor="#888"
         />
       </View>
+      <View style={styles3.inputContainer}>
+      <Text style={styles3.inputLabel}>{languageModule.lang(language, 'reWrite') + " " + languageModule.lang(language, 'visualOdometer')}</Text>
+        <TextInput
+          style={[styles3.input, styles3.rightInput]}
+          placeholderTextColor="#888"
+        />
+      </View>
     </View>
     )
   }
@@ -419,13 +426,12 @@ const styles3 = StyleSheet.create({
     color: '#333', // Color de texto oscuro
   },
   leftInput: {
-    marginRight: 140,
+    marginTop: 15,
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 0, // Quita la esquina derecha del borde inferior
     borderTopRightRadius: 0, // Quita la esquina derecha del borde superior
   },
   rightInput: {
-    borderLeftWidth: 0, // Quita la línea de borde izquierda
     borderBottomLeftRadius: 0, // Quita la esquina izquierda del borde inferior
     borderTopLeftRadius: 0, // Quita la esquina izquierda del borde superior
   },

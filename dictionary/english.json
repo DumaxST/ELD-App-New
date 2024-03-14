@@ -167,5 +167,6 @@
     "thereisNovehicleSelected": "There is no vehicle selected",
     "thereisNotrailerSelected": "There is no trailer selected",
     "trailerRegistrationPlace": "Trailer Registration Place",
-    "selectedTrailer": "Selected Trailer"
+    "selectedTrailer": "Selected Trailer",
+    "reWrite": "Re-Write"
 }
