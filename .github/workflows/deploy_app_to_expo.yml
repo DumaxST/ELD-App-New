@@ -1,7 +1,5 @@
 name: Deploy APP to EXPO PREVIEW CHANNEL
 on: 
-    pull_request:
-        types: [opened, synchronize, reopened]
     pull_request_review:
       types: [submitted]
 
@@ -52,12 +50,9 @@ jobs:
             FULL_STRING="${{ github.event.pull_request.head.ref }}"
             JIRAISSUEID=$(echo $FULL_STRING | cut -d'-' -f1,2)
             echo "JIRAISSUEID=$JIRAISSUEID" >> $GITHUB_ENV
-            
+
         - name: Install Expo CLI
-          run: npm install -g expo-cli
-          
-        - name: Clear CACHE 
-          run: npx react-native start --reset-cache
+          run: npm install -g expo-cli 
           
         - name: Expo Login
           env:
@@ -70,6 +65,11 @@ jobs:
         
         - name: Install dependencies
           run: npm install @config-plugins/react-native-ble-plx
+
+          
+        - name: Install expo/config-plugins
+          run: npm install @expo/config-plugins
+        
 
         - name: Publish Update to EAS and save output
           env:
