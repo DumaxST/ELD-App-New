@@ -71,7 +71,7 @@ const elegirRemolque = ({ navigation }) => {
     //Aqui tienen que ir los Trailers que se cargan desde el API no los cmvs
     getCMVs(userON?.data?.id, userON?.data?.carrier?.id, userON?.data?.company?.id).then(
         async (res) => {
-             setVehicles(res);
+             setTrailers(res);
              setIsLoading(false);
         }
       );
@@ -91,6 +91,16 @@ const elegirRemolque = ({ navigation }) => {
     setErrorMessages([]); // Limpia los mensajes de error
   };
 
+  const handleSeleccionarTrailer = (trailer) => {
+    setTrailerSeleccionado(trailerSeleccionado === trailer ? null : trailer);
+  };
+
+  const elegirTrailer = (trailer) => {
+    AsyncStorage.setItem('currentTrailer', JSON.stringify(trailer));
+    setmiTrailer(trailer);
+    setTrailerSeleccionado(null);
+  };
+
   //funciones de renderizado
   const header = () => {
       return (
@@ -105,6 +115,77 @@ const elegirRemolque = ({ navigation }) => {
       </View>
       );
   }  
+
+  const trailerSeleccionadoModal = () => { 
+    return (
+        <Modal
+            animationType="slide"
+            transparent={true}
+            visible={trailerSeleccionado !== null}
+            onRequestClose={() => {
+                setTrailerSeleccionado(null);
+            }}
+        >
+            <View style={styles1.modalBackground}>
+                <View style={styles1.modalContainer}>
+                    <Text style={styles1.modalTitle}>{languageModule.lang(language, 'trailerInformation')}</Text>
+                    <TouchableOpacity onPress={() => {setTrailerSeleccionado(null)}} style={{...stylesAlert.closeButton, marginTop: -40, marginRight: -10}}>
+                    <Ionicons name="close-circle-outline" size={24} color="black" />
+                    </TouchableOpacity>
+                    <View style={styles.infoTarjeta}>
+                        <Image source={require('../../../assets/images/trailers/trailer.png')} style={styles.infoTarjetaImagen} />
+                        <Text>{languageModule.lang(language, 'trailerNumber') + ": " + trailerSeleccionado?.number}</Text>
+                        <Text>{languageModule.lang(language, 'licensePlate') + ": " + trailerSeleccionado?.plate}</Text>
+                        <Text>{languageModule.lang(language, 'trailerRegistrationPlace') + ": " + trailerSeleccionado?.state}</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles1.centeredButton}
+                      onPress={() => {
+                        elegirTrailer(trailerSeleccionado);
+                      }}
+                    >
+                      <Text style={styles1.buttonText}>{languageModule.lang(language, 'chooseTrailer')}</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </Modal>
+    );
+  }
+
+  const listadeTrailers = () => {
+    return (
+        <View style={{...styles.container, marginTop: 5}}>
+        <ScrollView>
+        {isLoading ? (
+        <View style={[styles.container, styles.horizontal]}>
+          <ActivityIndicator size="large" color="#4CAF50" />
+        </View>
+      ) : Trailers.length === 0 ? (
+        <Text>{languageModule.lang(language, 'thereisNotrailerSelected')}</Text>
+      ) : (
+        Trailers
+        .map((trailer) => (
+          <TouchableOpacity
+            key={trailer.id}
+            style={{
+                ...styles.vehiculoItem,
+                marginTop: 10,
+                backgroundColor: miTrailer.number === trailer.number && miTrailer.vin === trailer.vin ? "#4CAF50" : "#eee"
+              }}
+            onPress={() => {
+                handleSeleccionarTrailer(trailer);
+              }}
+          >
+            <Text>{languageModule.lang(language, 'trailerNumber') + ":"}</Text>
+            <Text>{trailer?.number}</Text>
+            <Image source={require('../../../assets/images/trailers/trailer.png')} style={styles.vehiculoImagen} />
+          </TouchableOpacity>
+        ))
+      )}
+      </ScrollView>
+        </View>
+    )
+  }
 
   const nuevoTrailerModal = () => {
 
@@ -210,7 +291,9 @@ const elegirRemolque = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
     <StatusBar translucent={false} backgroundColor={Colors.primaryColor} />
     {header()}
+    {listadeTrailers()}
     {nuevoTrailerModal()}
+    {trailerSeleccionadoModal()}
     {showErrorModal && (
         <FloatingMessageError
           message={errorMessages}
