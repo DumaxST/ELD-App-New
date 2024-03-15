@@ -176,5 +176,7 @@
     "vehicleInformation": "Vehicle Information",
     "searchVehicle": "Search Vehicle",
     "goBack": "Go Back",
-    "chooseTrailer": "Choose Trailer"
+    "chooseTrailer": "Choose Trailer",
+    "addTrailer": "Add Trailer",
+    "trailerLicensePlate": "Trailer License Plate"
 }

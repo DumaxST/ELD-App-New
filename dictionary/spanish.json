@@ -174,5 +174,7 @@
     "vehicleInformation": "Información del vehículo",
     "searchVehicle": "Buscar vehículo",
     "goBack": "Regresar",
-    "chooseTrailer": "Elegir remolque"
+    "chooseTrailer": "Elegir remolque",
+    "addTrailer": "Agregar remolque",
+    "trailerLicensePlate": "Placa del remolque"
 }

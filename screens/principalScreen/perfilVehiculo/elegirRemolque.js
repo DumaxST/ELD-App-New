@@ -43,19 +43,139 @@ const elegirRemolque = ({ navigation }) => {
     getPreferredLanguage();
   }, []);
 
+  //funciones de la pantalla
+  const openErrorModal = () => {
+    setShowErrorModal(true); // Muestra el modal
+  };
+
+  const closeErrorModal = () => {
+    setShowErrorModal(false); // Cierra el modal
+    setErrorMessages([]); // Limpia los mensajes de error
+  };
+
   //funciones de renderizado
   const header = () => {
       return (
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <Text style={styles.title}>{languageModule.lang(language, 'chooseTrailer')}</Text>
+          <TouchableOpacity onPress={() => setNewTrailerModal(true)}>   
+                    <MaterialCommunityIcons name="plus" size={30} color={Colors.primaryColor} />
+            </TouchableOpacity>
       </View>
       );
   }  
+
+  const nuevoTrailerModal = () => {
+
+    //Declaracion de variables del modal
+    const [trailerNumber, setTrailerNumber] = useState(''); 
+    const [trailerVIN, setTrailerVIN] = useState('');
+    const [licensePlate, setLicensePlate] = useState('');
+    const [trailerRegistrationPlace, setTrailerRegistrationPlace] = useState('');
+
+    //mandar a redo depende de issue ELD-851
+    const postAddingCMV = async () => {
+        const cmvData = {
+            "company": company,
+            "description": "Vehicle created from mobile app",
+            "trailerPlate": licensePlate,
+            "trailerNumber": trailerNumber,
+            "powerUnitNumber": "123456", // harckodeado no se usa
+            "trailerVin": trailerVIN,
+            "type": {
+                "value": "Trailer",
+                "option": "Trailer"
+            },
+            "base": base,
+            "state": trailerRegistrationPlace,
+        };
+        if(trailerNumber === '' || trailerVIN === '' || licensePlate === '' || trailerRegistrationPlace === ''){
+            setErrorMessages([languageModule.lang(language, 'allFieldsRequired')]);
+            openErrorModal();
+            return;
+        }
+        
+    }
+
+    return (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={newTrailerModal}
+          onRequestClose={() => {
+              setNewTrailerModal(false);
+          }}
+        >
+          <View style={styles1.modalBackground}>
+            <View style={styles1.modalContainer}>
+              <Text style={styles1.modalTitle}>{languageModule.lang(language, 'addTrailer')}</Text>
+              <TextInput
+               style={styles1.input}
+               placeholder={languageModule.lang(language, 'trailerNumber')}
+               onChangeText={text => setTrailerNumber(text)}
+               keyboardType="numeric"
+              />
+              <TextInput
+                style={styles1.input}
+                placeholder="VIN"
+                onChangeText={text => setTrailerVIN(text)}
+              />
+              <TextInput
+                style={styles1.input}
+                placeholder={languageModule.lang(language, 'trailerLicensePlate')}
+                onChangeText={text => setLicensePlate(text)}
+              />
+              <TextInput
+               style={styles1.input}
+               placeholder={languageModule.lang(language, 'trailerRegistrationPlace')}
+               onChangeText={text => {
+                const newText = text.replace(/[0-9a-z]/g, '');
+
+                setTrailerRegistrationPlace(newText);
+              }}
+              value={trailerRegistrationPlace}
+               maxLength={3}
+              />
+              <TouchableOpacity style={styles1.addButton} onPress={postAddingCMV}>
+                <Text style={styles1.buttonText}>{languageModule.lang(language, 'addTrailer')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles1.cancelButton} onPress={() => {setNewTrailerModal(false)}}>
+                <Text style={styles1.buttonText}>{languageModule.lang(language, 'cancel')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      );
+  }
+
+  function FloatingMessageError({ message, onClose }) {
+    return (
+      <Modal visible={true} transparent animationType="fade">
+        <View style={stylesAlert.modalBackground}>
+          <View style={stylesAlert.modalContainer}>
+            <TouchableOpacity onPress={onClose} style={stylesAlert.closeButton}>
+              <Ionicons name="close-circle-outline" size={24} color="white" />
+            </TouchableOpacity>
+            {message.map((message, index) => (
+          <Text key={index} style={stylesAlert.errorMessage}>{message}</Text>
+           ))}
+          </View>
+        </View>
+      </Modal>
+    );
+  }
 
   return(  
     <SafeAreaView style={styles.container}>
     <StatusBar translucent={false} backgroundColor={Colors.primaryColor} />
     {header()}
+    {nuevoTrailerModal()}
+    {showErrorModal && (
+        <FloatingMessageError
+          message={errorMessages}
+          onClose={closeErrorModal} // Función para cerrar el modal
+        />
+      )}
     </SafeAreaView>
   )
 }
