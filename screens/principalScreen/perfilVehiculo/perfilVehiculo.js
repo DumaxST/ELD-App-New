@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {View,Text,TextInput,Image,TouchableOpacity,ScrollView,SafeAreaView,StyleSheet,Dimensions,StatusBar,} from 'react-native';
+import {View,Text,Modal,TextInput,Image,TouchableOpacity,ScrollView,SafeAreaView,StyleSheet,Dimensions,StatusBar,} from 'react-native';
 import { Colors, Fonts, Sizes } from '../../../constants/styles';
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentDriver, currentCMV } from "../../../config/localStorage";
 import { startVehicleMeters } from "../../../redux/actions";
 import { putCMV, getCMVs} from "../../../data/commonQuerys";
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { getCurrentUsers } from "../../../config/localStorage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -22,6 +23,8 @@ const PerfilVehiculo = ({ navigation }) => {
   const [userON, setUserON] = useState('');
   const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState(null);
   const [remolqueSeleccionado, setRemolqueSeleccionado] = useState(null);
+  const [errorMessages, setErrorMessages] = useState([]);
+  const [showErrorModal, setShowErrorModal] = useState(false);
   const [odometer, setodometer] = useState('');  
   const [odometer2, setodometer2] = useState('');
   const [state, setState] = useState({
@@ -94,7 +97,7 @@ const PerfilVehiculo = ({ navigation }) => {
 
   useEffect(() => {
     getVehicles();
-  }, [vehiculos]);
+  }, [vehiculos === null]);
 
   useEffect(() => {
     const getUsers = async () => {
@@ -118,9 +121,22 @@ const PerfilVehiculo = ({ navigation }) => {
       }
   })
   }
+  
+  const openErrorModal = () => {
+    setShowErrorModal(true); // Muestra el modal
+  };
+
+  const closeErrorModal = () => {
+    setShowErrorModal(false); // Cierra el modal
+    setErrorMessages([]); // Limpia los mensajes de error
+  };
 
   const updateCMVProfile = async () => {
-
+    if (odometer !== odometer2 || odometer === "" || odometer2 === "") {
+      setErrorMessages([languageModule.lang(language, 'allFieldsRequired')]);
+      openErrorModal();
+      return;
+    }
     let cmvData = {
       ...vehiculos[0],
       odometroVisual: odometer,
@@ -262,10 +278,30 @@ const PerfilVehiculo = ({ navigation }) => {
         <TextInput
           style={[styles3.input, styles3.rightInput]}
           placeholderTextColor="#888"
+          onChangeText={text => setodometer2(text)}
+          keyboardType="numeric"
         />
       </View>
     </View>
     )
+  }
+
+  
+  function FloatingMessageError({ message, onClose }) {
+    return (
+      <Modal visible={true} transparent animationType="fade">
+        <View style={stylesAlert.modalBackground}>
+          <View style={stylesAlert.modalContainer}>
+            <TouchableOpacity onPress={onClose} style={stylesAlert.closeButton}>
+              <Ionicons name="close-circle-outline" size={24} color="white" />
+            </TouchableOpacity>
+            {message.map((message, index) => (
+          <Text key={index} style={stylesAlert.errorMessage}>{message}</Text>
+           ))}
+          </View>
+        </View>
+      </Modal>
+    );
   }
  
   return (
@@ -296,11 +332,40 @@ const PerfilVehiculo = ({ navigation }) => {
       <TouchableOpacity style={styles.submitButton} onPress={updateCMVProfile}>
         <Text style={styles.submitButtonText}>{languageModule.lang(language, 'save')}</Text>
       </TouchableOpacity>
+      {showErrorModal && (
+        <FloatingMessageError
+          message={errorMessages}
+          onClose={closeErrorModal} // Función para cerrar el modal
+        />
+      )}
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+
+const stylesAlert = StyleSheet.create({
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    backgroundColor: '#cc0b0a',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  closeButton: {
+    alignSelf: 'flex-end',
+  },
+  errorMessage: {
+    color: 'white',
+    marginTop: 8,
+  },
+});
+const 
+styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.whiteColor,
