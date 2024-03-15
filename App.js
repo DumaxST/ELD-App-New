@@ -16,6 +16,7 @@ import AppMenu from './screens/principalScreen/Menu/appMenu';
 import LogBook from './screens/principalScreen/logBook/logBook';
 import Diagnostico from './screens/principalScreen/diagnostico/diagnostico';
 import PerfilVehiculo from './screens/principalScreen/perfilVehiculo/perfilVehiculo';
+import elegirVehiculo from "./screens/principalScreen/perfilVehiculo/elegirVehiculo";
 import Violaciones from './screens/principalScreen/violaciones/violaciones';
 import PerfilConductor from './screens/principalScreen/perfilConductor/perfilConductor';
 import AcercaDelELD from './screens/principalScreen/acercadeELD/acercadeELD';
@@ -59,6 +60,7 @@ const MainStackNavigator = ({ handleLogout }) => (
     <Stack.Screen name="BluetoothScreenReal" component={BluetoothScreenReal} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }} />
     <Stack.Screen name="Diagnostico" component={Diagnostico} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
     <Stack.Screen name="PerfilVehiculo" component={PerfilVehiculo} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
+    <Stack.Screen name="ElegirVehiculo" component={elegirVehiculo} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
     <Stack.Screen name="PrincipalScreen" options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}>
       {props => <DrawerNavigator {...props} handleLogout={handleLogout} />}
     </Stack.Screen>
