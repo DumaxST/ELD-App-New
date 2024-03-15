@@ -207,6 +207,16 @@ const elegirRemolque = ({ navigation }) => {
     )
   }
 
+  const footer = () => {    
+    return (
+        <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.scanButton} onPress={() =>{navigation.navigate('PerfilVehiculo')}}>
+              <Text style={styles.buttonText}>{languageModule.lang(language, 'goBack')}</Text>
+            </TouchableOpacity>
+          </View>
+    );
+  }
+
   const nuevoTrailerModal = () => {
 
     //Declaracion de variables del modal
@@ -313,6 +323,7 @@ const elegirRemolque = ({ navigation }) => {
     {header()}
     {inputBuscarTrailer()}
     {listadeTrailers()}
+    {footer()}
     {nuevoTrailerModal()}
     {trailerSeleccionadoModal()}
     {showErrorModal && (
