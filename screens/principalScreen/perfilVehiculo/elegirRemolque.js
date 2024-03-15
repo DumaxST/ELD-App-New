@@ -43,7 +43,45 @@ const elegirRemolque = ({ navigation }) => {
     getPreferredLanguage();
   }, []);
 
+  useEffect(() => {
+    const getUsers = async () => {
+      try {
+        let users = await getCurrentUsers();
+        const userActive = users.find(user => user.isActive === true);
+        setUserON(userActive);
+        setcompany(userActive?.data?.company);
+        setbase(userActive?.data?.base);
+        setUsers(users);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+      getUsers();
+  }, []);
+
+  useEffect(() => {
+    if(userON) {
+       cargarTrailers();
+    }  
+  }, [userON]);
+
   //funciones de la pantalla
+
+  const cargarTrailers = async () => {
+    //Aqui tienen que ir los Trailers que se cargan desde el API no los cmvs
+    getCMVs(userON?.data?.id, userON?.data?.carrier?.id, userON?.data?.company?.id).then(
+        async (res) => {
+             setVehicles(res);
+             setIsLoading(false);
+        }
+      );
+  }
+
+  const refreshTrailers = async () => {
+    setIsLoading(true);
+    cargarTrailers();
+  }
+
   const openErrorModal = () => {
     setShowErrorModal(true); // Muestra el modal
   };
@@ -58,6 +96,9 @@ const elegirRemolque = ({ navigation }) => {
       return (
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <Text style={styles.title}>{languageModule.lang(language, 'chooseTrailer')}</Text>
+          <TouchableOpacity onPress={refreshTrailers}>   
+                    <MaterialCommunityIcons name="refresh" size={30} color={Colors.primaryColor} />
+            </TouchableOpacity>
           <TouchableOpacity onPress={() => setNewTrailerModal(true)}>   
                     <MaterialCommunityIcons name="plus" size={30} color={Colors.primaryColor} />
             </TouchableOpacity>
