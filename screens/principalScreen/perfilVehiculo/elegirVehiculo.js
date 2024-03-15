@@ -107,7 +107,7 @@ const elegirVehiculo = ({ navigation }) => {
         openErrorModal();
         return;
     }
-    AsyncStorage.setItem('currentCMV', JSON.stringify(vehiculo));
+    AsyncStorage.setItem('currentCMV', JSON.stringify(miVehiculo));
     navigation.navigate('PerfilVehiculo');
   };
 
@@ -347,7 +347,7 @@ const elegirVehiculo = ({ navigation }) => {
     return (
         <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.scanButton} onPress={() =>{navigation.navigate('PerfilVehiculo')}}>
-              <Text style={styles.buttonText}>{languageModule.lang(language, 'goBack').replace('dispositivos', '')}</Text>
+              <Text style={styles.buttonText}>{languageModule.lang(language, 'goBack')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.continueButton} onPress={guardarTodo}>
               <Text style={styles.buttonText}>{languageModule.lang(language, 'save')}</Text>

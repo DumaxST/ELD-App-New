@@ -180,5 +180,6 @@
     "addTrailer": "Add Trailer",
     "trailerLicensePlate": "Trailer License Plate",
     "trailerInformation": "Trailer Information",
-    "searchTrailer": "Search Trailer"
+    "searchTrailer": "Search Trailer",
+    "selectTrailerFirst": "Select a trailer first"
 }

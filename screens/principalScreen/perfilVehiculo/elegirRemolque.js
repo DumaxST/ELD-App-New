@@ -101,6 +101,16 @@ const elegirRemolque = ({ navigation }) => {
     setTrailerSeleccionado(null);
   };
 
+  const guardarTodo = () => {
+    if(miTrailer === '') {
+        setErrorMessages([languageModule.lang(language, 'selectTrailerFirst')]);
+        openErrorModal();
+        return;
+    }
+    AsyncStorage.setItem('currentTrailer', JSON.stringify(miTrailer));
+    navigation.navigate('PerfilVehiculo');
+  };
+
   //funciones de renderizado
   const header = () => {
       return (
@@ -212,6 +222,9 @@ const elegirRemolque = ({ navigation }) => {
         <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.scanButton} onPress={() =>{navigation.navigate('PerfilVehiculo')}}>
               <Text style={styles.buttonText}>{languageModule.lang(language, 'goBack')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.continueButton} onPress={guardarTodo}>
+              <Text style={styles.buttonText}>{languageModule.lang(language, 'save')}</Text>
             </TouchableOpacity>
           </View>
     );
