@@ -6,6 +6,7 @@ import { getCurrentDriver, currentCMV } from "../../../config/localStorage";
 import { startVehicleMeters } from "../../../redux/actions";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { JumpingTransition } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 const languageModule = require('../../../global_functions/variables');
@@ -30,15 +31,7 @@ const PerfilVehiculo = ({ navigation }) => {
       numeroDeDocumentoDeEnvio,
       odometroVisual,
   } = state;
-  const [vehiculos, setVehiculos] = useState([
-    { id: 1, 
-      nombre: 'Vehículo 1',
-      numero: 29, 
-      VIN: "1293FKA102183",
-      licensePlate: "123-ABC",
-      registeredState: "TX",
-      imagen: require('../../../assets/images/trucks/truck3.png') },
-  ]);
+  const [vehiculos, setVehiculos] = useState([]);
 
   const [remolques, setRemolques] = useState([
     { id: 1, 
@@ -93,7 +86,19 @@ const PerfilVehiculo = ({ navigation }) => {
     setData();
   }, []);
 
+  useEffect(() => {
+    getVehicles();
+  }, [vehiculos]);
+
   //funcines de la pantalla
+  const getVehicles = async () => {
+    return await AsyncStorage.getItem("currentCMV").then((currentCMV) => {
+      if (currentCMV) {
+         setVehiculos([JSON.parse(currentCMV)]);
+      }
+  })
+  }
+
   const updateCMVProfile = async () => {
   return await AsyncStorage.setItem("currentCMV", JSON.stringify(state)).then(
     async () => {
@@ -107,7 +112,7 @@ const PerfilVehiculo = ({ navigation }) => {
   };
 
   const handleSeleccionarVehiculo = (vehiculo) => {
-    setVehiculoSeleccionado(vehiculoSeleccionado === vehiculo ? null : vehiculo);
+    setVehiculoSeleccionado(vehiculoSeleccionado?.id === vehiculos[0]?.id ? null : vehiculo);
     setRemolqueSeleccionado(null); // Cerrar la tarjeta del remolque seleccionado
   };
 
@@ -116,9 +121,12 @@ const PerfilVehiculo = ({ navigation }) => {
     setVehiculoSeleccionado(null); // Cerrar la tarjeta del vehículo seleccionado
   };
 
-  const handleEditar = (seleccionado) => {
-    // Implementa la lógica para editar el vehículo seleccionado
-    console.log(`Editar ${seleccionado.nombre}`);
+  const handleEditarV = () => {
+    navigation.navigate('ElegirVehiculo');
+  };
+
+  const handleEditarR = () => { 
+    navigation.navigate('ElegirRemolque');
   };
   
 
@@ -132,13 +140,13 @@ const PerfilVehiculo = ({ navigation }) => {
       {/* Información del vehículo seleccionado */}
       {vehiculoSeleccionado && (
         <View style={styles.infoTarjeta}>
-          <Image source={vehiculoSeleccionado.imagen} style={styles.infoTarjetaImagen} />
-          <Text>{"VIN:" + vehiculoSeleccionado.VIN}</Text>
-          <Text>{languageModule.lang(language, "licensePlate")+ ":" + vehiculoSeleccionado.licensePlate}</Text>
-          <Text>{languageModule.lang(language, "vehicleRegistrationPlace")+ ":" + vehiculoSeleccionado.registeredState}</Text>
+          <Image source={require('../../../assets/images/trucks/truck3.png')} style={styles.infoTarjetaImagen} />
+          <Text>{"VIN: " + vehiculoSeleccionado.vin}</Text>
+          <Text>{languageModule.lang(language, "licensePlate")+ ": " + vehiculoSeleccionado.plate}</Text>
+          <Text>{languageModule.lang(language, "vehicleRegistrationPlace")+ ": " + vehiculoSeleccionado.state}</Text>
           <TouchableOpacity
             style={{...styles.editButton, backgroundColor: 'transparent'}}
-            onPress={() => handleEditar(vehiculoSeleccionado)}
+            onPress={() => handleEditarV()}
           >
             <MaterialIcons  name="edit" size={24} />
           </TouchableOpacity>
@@ -155,13 +163,11 @@ const PerfilVehiculo = ({ navigation }) => {
             style={styles.vehiculoItem}
             onPress={() => {
               handleSeleccionarVehiculo(vehiculo);
-              // Llama a la función selectedTrailer() al seleccionar un vehículo
-              selectedTrailer();
             }}
           >
             <Text>{languageModule.lang(language, 'vehicleNumber') + ":"}</Text>
-            <Text>{vehiculo.numero}</Text>
-            <Image source={vehiculo.imagen} style={styles.vehiculoImagen} />
+            <Text>{vehiculo.number}</Text>
+            <Image source={require('../../../assets/images/trucks/truck3.png')} style={styles.vehiculoImagen} />
           </TouchableOpacity>
         ))
       )}
@@ -182,7 +188,7 @@ const PerfilVehiculo = ({ navigation }) => {
           <Text>{languageModule.lang(language, "trailerRegistrationPlace")+ ": " + remolqueSeleccionado.registeredState}</Text>
           <TouchableOpacity
             style={{...styles.editButton, backgroundColor: 'transparent'}}
-            onPress={() => handleEditar(remolqueSeleccionado)}
+            onPress={() => handleEditarR()}
           >
             <MaterialIcons  name="edit" size={24} />
           </TouchableOpacity>
