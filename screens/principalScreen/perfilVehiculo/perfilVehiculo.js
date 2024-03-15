@@ -4,7 +4,9 @@ import { Colors, Fonts, Sizes } from '../../../constants/styles';
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentDriver, currentCMV } from "../../../config/localStorage";
 import { startVehicleMeters } from "../../../redux/actions";
+import { putCMV, getCMVs} from "../../../data/commonQuerys";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { getCurrentUsers } from "../../../config/localStorage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { JumpingTransition } from 'react-native-reanimated';
 
@@ -16,8 +18,12 @@ const PerfilVehiculo = ({ navigation }) => {
 
   //Declaracion de variables
   const [language, setlanguage] = useState("");
+  const [users, setUsers] = useState('');
+  const [userON, setUserON] = useState('');
   const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState(null);
   const [remolqueSeleccionado, setRemolqueSeleccionado] = useState(null);
+  const [odometer, setodometer] = useState('');  
+  const [odometer2, setodometer2] = useState('');
   const [state, setState] = useState({
     numeroDelCamion: "",
     numeroDelTrailer: "",
@@ -90,6 +96,20 @@ const PerfilVehiculo = ({ navigation }) => {
     getVehicles();
   }, [vehiculos]);
 
+  useEffect(() => {
+    const getUsers = async () => {
+      try {
+        let users = await getCurrentUsers();
+        const userActive = users.find(user => user.isActive === true);
+        setUserON(userActive);
+        setUsers(users);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+      getUsers();
+  }, []);
+
   //funcines de la pantalla
   const getVehicles = async () => {
     return await AsyncStorage.getItem("currentCMV").then((currentCMV) => {
@@ -100,15 +120,25 @@ const PerfilVehiculo = ({ navigation }) => {
   }
 
   const updateCMVProfile = async () => {
-  return await AsyncStorage.setItem("currentCMV", JSON.stringify(state)).then(
-    async () => {
-      dispatch(startVehicleMeters());
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'PrincipalScreen' }],
-      });
+
+    let cmvData = {
+      ...vehiculos[0],
+      odometroVisual: odometer,
     }
-  );
+
+    return await putCMV(userON?.data?.id, userON?.data?.carrier?.id, vehiculos[0]?.id, cmvData).then(async (response) => {
+      if (response) {
+        await AsyncStorage.setItem("currentCMV", JSON.stringify(cmvData)).then(
+          async () => {
+            dispatch(startVehicleMeters());
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'PrincipalScreen' }],
+            });
+          }
+        );
+      }
+    });
   };
 
   const handleSeleccionarVehiculo = (vehiculo) => {
@@ -128,7 +158,7 @@ const PerfilVehiculo = ({ navigation }) => {
   const handleEditarR = () => { 
     navigation.navigate('ElegirRemolque');
   };
-  
+ 
 
  //funciones de renderizado 
 
@@ -223,6 +253,8 @@ const PerfilVehiculo = ({ navigation }) => {
         <TextInput
           style={[styles3.input, styles3.leftInput]}
           placeholderTextColor="#888"
+          onChangeText={text => setodometer(text)}
+          keyboardType="numeric"
         />
       </View>
       <View style={styles3.inputContainer}>
