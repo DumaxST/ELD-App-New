@@ -14,7 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const { width } = Dimensions.get('window');
 const languageModule = require('../../../global_functions/variables');
 
-const elegirRemolque = ({ navigation }) => {
+const ElegirRemolque = ({ navigation }) => {
   //declaracion de variables
   const [language, setlanguage] = useState('');
   const [users, setUsers] = useState('');
@@ -557,4 +557,4 @@ const styles1 = StyleSheet.create({
 });
 
 
-export default elegirRemolque;
+export default ElegirRemolque;
