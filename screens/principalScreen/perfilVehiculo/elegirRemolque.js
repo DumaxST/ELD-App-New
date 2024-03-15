@@ -152,6 +152,20 @@ const elegirRemolque = ({ navigation }) => {
     );
   }
 
+  const inputBuscarTrailer = () => {
+    return (
+        <View style={{...styles.inputContainer, marginTop: 20}}>
+        <TextInput
+            style={styles.input}
+            placeholder={languageModule.lang(language, 'searchTrailer')}
+            onChangeText={(text) => {
+                setBuscarTrailer(text);
+            }}
+        />
+        </View>
+    );
+  }
+
   const listadeTrailers = () => {
     return (
         <View style={{...styles.container, marginTop: 5}}>
@@ -164,6 +178,12 @@ const elegirRemolque = ({ navigation }) => {
         <Text>{languageModule.lang(language, 'thereisNotrailerSelected')}</Text>
       ) : (
         Trailers
+        .filter(trailer => 
+            trailer.number.includes(buscarTrailer) ||
+            trailer.vin.includes(buscarTrailer) ||
+            trailer.plate.includes(buscarTrailer) ||
+            trailer.state.includes(buscarTrailer)
+        )
         .map((trailer) => (
           <TouchableOpacity
             key={trailer.id}
@@ -291,6 +311,7 @@ const elegirRemolque = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
     <StatusBar translucent={false} backgroundColor={Colors.primaryColor} />
     {header()}
+    {inputBuscarTrailer()}
     {listadeTrailers()}
     {nuevoTrailerModal()}
     {trailerSeleccionadoModal()}
