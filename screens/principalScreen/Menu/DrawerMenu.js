@@ -285,6 +285,13 @@ const DrawerMenu = ({ navigation, handleLogout }) => {
         </TouchableOpacity>
         <TouchableOpacity
          style={{...styles.menuItem, flexDirection: 'row', alignItems: 'center'}}
+         onPress={() => navigation.navigate('Inspecciones')}
+        >
+        <Ionicons name="newspaper" size={18} color="#4CAF50" style={styles.icon} />
+        <Text style={styles.menuItemText}>{languageModule.lang(language, 'inspectionsReport')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+         style={{...styles.menuItem, flexDirection: 'row', alignItems: 'center'}}
         onPress={() => navigation.navigate('CertificacionELD')}
         >
         <Ionicons name="lock-closed" size={18} color="#4CAF50" style={styles.icon} />
