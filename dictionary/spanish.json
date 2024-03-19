@@ -156,5 +156,9 @@
     "timeZone": "Zona horaria",
     "errorConexionELDDevice": "Error de conexión con el dispositivo ELD, por favor verifica la informacion del dispositivo o intenta nuevamente",
     "errorTryingToConnect": "Error al intentar conectarse, por favor intenta nuevamente",
-    "inspectionsReport": "Reporte de inspecciones"
+    "inspectionsReport": "Reporte de inspecciones",
+    "vehicleNumber": "Número de vehículo",
+    "inspectionType": "Tipo de inspección",
+    "inspectionDate": "Fecha de inspección",
+    "actions": "Acciones"
 }

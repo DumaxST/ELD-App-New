@@ -280,7 +280,7 @@ const DrawerMenu = ({ navigation, handleLogout }) => {
          style={{...styles.menuItem, flexDirection: 'row', alignItems: 'center'}}
          onPress={() => navigation.navigate('Anotaciones')}
         >
-        <Ionicons name="newspaper" size={18} color="#4CAF50" style={styles.icon} />
+        <Ionicons name="pencil" size={18} color="#4CAF50" style={styles.icon} />
         <Text style={styles.menuItemText}>{languageModule.lang(language, 'annotations')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
