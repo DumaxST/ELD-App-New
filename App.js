@@ -17,6 +17,7 @@ import LogBook from './screens/principalScreen/logBook/logBook';
 import Diagnostico from './screens/principalScreen/diagnostico/diagnostico';
 import PerfilVehiculo from './screens/principalScreen/perfilVehiculo/perfilVehiculo';
 import Inspecciones from './screens/principalScreen/inspecciones/inspecciones';
+import Regulaciones from './screens/principalScreen/inspecciones/regulaciones';
 import Violaciones from './screens/principalScreen/violaciones/violaciones';
 import PerfilConductor from './screens/principalScreen/perfilConductor/perfilConductor';
 import AcercaDelELD from './screens/principalScreen/acercadeELD/acercadeELD';
@@ -66,6 +67,7 @@ const MainStackNavigator = ({ handleLogout }) => (
     <Stack.Screen name="LogBook" component={LogBook} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
     <Stack.Screen name="Violaciones" component={Violaciones} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
     <Stack.Screen name="Inspecciones" component={Inspecciones} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
+    <Stack.Screen name="Regulaciones" component={Regulaciones} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
     <Stack.Screen name="PerfilConductor" component={PerfilConductor} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
     <Stack.Screen name="AcercaDelELD" component={AcercaDelELD} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>
     <Stack.Screen name="Anotaciones" component={Anotaciones} options={{ drawerLabel: null, drawerIcon: null, headerShown: false }}/>

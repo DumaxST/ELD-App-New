@@ -102,7 +102,7 @@ const Inspecciones = ({ navigation }) => {
             </View>
         )}
         {/* Add button */}
-        <TouchableOpacity style={styles.addButton} disabled={isLoading}>
+        <TouchableOpacity style={styles.addButton} disabled={isLoading} onPress={() => {navigation.navigate('Regulaciones')}}>
         {isLoading ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (

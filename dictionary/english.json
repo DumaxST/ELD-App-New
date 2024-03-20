@@ -162,5 +162,10 @@
     "vehicleNumber": "Vehicle Number",
     "inspectionType": "Inspection Type",
     "inspectionDate": "Inspection Date",
-    "actions": "Actions"
+    "actions": "Actions",
+    "selectRegulationofVehicleInspection": "Select the regulation of the vehicle inspection",
+    "selectAinspector": "Select a inspector",
+    "selectAformType": "Select a form type",
+    "selectTemplateForm": "Select a template form",
+    "goBack": "Go Back"
 }
