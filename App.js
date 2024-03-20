@@ -15,7 +15,7 @@ import PrincipalScreen from './screens/principalScreen/principalScreen';
 import AppMenu from './screens/principalScreen/Menu/appMenu';
 import LogBook from './screens/principalScreen/logBook/logBook';
 import Diagnostico from './screens/principalScreen/diagnostico/diagnostico';
-import PerfilVehiculo from './screens/principalScreen/perfilVehiculo/perfilVehiculo';
+import PerfilVehiculo from './screens/principalScreen/perfilVehiculo/elegirVehiculo';
 import Violaciones from './screens/principalScreen/violaciones/violaciones';
 import PerfilConductor from './screens/principalScreen/perfilConductor/perfilConductor';
 import AcercaDelELD from './screens/principalScreen/acercadeELD/acercadeELD';

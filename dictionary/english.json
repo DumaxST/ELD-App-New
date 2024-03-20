@@ -157,5 +157,20 @@
     "advContinuePersonal": "You are in personal use. Do you want to continue using it?",
     "timeZone": "Time Zone",
     "errorConexionELDDevice": "Error in the connection with the ELD device, please check the eld information or try again",
-    "errorTryingToConnect": "Error trying to connect to the device, please try again"
+    "errorTryingToConnect": "Error trying to connect to the device, please try again",
+    "selectVehicle": "Select Vehicle",
+    "selectTrailer": "Select Trailer",
+    "selectedVehicle": "Selected Vehicle",
+    "vehicleNumber": "Vehicle Number",
+    "licensePlate": "License Plate",
+    "vehicleRegistrationPlace": "Vehicle Registration Place",
+    "thereisNovehicleSelected": "There is no vehicle selected",
+    "thereisNotrailerSelected": "There is no trailer selected",
+    "trailerRegistrationPlace": "Trailer Registration Place",
+    "selectedTrailer": "Selected Trailer",
+    "reWrite": "Re-Write",
+    "chooseVehicle": "Choose Vehicle",
+    "addVehicle": "Add Vehicle",
+    "fuelType": "Fuel Type",
+    "allFieldsRequired": "All fields are required"
 }
