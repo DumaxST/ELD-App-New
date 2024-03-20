@@ -165,5 +165,20 @@
     "selectAinspector": "Selecciona un inspector",
     "selectAformType": "Selecciona un tipo de formulario",
     "selectTemplateForm": "Selecciona una plantilla de formulario",
-    "goBack": "Regresar"
+    "goBack": "Regresar",
+    "selectVehicle": "Selecciona un vehículo",
+    "selectTrailer": "Selecciona un remolque",
+    "selectedVehicle": "Vehículo seleccionado",
+    "vehicleNumber": "Número de vehículo",
+    "licensePlate": "Placa",
+    "vehicleRegistrationPlace": "Lugar de registro del vehículo",
+    "thereisNovehicleSelected": "No hay vehículo seleccionado",
+    "thereisNotrailerSelected": "No hay remolque seleccionado",
+    "trailerRegistrationPlace": "Lugar de registro del remolque",
+    "selectedTrailer": "Remolque seleccionado",
+    "reWrite": "Reescribir",
+    "chooseVehicle": "Elegir vehículo",
+    "addVehicle": "Agregar vehículo",
+    "fuelType": "Tipo de combustible",
+    "allFieldsRequired": "Todos los campos son requeridos"
 }
