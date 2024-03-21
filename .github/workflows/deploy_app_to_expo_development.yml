@@ -1,4 +1,4 @@
-name: Deploy APP to EXPO DEVELOPMENT CHANNEL
+name: Deploy APP to EXPO DEVELOPMENT
 on: 
     pull_request_review:
       types: [submitted]
