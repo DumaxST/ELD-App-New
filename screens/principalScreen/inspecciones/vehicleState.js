@@ -232,7 +232,7 @@ const VehicleState = ({ navigation }) => {
             {/* Botones */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20}}>
               <Button icon={() => <Icon name="keyboard-arrow-left" size={20} />} mode="outlined" style={{ borderColor: '#333', width: '45%' }} onPress={() => {navigation.navigate('Regulaciones')}}>{languageModule.lang(language, 'goBack')}</Button>
-              <Button icon={() => <Icon name="keyboard-arrow-right" size={20} />} mode="contained" style={{ backgroundColor: '#0f9d58', width: '45%' }} onPress={() => {navigation.navigate('VehicleState')}}>{languageModule.lang(language, 'continue')}</Button>
+              <Button icon={() => <Icon name="keyboard-arrow-right" size={20} />} mode="contained" style={{ backgroundColor: '#0f9d58', width: '45%' }} onPress={() => {navigation.navigate('Observaciones')}}>{languageModule.lang(language, 'continue')}</Button>
             </View>
             </View>
         );

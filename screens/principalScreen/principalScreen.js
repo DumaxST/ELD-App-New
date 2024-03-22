@@ -65,7 +65,8 @@ const PrincipalScreen = ({ navigation }) => {
     hasRun.current = true;
     }
   }, [userON]);
-const personalhasRun = useRef(false);
+
+  const personalhasRun = useRef(false);
   useEffect(() => {
     const getLastEvent = async () => {
       let lastevent = await AsyncStorage.getItem("lastPCorYM");

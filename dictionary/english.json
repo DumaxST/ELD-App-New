@@ -215,5 +215,7 @@
     "wheelsAndRims": "Wheels and Rims",
     "windshieldWipers": "Windshield Wipers",
     "windows": "Windows",
-    "otherDefects": "Other Defects"
+    "otherDefects": "Other Defects",
+    "addObservations": "Add Observations or Comments to the inspection",
+    "writeObservations": "Write Observations..."
 }

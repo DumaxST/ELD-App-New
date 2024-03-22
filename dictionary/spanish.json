@@ -213,5 +213,7 @@
     "wheelsAndRims": "Ruedas y aros",
     "windshieldWipers": "Limpiaparabrisas",
     "windows": "Ventanas",
-    "otherDefects": "Otros"
+    "otherDefects": "Otros",
+    "addObservations": "Agrega observaciones adicionales al reporte",
+    "writeObservations": "Escribe aquí tus observaciones..."
 }
