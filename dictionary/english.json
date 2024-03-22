@@ -215,5 +215,20 @@
     "wheelsAndRims": "Wheels and Rims",
     "windshieldWipers": "Windshield Wipers",
     "windows": "Windows",
-    "otherDefects": "Other Defects"
+    "otherDefects": "Other Defects",
+    "selectVehicle": "Select Vehicle",
+    "selectTrailer": "Select Trailer",
+    "selectedVehicle": "Selected Vehicle",
+    "vehicleNumber": "Vehicle Number",
+    "licensePlate": "License Plate",
+    "vehicleRegistrationPlace": "Vehicle Registration Place",
+    "thereisNovehicleSelected": "There is no vehicle selected",
+    "thereisNotrailerSelected": "There is no trailer selected",
+    "trailerRegistrationPlace": "Trailer Registration Place",
+    "selectedTrailer": "Selected Trailer",
+    "reWrite": "Re-Write",
+    "chooseVehicle": "Choose Vehicle",
+    "addVehicle": "Add Vehicle",
+    "fuelType": "Fuel Type",
+    "allFieldsRequired": "All fields are required"
 }
