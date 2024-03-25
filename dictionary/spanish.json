@@ -215,5 +215,6 @@
     "windows": "Ventanas",
     "otherDefects": "Otros",
     "addObservations": "Agrega observaciones adicionales al reporte",
-    "writeObservations": "Escribe aquí tus observaciones..."
+    "writeObservations": "Escribe aquí tus observaciones...",
+    "takeAphotoOfYourEvidence": "Toma una foto de tu evidencia"
 }

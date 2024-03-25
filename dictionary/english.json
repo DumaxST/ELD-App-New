@@ -217,5 +217,6 @@
     "windows": "Windows",
     "otherDefects": "Other Defects",
     "addObservations": "Add Observations or Comments to the inspection",
-    "writeObservations": "Write Observations..."
+    "writeObservations": "Write Observations...",
+    "takeAphotoOfYourEvidence": "Take a photo of your evidence"
 }

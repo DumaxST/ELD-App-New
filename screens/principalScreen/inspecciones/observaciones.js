@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {setKey,setDefaults,setLanguage,setRegion,fromAddress,fromLatLng,fromPlaceId,setLocationType,geocode,RequestType,} from "react-geocode";
 import { Button, Checkbox } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { checkAndRequestCameraPermission } from './constructor';
 
 const Observaciones = ({navigation}) => {
 
@@ -102,6 +103,20 @@ const Observaciones = ({navigation}) => {
         }
     };
 
+    const nextPage = async () => {
+      let granted = await checkAndRequestCameraPermission();
+      while (!granted) {
+        granted = await checkAndRequestCameraPermission();
+      }
+
+      if (granted) {
+        console.log('Los permisos se concedieron');    
+        navigation.navigate('Camara');
+      } else {
+        console.log('Los permisos no se concedieron');
+      }
+    }
+
     //funcion de renderizado
     
     const footer = () => {
@@ -110,7 +125,7 @@ const Observaciones = ({navigation}) => {
             {/* Botones */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20}}>
               <Button icon={() => <Icon name="keyboard-arrow-left" size={20} />} mode="outlined" style={{ borderColor: '#333', width: '45%' }} onPress={() => {navigation.navigate('VehicleState')}}>{languageModule.lang(language, 'goBack')}</Button>
-              <Button icon={() => <Icon name="keyboard-arrow-right" size={20} />} mode="contained" style={{ backgroundColor: '#0f9d58', width: '45%' }} onPress={() => {navigation.navigate('Observaciones')}}>{languageModule.lang(language, 'continue')}</Button>
+              <Button icon={() => <Icon name="keyboard-arrow-right" size={20} />} mode="contained" style={{ backgroundColor: '#0f9d58', width: '45%' }} onPress={nextPage}>{languageModule.lang(language, 'continue')}</Button>
             </View>
             </View>
         );
