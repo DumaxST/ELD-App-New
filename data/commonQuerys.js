@@ -132,12 +132,6 @@ export const pendingCertifyDriverEvents = async (eldID, driverID, carrierID) => 
 //*-----------------START-PerfilConductor----------------------------------*//
 
 export const postCMV = async (userID, carrierID,cmv) => {
-  console.log({
-    lang: "Eng",
-    userID: userID,
-    carrierID: carrierID,
-    cmv: cmv
-  })
   return await postAxios("/api/carrier/cmv", {
     lang: "Eng",
     userID: userID,
@@ -149,6 +143,19 @@ export const postCMV = async (userID, carrierID,cmv) => {
     console.error("authDriver", err);
   });
 }
+
+export const getCMVs = async (userID, carrierID, companyID) => {
+  return await getAxios("/api/carrier/cmvs", {
+    userID: userID,
+    carrierID: carrierID,
+    companyID: companyID
+  }).then((res) =>{
+    return res
+  }).catch((err) => {
+    console.error("getCMVs", err);
+  });
+}
+  
 
 //*-----------------FINISH-PerfilConductor----------------------------------*//
 

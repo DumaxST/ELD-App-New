@@ -172,5 +172,14 @@
     "chooseVehicle": "Choose Vehicle",
     "addVehicle": "Add Vehicle",
     "fuelType": "Fuel Type",
-    "allFieldsRequired": "All fields are required"
+    "allFieldsRequired": "All fields are required",
+    "vehicleInformation": "Vehicle Information",
+    "searchVehicle": "Search Vehicle",
+    "goBack": "Go Back",
+    "chooseTrailer": "Choose Trailer",
+    "addTrailer": "Add Trailer",
+    "trailerLicensePlate": "Trailer License Plate",
+    "trailerInformation": "Trailer Information",
+    "searchTrailer": "Search Trailer",
+    "selectTrailerFirst": "Select a trailer first"
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {View,Text,TextInput,Image,TouchableOpacity,ScrollView,SafeAreaView,StyleSheet,Dimensions,StatusBar,} from 'react-native';
+import {View,Text,TextInput,Image,TouchableOpacity,ScrollView,SafeAreaView,StyleSheet,Dimensions,StatusBar,} from 'react-native';
 import { Colors, Fonts, Sizes } from '../../../constants/styles';
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentDriver, currentCMV } from "../../../config/localStorage";
@@ -236,7 +237,7 @@ const PerfilVehiculo = ({ navigation }) => {
       <Text style={styles.title}>{languageModule.lang(language, 'vehicleProfile')}</Text>
       <ScrollView >
       <View style={styles2.buttonContainer}>
-        <TouchableOpacity style={styles2.button}>
+        <TouchableOpacity onPress={() => {navigation.navigate('ElegirVehiculo')}} style={styles2.button}>
           <Image
             source={require('../../../assets/images/trucks/truck3.png')}
             style={styles2.buttonImage}

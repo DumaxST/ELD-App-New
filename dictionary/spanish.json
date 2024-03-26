@@ -170,5 +170,14 @@
     "chooseVehicle": "Elegir vehículo",
     "addVehicle": "Agregar vehículo",
     "fuelType": "Tipo de combustible",
-    "allFieldsRequired": "Todos los campos son requeridos"
+    "allFieldsRequired": "Todos los campos son requeridos",
+    "vehicleInformation": "Información del vehículo",
+    "searchVehicle": "Buscar vehículo",
+    "goBack": "Regresar",
+    "chooseTrailer": "Elegir remolque",
+    "addTrailer": "Agregar remolque",
+    "trailerLicensePlate": "Placa del remolque",
+    "trailerInformation": "Información del remolque",
+    "searchTrailer": "Buscar remolque",
+    "selectTrailerFirst": "Selecciona un remolque"
 }

@@ -14,8 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const { width } = Dimensions.get('window');
 const languageModule = require('../../../global_functions/variables');
 
-const ElegirVehiculo = ({ navigation }) => {  
-
+const elegirRemolque = ({ navigation }) => {
   //declaracion de variables
   const [language, setlanguage] = useState('');
   const [users, setUsers] = useState('');
@@ -25,14 +24,13 @@ const ElegirVehiculo = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessages, setErrorMessages] = useState([]);
   const [showErrorModal, setShowErrorModal] = useState(false);
-  const [newVehicleModal, setNewVehicleModal] = useState(false);
-  const [vehicles, setVehicles] = useState([]);
-  const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState(null);
-  const [miVehiculo, setmiVehiculo] = useState('');
-  const [buscarVehiculo ,setBuscarVehiculo] = useState('');
-  
-  //Uso de efectos de inicio del screen
-  //Aqui obtenemos el idioma seleccionado desde la primera pantalla
+  const [newTrailerModal, setNewTrailerModal] = useState(false);
+  const [Trailers, setTrailers] = useState([]);
+  const [trailerSeleccionado, setTrailerSeleccionado] = useState(null);
+  const [miTrailer, setmiTrailer] = useState('');
+  const [buscarTrailer ,setBuscarTrailer] = useState('');
+
+  //efectos de la pantalla
   useEffect(() => {
     const getPreferredLanguage = async () => {
        try {
@@ -63,23 +61,25 @@ const ElegirVehiculo = ({ navigation }) => {
 
   useEffect(() => {
     if(userON) {
-       cargarVehiculos();
+       cargarTrailers();
     }  
   }, [userON]);
 
   //funciones de la pantalla
-  const cargarVehiculos = async () => {
+
+  const cargarTrailers = async () => {
+    //Aqui tienen que ir los Trailers que se cargan desde el API no los cmvs
     getCMVs(userON?.data?.id, userON?.data?.carrier?.id, userON?.data?.company?.id).then(
         async (res) => {
-             setVehicles(res);
+             setTrailers(res);
              setIsLoading(false);
         }
       );
   }
 
-  const refreshVehicles = async () => {
+  const refreshTrailers = async () => {
     setIsLoading(true);
-    cargarVehiculos();
+    cargarTrailers();
   }
 
   const openErrorModal = () => {
@@ -91,196 +91,70 @@ const ElegirVehiculo = ({ navigation }) => {
     setErrorMessages([]); // Limpia los mensajes de error
   };
 
-  const handleSeleccionarVehiculo = (vehiculo) => {
-    setVehiculoSeleccionado(vehiculoSeleccionado === vehiculo ? null : vehiculo);
+  const handleSeleccionarTrailer = (trailer) => {
+    setTrailerSeleccionado(trailerSeleccionado === trailer ? null : trailer);
   };
 
-  const elegirVehiculo = (vehiculo) => {
-    AsyncStorage.setItem('currentCMV', JSON.stringify(vehiculo));
-    setmiVehiculo(vehiculo);
-    setVehiculoSeleccionado(null);
+  const elegirTrailer = (trailer) => {
+    AsyncStorage.setItem('currentTrailer', JSON.stringify(trailer));
+    setmiTrailer(trailer);
+    setTrailerSeleccionado(null);
   };
 
   const guardarTodo = () => {
-    if(miVehiculo === '') {
-        setErrorMessages([languageModule.lang(language, 'selectVehicle')]);
+    if(miTrailer === '') {
+        setErrorMessages([languageModule.lang(language, 'selectTrailerFirst')]);
         openErrorModal();
         return;
     }
-    AsyncStorage.setItem('currentCMV', JSON.stringify(miVehiculo));
+    AsyncStorage.setItem('currentTrailer', JSON.stringify(miTrailer));
     navigation.navigate('PerfilVehiculo');
   };
 
-
   //funciones de renderizado
   const header = () => {
-        return (
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={styles.title}>{languageModule.lang(language, 'chooseVehicle')}</Text>
-            <TouchableOpacity onPress={refreshVehicles}>   
+      return (
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={styles.title}>{languageModule.lang(language, 'chooseTrailer')}</Text>
+          <TouchableOpacity onPress={refreshTrailers}>   
                     <MaterialCommunityIcons name="refresh" size={30} color={Colors.primaryColor} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setNewVehicleModal(true)}>   
+          <TouchableOpacity onPress={() => setNewTrailerModal(true)}>   
                     <MaterialCommunityIcons name="plus" size={30} color={Colors.primaryColor} />
             </TouchableOpacity>
-        </View>
-        );
+      </View>
+      );
   }  
 
-  const nuevoVehiculoModal = () => {
-
-    //Declaracion de variables del modal
-    const [vehicleNumber, setVehicleNumber] = useState(''); 
-    const [VIN, setVIN] = useState('');
-    const [licensePlate, setLicensePlate] = useState('');
-    const [fuelTypes, setFuelTypes] = useState( [
-        {  value: 'Diesel' },
-        {  value: 'Gasoline'},
-        {  value: 'Natural Gas'},
-        {  value: 'Propane'}
-      ]); 
-    const [fuelType, setFuelType] = useState('');
-    const [vehicleRegistrationPlace, setVehicleRegistrationPlace] = useState('');
-
-    const postAddingCMV = async () => {
-        const cmvData = {
-            "company": company,
-            "description": "Vehicle created from mobile app",
-            "plate": licensePlate,
-            "number": vehicleNumber,
-            "powerUnitNumber": "123456", // harckodeado no se usa
-            "vin": VIN,
-            "gasType": {
-                "value": fuelType,
-                "option": fuelType
-            },
-            "type": {
-                "value": "Truck",
-                "option": "Truck"
-            },
-            "base": base,
-            "state": vehicleRegistrationPlace,
-        };
-        if(cmvData.plate === '' || cmvData.trailerNumber === '' || cmvData.vin === '' || cmvData.gasType.value === '' || cmvData.state === '') {
-            setErrorMessages([languageModule.lang(language, 'allFieldsRequired')]);
-            openErrorModal();
-            return;
-        }
-        
-        return await postCMV(userON?.data?.id, userON?.data?.carrier?.id,cmvData).then(
-            async (res) => {
-                if (res.status === 200) {
-                    setNewVehicleModal(false);
-                } else {
-                    const data = await res.json();
-                    setErrorMessages([data.message]);
-                    openErrorModal();
-                }
-        });
-    }
-
-    return (
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={newVehicleModal}
-          onRequestClose={() => {
-              setNewVehicleModal(false);
-          }}
-        >
-          <View style={styles1.modalBackground}>
-            <View style={styles1.modalContainer}>
-              <Text style={styles1.modalTitle}>{languageModule.lang(language, 'addVehicle')}</Text>
-              <TextInput
-               style={styles1.input}
-               placeholder={languageModule.lang(language, 'vehicleNumber')}
-               onChangeText={text => setVehicleNumber(text)}
-               keyboardType="numeric"
-              />
-              <TextInput
-                style={styles1.input}
-                placeholder="VIN"
-                onChangeText={text => setVIN(text)}
-              />
-              <TextInput
-                style={styles1.input}
-                placeholder={languageModule.lang(language, 'licensePlate')}
-                onChangeText={text => setLicensePlate(text)}
-              />
-              <TextInput
-               style={styles1.input}
-               placeholder={languageModule.lang(language, 'vehicleRegistrationPlace')}
-               onChangeText={text => {
-                const newText = text.replace(/[0-9a-z]/g, '');
-
-                setVehicleRegistrationPlace(newText);
-              }}
-              value={vehicleRegistrationPlace}
-               maxLength={3}
-              />
-              <SelectDropdown
-              buttonTextStyle={{fontSize: 14}}
-              buttonStyle={{width: '93%',
-              height: 35,
-              backgroundColor: '#FFF',
-              borderRadius: 8,
-              borderWidth: 1,
-              borderColor: '#ddd'}}
-              defaultButtonText={languageModule.lang(language,'fuelType')}
-              data={fuelTypes}
-              onSelect={(selectedItem, index) => {
-                console.log(selectedItem, index);
-                setFuelType(selectedItem.value);
-              }}
-              buttonTextAfterSelection={(selectedItem, index) => {
-                return selectedItem.value;
-              }}
-              rowTextForSelection={(item, index) => {
-              return item.value;
-              }}
-              />
-              <TouchableOpacity style={styles1.addButton} onPress={postAddingCMV}>
-                <Text style={styles1.buttonText}>{languageModule.lang(language, 'addVehicle')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles1.cancelButton} onPress={() => {setNewVehicleModal(false)}}>
-                <Text style={styles1.buttonText}>{languageModule.lang(language, 'cancel')}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-      );
-  }
-
-  const vehiculoSeleccionadoModal = () => { 
+  const trailerSeleccionadoModal = () => { 
     return (
         <Modal
             animationType="slide"
             transparent={true}
-            visible={vehiculoSeleccionado !== null}
+            visible={trailerSeleccionado !== null}
             onRequestClose={() => {
-                setVehiculoSeleccionado(null);
+                setTrailerSeleccionado(null);
             }}
         >
             <View style={styles1.modalBackground}>
                 <View style={styles1.modalContainer}>
-                    <Text style={styles1.modalTitle}>{languageModule.lang(language, 'vehicleInformation')}</Text>
-                    <TouchableOpacity onPress={() => {setVehiculoSeleccionado(null)}} style={{...stylesAlert.closeButton, marginTop: -40}}>
+                    <Text style={styles1.modalTitle}>{languageModule.lang(language, 'trailerInformation')}</Text>
+                    <TouchableOpacity onPress={() => {setTrailerSeleccionado(null)}} style={{...stylesAlert.closeButton, marginTop: -40, marginRight: -10}}>
                     <Ionicons name="close-circle-outline" size={24} color="black" />
                     </TouchableOpacity>
                     <View style={styles.infoTarjeta}>
-                        <Image source={require('../../../assets/images/trucks/truck3.png')} style={styles.infoTarjetaImagen} />
-                        <Text>{languageModule.lang(language, 'vehicleNumber') + ": " + vehiculoSeleccionado?.number}</Text>
-                        <Text>{languageModule.lang(language, 'licensePlate') + ": " + vehiculoSeleccionado?.plate}</Text>
-                        <Text>{languageModule.lang(language, 'fuelType') + ": " + vehiculoSeleccionado?.gasType?.value}</Text>
-                        <Text>{languageModule.lang(language, 'vehicleRegistrationPlace') + ": " + vehiculoSeleccionado?.state}</Text>
+                        <Image source={require('../../../assets/images/trailers/trailer.png')} style={styles.infoTarjetaImagen} />
+                        <Text>{languageModule.lang(language, 'trailerNumber') + ": " + trailerSeleccionado?.number}</Text>
+                        <Text>{languageModule.lang(language, 'licensePlate') + ": " + trailerSeleccionado?.plate}</Text>
+                        <Text>{languageModule.lang(language, 'trailerRegistrationPlace') + ": " + trailerSeleccionado?.state}</Text>
                     </View>
                     <TouchableOpacity
                       style={styles1.centeredButton}
                       onPress={() => {
-                        elegirVehiculo(vehiculoSeleccionado);
+                        elegirTrailer(trailerSeleccionado);
                       }}
                     >
-                      <Text style={styles1.buttonText}>{languageModule.lang(language, 'chooseVehicle')}</Text>
+                      <Text style={styles1.buttonText}>{languageModule.lang(language, 'chooseTrailer')}</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -288,21 +162,21 @@ const ElegirVehiculo = ({ navigation }) => {
     );
   }
 
-  const inputBuscarVehiculo = () => {
+  const inputBuscarTrailer = () => {
     return (
         <View style={{...styles.inputContainer, marginTop: 20}}>
         <TextInput
             style={styles.input}
-            placeholder={languageModule.lang(language, 'searchVehicle')}
+            placeholder={languageModule.lang(language, 'searchTrailer')}
             onChangeText={(text) => {
-                setBuscarVehiculo(text);
+                setBuscarTrailer(text);
             }}
         />
         </View>
     );
   }
 
-  const listaDeVehiculos = () => {
+  const listadeTrailers = () => {
     return (
         <View style={{...styles.container, marginTop: 5}}>
         <ScrollView>
@@ -310,31 +184,31 @@ const ElegirVehiculo = ({ navigation }) => {
         <View style={[styles.container, styles.horizontal]}>
           <ActivityIndicator size="large" color="#4CAF50" />
         </View>
-      ) : vehicles.length === 0 ? (
-        <Text>{languageModule.lang(language, 'thereisNovehicleSelected')}</Text>
+      ) : Trailers.length === 0 ? (
+        <Text>{languageModule.lang(language, 'thereisNotrailerSelected')}</Text>
       ) : (
-        vehicles
-        .filter(vehiculo => 
-            vehiculo.number.includes(buscarVehiculo) ||
-            vehiculo.vin.includes(buscarVehiculo) ||
-            vehiculo.plate.includes(buscarVehiculo) ||
-            vehiculo.state.includes(buscarVehiculo)
+        Trailers
+        .filter(trailer => 
+            trailer.number.includes(buscarTrailer) ||
+            trailer.vin.includes(buscarTrailer) ||
+            trailer.plate.includes(buscarTrailer) ||
+            trailer.state.includes(buscarTrailer)
         )
-        .map((vehiculo) => (
+        .map((trailer) => (
           <TouchableOpacity
-            key={vehiculo.id}
+            key={trailer.id}
             style={{
                 ...styles.vehiculoItem,
                 marginTop: 10,
-                backgroundColor: miVehiculo.number === vehiculo.number && miVehiculo.vin === vehiculo.vin ? "#4CAF50" : "#eee"
+                backgroundColor: miTrailer.number === trailer.number && miTrailer.vin === trailer.vin ? "#4CAF50" : "#eee"
               }}
             onPress={() => {
-                handleSeleccionarVehiculo(vehiculo);
+                handleSeleccionarTrailer(trailer);
               }}
           >
-            <Text>{languageModule.lang(language, 'vehicleNumber') + ":"}</Text>
-            <Text>{vehiculo?.number}</Text>
-            <Image source={require('../../../assets/images/trucks/truck3.png')} style={styles.vehiculoImagen} />
+            <Text>{languageModule.lang(language, 'trailerNumber') + ":"}</Text>
+            <Text>{trailer?.number}</Text>
+            <Image source={require('../../../assets/images/trailers/trailer.png')} style={styles.vehiculoImagen} />
           </TouchableOpacity>
         ))
       )}
@@ -356,6 +230,89 @@ const ElegirVehiculo = ({ navigation }) => {
     );
   }
 
+  const nuevoTrailerModal = () => {
+
+    //Declaracion de variables del modal
+    const [trailerNumber, setTrailerNumber] = useState(''); 
+    const [trailerVIN, setTrailerVIN] = useState('');
+    const [licensePlate, setLicensePlate] = useState('');
+    const [trailerRegistrationPlace, setTrailerRegistrationPlace] = useState('');
+
+    //mandar a redo depende de issue ELD-851
+    const postAddingCMV = async () => {
+        const cmvData = {
+            "company": company,
+            "description": "Vehicle created from mobile app",
+            "trailerPlate": licensePlate,
+            "trailerNumber": trailerNumber,
+            "powerUnitNumber": "123456", // harckodeado no se usa
+            "trailerVin": trailerVIN,
+            "type": {
+                "value": "Trailer",
+                "option": "Trailer"
+            },
+            "base": base,
+            "state": trailerRegistrationPlace,
+        };
+        if(trailerNumber === '' || trailerVIN === '' || licensePlate === '' || trailerRegistrationPlace === ''){
+            setErrorMessages([languageModule.lang(language, 'allFieldsRequired')]);
+            openErrorModal();
+            return;
+        }
+        
+    }
+
+    return (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={newTrailerModal}
+          onRequestClose={() => {
+              setNewTrailerModal(false);
+          }}
+        >
+          <View style={styles1.modalBackground}>
+            <View style={styles1.modalContainer}>
+              <Text style={styles1.modalTitle}>{languageModule.lang(language, 'addTrailer')}</Text>
+              <TextInput
+               style={styles1.input}
+               placeholder={languageModule.lang(language, 'trailerNumber')}
+               onChangeText={text => setTrailerNumber(text)}
+               keyboardType="numeric"
+              />
+              <TextInput
+                style={styles1.input}
+                placeholder="VIN"
+                onChangeText={text => setTrailerVIN(text)}
+              />
+              <TextInput
+                style={styles1.input}
+                placeholder={languageModule.lang(language, 'trailerLicensePlate')}
+                onChangeText={text => setLicensePlate(text)}
+              />
+              <TextInput
+               style={styles1.input}
+               placeholder={languageModule.lang(language, 'trailerRegistrationPlace')}
+               onChangeText={text => {
+                const newText = text.replace(/[0-9a-z]/g, '');
+
+                setTrailerRegistrationPlace(newText);
+              }}
+              value={trailerRegistrationPlace}
+               maxLength={3}
+              />
+              <TouchableOpacity style={styles1.addButton} onPress={postAddingCMV}>
+                <Text style={styles1.buttonText}>{languageModule.lang(language, 'addTrailer')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles1.cancelButton} onPress={() => {setNewTrailerModal(false)}}>
+                <Text style={styles1.buttonText}>{languageModule.lang(language, 'cancel')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      );
+  }
+
   function FloatingMessageError({ message, onClose }) {
     return (
       <Modal visible={true} transparent animationType="fade">
@@ -373,22 +330,22 @@ const ElegirVehiculo = ({ navigation }) => {
     );
   }
 
-  return (
-        <SafeAreaView style={styles.container}>
-        <StatusBar translucent={false} backgroundColor={Colors.primaryColor} />
-        {header()}
-        {inputBuscarVehiculo()}
-        {listaDeVehiculos()}
-        {footer()}
-        {nuevoVehiculoModal()}
-        {vehiculoSeleccionadoModal()}
-        {showErrorModal && (
+  return(  
+    <SafeAreaView style={styles.container}>
+    <StatusBar translucent={false} backgroundColor={Colors.primaryColor} />
+    {header()}
+    {inputBuscarTrailer()}
+    {listadeTrailers()}
+    {footer()}
+    {nuevoTrailerModal()}
+    {trailerSeleccionadoModal()}
+    {showErrorModal && (
         <FloatingMessageError
           message={errorMessages}
           onClose={closeErrorModal} // Función para cerrar el modal
         />
       )}
-        </SafeAreaView>
+    </SafeAreaView>
   )
 }
 
@@ -599,4 +556,5 @@ const styles1 = StyleSheet.create({
     },
 });
 
-export default ElegirVehiculo;
+
+export default elegirRemolque;
