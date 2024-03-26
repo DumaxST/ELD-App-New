@@ -50,9 +50,10 @@ jobs:
             FULL_STRING="${{ github.event.pull_request.head.ref }}"
             JIRAISSUEID=$(echo $FULL_STRING | cut -d'-' -f1,2)
             echo "JIRAISSUEID=$JIRAISSUEID" >> $GITHUB_ENV
+
         - name: Install Expo CLI
-          run: npm install -g expo-cli
-          
+          run: npm install -g expo-cli 
+
         - name: Expo Login
           env:
             EXPO_CLI_USERNAME: ${{ secrets.EXPO_CLI_USERNAME }}
@@ -64,6 +65,11 @@ jobs:
         
         - name: Install dependencies
           run: npm install @config-plugins/react-native-ble-plx
+
+          
+        - name: Install expo/config-plugins
+          run: npm install @expo/config-plugins
+        
 
         - name: Publish Update to EAS and save output
           env:
