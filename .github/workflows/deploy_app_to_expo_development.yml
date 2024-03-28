@@ -1,7 +1,9 @@
 name: Deploy APP to EXPO DEVELOPMENT
 on: 
-    pull_request_review:
-      types: [submitted]
+  pull_request:
+    types: [closed]
+    branches:
+      - development
 
 permissions:
   contents: read

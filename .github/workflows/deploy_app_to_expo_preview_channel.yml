@@ -53,7 +53,7 @@ jobs:
 
         - name: Install Expo CLI
           run: npm install -g expo-cli 
-
+          
         - name: Expo Login
           env:
             EXPO_CLI_USERNAME: ${{ secrets.EXPO_CLI_USERNAME }}
