@@ -162,5 +162,22 @@
     "vehicleNumber": "Número de vehículo",
     "licensePlate": "Placa",
     "vehicleRegistrationPlace": "Lugar de registro del vehículo",
-    "thereisNovehicleSelected": "No hay vehículo seleccionado"
+    "thereisNovehicleSelected": "No hay vehículo seleccionado",
+    "thereisNotrailerSelected": "No hay remolque seleccionado",
+    "trailerRegistrationPlace": "Lugar de registro del remolque",
+    "selectedTrailer": "Remolque seleccionado",
+    "reWrite": "Reescribir",
+    "chooseVehicle": "Elegir vehículo",
+    "addVehicle": "Agregar vehículo",
+    "fuelType": "Tipo de combustible",
+    "allFieldsRequired": "Todos los campos son requeridos",
+    "vehicleInformation": "Información del vehículo",
+    "searchVehicle": "Buscar vehículo",
+    "goBack": "Regresar",
+    "chooseTrailer": "Elegir remolque",
+    "addTrailer": "Agregar remolque",
+    "trailerLicensePlate": "Placa del remolque",
+    "trailerInformation": "Información del remolque",
+    "searchTrailer": "Buscar remolque",
+    "selectTrailerFirst": "Selecciona un remolque"
 }
