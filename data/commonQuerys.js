@@ -129,7 +129,7 @@ export const pendingCertifyDriverEvents = async (eldID, driverID, carrierID) => 
 
 //*-----------------FINISH-CertifyLogs----------------------------------*//
 
-//*-----------------START-PerfilConductor----------------------------------*//
+//*-----------------START-PerfilVehiculo----------------------------------*//
 
 export const postCMV = async (userID, carrierID,cmv) => {
   return await postAxios("/api/carrier/cmv", {
@@ -144,6 +144,21 @@ export const postCMV = async (userID, carrierID,cmv) => {
   });
 }
 
+export const putCMV = async (userID, carrierID,cmvID, cmv) => {
+  console.log("putCMV", userID, carrierID, cmvID, cmv);
+  return await putAxios("/api/carrier/cmv", {
+    lang: "Eng",
+    userID: userID,
+    carrierID: carrierID,
+    cmvID: cmvID,
+    cmv: cmv
+  }).then((res) =>{
+    return res
+  }).catch((err) => {
+    console.error("putCMV", err);
+  });
+}
+
 export const getCMVs = async (userID, carrierID, companyID) => {
   return await getAxios("/api/carrier/cmvs", {
     userID: userID,
@@ -155,9 +170,9 @@ export const getCMVs = async (userID, carrierID, companyID) => {
     console.error("getCMVs", err);
   });
 }
-  
 
-//*-----------------FINISH-PerfilConductor----------------------------------*//
+
+//*-----------------FINISH-PerfilVehiculo----------------------------------*//
 
 export const getEventTypeCode = (tempDriverStatus) => {
   switch (tempDriverStatus) {
