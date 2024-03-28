@@ -1,4 +1,4 @@
-name: Deploy APP to EXPO PREVIEW CHANNEL
+name: Deploy APP to EXPO STAGING
 on: 
   pull_request:
     branches:
