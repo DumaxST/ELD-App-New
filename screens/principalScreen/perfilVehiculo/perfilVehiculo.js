@@ -244,7 +244,7 @@ const PerfilVehiculo = ({ navigation }) => {
           />
           <Text style={styles2.buttonText}>{languageModule.lang(language, "selectVehicle")}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles2.button}>
+        <TouchableOpacity onPress={() => {navigation.navigate('ElegirRemolque')}} style={styles2.button}>
           <Image
             source={require('../../../assets/images/trailers/trailer.png')}
             style={styles2.buttonImage}
